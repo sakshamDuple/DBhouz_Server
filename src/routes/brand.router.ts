@@ -9,6 +9,7 @@ brandRouter.use(express.json())
 brandRouter.post('/create', async (req: Request, res: Response) => {
     try {
         let brand: IBrand = req.body.brand;
+        console.log(brand)
         brand = await BrandService.create(brand);
         res.status(200).json({ brand });
     } catch (error: any) {

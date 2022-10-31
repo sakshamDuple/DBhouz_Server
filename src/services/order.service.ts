@@ -11,24 +11,6 @@ class OrderServiceClass {
             newOrder.transactionDetail.transactionMethod = transactionMethod.CASH_ON_DELIVERY
         }
         newOrder = this.sanitize(newOrder)
-        // const agg = [
-        //     {
-        //         '$sort': {
-        //             'Sr_No': -1
-        //         }
-        //     }, {
-        //         '$limit': 1
-        //     }, {
-        //         '$project': {
-        //             'Sr_No': 1,
-        //             '_id': 0
-        //         }
-        //     }
-        // ];
-        // let maxVal = await collections.orders.aggregate(agg)
-        // let resultOfVal = await maxVal.toArray()
-        // let nextVal = resultOfVal[0].Sr_No + 1
-        // newOrder.Sr_No = nextVal
         if (newOrder.transactionDetail.status == "successful" && newOrder.transactionDetail.transactionMethod != transactionMethod.CASH_ON_DELIVERY) {
             newOrder.order_status = OrderStatus.Payment_Accepted
         } else {
@@ -66,6 +48,7 @@ class OrderServiceClass {
         });
         return transactions
     }
+
     async getTransaction(id: string, type: string): Promise<any[]> {
         let agg = [
             {
@@ -136,47 +119,89 @@ class OrderServiceClass {
         });
         return transactions
     }
-    async getByUser(Id: string): Promise<Order[]> {
-        return (await collections.orders
-            .find({ "customerDetail.userId": Id })
-            .sort({ createdAt: -1 })
-            .toArray()) as Order[]
+
+    async updateOrder(order: Order): Promise<any> {
+        let update = false
+        if (order.expectedDeliveryDate < Date.now()) {
+            order.orderCompleteFlag = true
+            await collections.orders.findOneAndUpdate(order._id, order)
+            update = true
+        }
+        // if ()
+        return { Order: order, Update: update }
     }
-    async getByUserFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
+
+    async getByUserFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
+        // let Orders: Order[]
         if (SortByDate == "Desc") {
-            console.log(Start, End, SortByDate)
             return (await collections.orders
-                .find({ "customerDetail.userId": Id })
+                .find({
+                    'customerDetail.userId': Id, 'order_status': {
+                        '$in': OrderType
+                    }
+                }).sort({ createdAt: 1 })
                 .limit(PageLimit).skip(Start - 1)
-                .sort({ createdAt: 1 })
-                .limit(PageLimit)
+                .toArray()) as Order[]
+            // Orders.forEach(async Order => {
+            //     if (Order.expectedDeliveryDate > Date.now()) {
+            //         Order.orderCompleteFlag = true
+            //         try {
+            //             await collections.orders.findOneAndUpdate(Order._id, Order)
+            //         } catch (e) {
+            //             console.log(e)
+            //         }
+            //     }
+            // });
+            // return Orders
+        }
+        return (await collections.orders
+            .find({
+                'customerDetail.userId': Id, 'order_status': {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: -1 })
+            .limit(PageLimit).skip(Start - 1)
+            .toArray()) as Order[]
+        // Orders.forEach(async Order => {
+        //     if (Order.expectedDeliveryDate > Date.now()) {
+        //         Order.orderCompleteFlag = true
+        //         try {
+        //             await collections.orders.findOneAndUpdate(Order._id, Order)
+        //         } catch (e) {
+        //             console.log(e)
+        //         }
+        //     }
+        // });
+        // return Orders
+
+    }
+    async getTotalByUserFilter(Id: string, OrderType: Array<string>): Promise<number> {
+        return (await collections.orders
+            .find({
+                'customerDetail.userId': Id, 'order_status': {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: 1 })
+            .toArray()).length
+    }
+    async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
+        if (SortByDate == "Desc") {
+            return (await collections.orders
+                .find({
+                    "products.sellerId": Id, 'order_status': {
+                        '$in': OrderType
+                    }
+                }).sort({ createdAt: 1 })
+                .limit(PageLimit).skip(Start - 1)
                 .toArray()) as Order[]
         }
         return (await collections.orders
-            .find({ "customerDetail.userId": Id })
+            .find({
+                "products.sellerId": Id, 'order_status': {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: -1 })
             .limit(PageLimit).skip(Start - 1)
-            .sort({ createdAt: -1 })
-            .limit(PageLimit)
-            .toArray()) as Order[]
-    }
-    async getBySeller(Id: string): Promise<Order[]> {
-        return (await collections.orders
-            .find({ "products.sellerId": Id })
-            .sort({ createdAt: -1 })
-            .toArray()) as Order[]
-    }
-    async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
-        if (SortByDate == "Desc") {
-            return (await collections.orders
-                .find({ "products.sellerId": Id })
-                .limit(PageLimit).skip(Start - 1)
-                .sort({ createdAt: 1 })
-                .toArray()) as Order[]
-        }
-        return (await collections.orders
-            .find({ "products.sellerId": Id })
-            .limit(PageLimit).skip(Start - 1)
-            .sort({ createdAt: -1 })
             .toArray()) as Order[]
     }
     async get(): Promise<Order[]> {
@@ -184,42 +209,101 @@ class OrderServiceClass {
             .find().sort({ createdAt: -1 })
             .toArray()) as Order[]
     }
-    async getFilter(Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
+
+    async getTotalAfterFilter(OrderType: Array<string>): Promise<number> {
+        return (await collections.orders
+            .find({
+                'order_status': {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: -1 })
+            .toArray()).length
+    }
+
+    async getFilterByOrderType(Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
         if (SortByDate == "Desc") {
-            console.log(Start)
             return (await collections.orders
-                .find().sort({ createdAt: -1 })
+                .find({
+                    'order_status': {
+                        '$in': OrderType
+                    }
+                }).sort({ createdAt: 1 })
                 .limit(PageLimit).skip(Start - 1)
                 .toArray()) as Order[]
         }
-        console.log(Start)
         return (await collections.orders
-            .find().sort({ createdAt: -1 })
+            .find({
+                "order_status": {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: -1 })
             .limit(PageLimit).skip(Start - 1)
             .toArray()) as Order[]
     }
-    async getCompletedOrder(Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
+    async getCompletedOrder(Start: number, End: number, SortByDate: string, PageLimit: number, UserId: string): Promise<Order[]> {
         if (SortByDate == "Desc") {
             return (await collections.orders
-                .find({ "order_status": OrderStatus.Delivered }).sort({ createdAt: -1 })
+                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: 1 })
                 .limit(PageLimit).skip(Start - 1)
                 .toArray()) as Order[]
         }
         return (await collections.orders
-            .find({ "order_status": OrderStatus.Delivered }).sort({ createdAt: -1 })
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: -1 })
             .limit(PageLimit).skip(Start - 1)
             .toArray()) as Order[]
     }
-    async getCancelledOrder(Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
+    async getCancelledOrder(Start: number, End: number, SortByDate: string, PageLimit: number, UserId: string): Promise<Order[]> {
         if (SortByDate == "Desc") {
             return (await collections.orders
-                .find({ "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
+                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: 1 })
                 .limit(PageLimit).skip(Start - 1)
                 .toArray()) as Order[]
         }
+        return (await collections.orders
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
+            .limit(PageLimit).skip(Start - 1)
+            .toArray()) as Order[]
+    }
+
+    async getByUser(Id: string): Promise<Order[]> {
+        return (await collections.orders
+            .find({ "customerDetail.userId": Id })
+            .sort({ createdAt: -1 })
+            .toArray()) as Order[]
+    }
+    async getSeller(SellerId: string): Promise<Order[]> {
+        return (await collections.orders
+            .find({ "products.sellerId": SellerId }).sort({ createdAt: -1 })
+            .toArray()) as Order[]
+    }
+    async getSellerTotalOrder(SellerId: string, OrderType: Array<string>): Promise<Order[]> {
+        return (await collections.orders
+            .find({
+                "products.sellerId": SellerId, 'order_status': {
+                    '$in': OrderType
+                }
+            }).sort({ createdAt: -1 })
+            .toArray()) as Order[]
+    }
+    async getUserCompletedOrder(UserId: string): Promise<Order[]> {
+        return (await collections.orders
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Delivered }).sort({ createdAt: -1 })
+            .toArray()) as Order[]
+    }
+
+    async getAllCancelledOrder(): Promise<Order[]> {
         return (await collections.orders
             .find({ "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
+            .toArray()) as Order[]
+    }
+    async getSellerCancelledOrder(SellerId: string): Promise<Order[]> {
+        return (await collections.orders
+            .find({ "products.sellerId": SellerId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
+            .toArray()) as Order[]
+    }
+    async getUserCancelledOrder(UserId: string): Promise<Order[]> {
+        return (await collections.orders
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
             .toArray()) as Order[]
     }
     // async getTransactionDetailForUser(Start: number, End: number, SortByDate: string, PageLimit: number): Promise<Order[]> {
@@ -237,7 +321,9 @@ class OrderServiceClass {
     sanitize(o: Order): Order {
         if (o.products) o.products.forEach(i => {
             i.saleId = new ObjectId(i.saleId)
+            if (!i.reviewFlagOfThisProduct) i.reviewFlagOfThisProduct = false
         })
+        if (!o.reviewFlag) o.reviewFlag = false;
         if (o.address) o.address.addressId = new ObjectId(o.address.addressId)
         if (o.customerDetail) o.customerDetail.customerId = new ObjectId(o.customerDetail.customerId)
         if (o.transactionDetail.transactionMethod != transactionMethod.CASH_ON_DELIVERY) o.transactionDetail.transactionId = new ObjectId(o.transactionDetail.transactionId)

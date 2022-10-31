@@ -110,5 +110,3 @@ miscRouter.delete("/deleteUnit/:unitId", async (req: Request, res: Response) => 
 });
 
 export { miscRouter }
-
-//hii

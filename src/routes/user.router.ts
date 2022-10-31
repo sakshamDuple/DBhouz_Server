@@ -95,7 +95,7 @@ userRouter.post("/checkData", async (req: Request, res: Response) => {
     let user: IUser = await userService.get(userId);
     if (!user) throw new Error(`user ${userId} does not exist`);
     let products: IProduct[] = await ProductService.getAllByMerchant(userId, false);
-    res.status(200).json({ totalProducts: products.length });
+    res.status(200).json({ totalProducts: products.length, products:products });
   } catch (error) {
     console.error(error);
     LOG.error(error);

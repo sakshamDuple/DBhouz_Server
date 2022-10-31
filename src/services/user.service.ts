@@ -1,6 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { ECommisionType, IUser } from "../interfaces";
+import { ECommisionType, IContact, IMerchant, IUser } from "../interfaces";
 
 class UserServiceClass {
   async get(userId: string | ObjectId): Promise<IUser> {
@@ -8,9 +8,31 @@ class UserServiceClass {
     return (await collections.users.findOne({})) as IUser;
   }
 
+  async makeContact(contact:IContact): Promise<IContact> {
+    contact = { ...contact }
+    contact = this.sanitizeContact(contact);
+    const result: InsertOneResult<IContact> = await collections.contact.insertOne(contact);
+    contact._id = result.insertedId;
+    console.log(contact)
+    return contact;
+  }
+
+  async getAllContact(): Promise<IContact[]> {
+    return await collections.contact.find().toArray() as IContact[];
+    // return result[];
+  }
+
+  async getSpecificUser(userId: string | ObjectId): Promise<IUser> {
+    const query = { _id: userId };
+    return (await collections.users.findOne({query})) as IUser;
+  }
+
   async getByEmail(email: string): Promise<IUser> {
-    // console.log(collections);
     return (await collections.users.findOne({ email })) as IUser;
+  }
+
+  async getByEmailM(email: string): Promise<IMerchant> {
+    return (await collections.merchants.findOne({ email })) as IMerchant;
   }
 
   async getAll(): Promise<IUser[]> {
@@ -48,9 +70,38 @@ class UserServiceClass {
     return result.modifiedCount > 0;
   }
 
+  async updateC(contact:IContact): Promise<boolean> {
+    contact = { ...contact };
+    const existingMerchant: IUser = await this.getByEmail(contact.email);
+    if (existingMerchant && existingMerchant._id.toString() !== contact._id.toString()) {
+      throw new Error(`User with this email already exists`);
+    }
+    const query = { _id: new ObjectId(contact._id) };
+    delete contact._id;
+    contact = this.sanitizeContact(contact);
+    let result: UpdateResult = await collections.users.updateOne(query, {
+      $set: contact,
+    });
+    return result.modifiedCount > 0;
+  }
+
+  async verifyUser(userId:ObjectId): Promise<boolean> {
+    const query = { _id: userId };
+    let result: UpdateResult = await collections.users.updateOne(query, {
+      $set: {isEmailVerified:true},
+    });
+    return result.modifiedCount > 0;
+  }
+
   async delete(merchantId: string | ObjectId): Promise<boolean> {
     const query = { _id: new ObjectId(merchantId) };
     const result = await collections.users.deleteOne(query);
+    return result && result.deletedCount > 0;
+  }
+
+  async deleteC(contactId:string|ObjectId): Promise<boolean> {
+    const query = { _id: new ObjectId(contactId) };
+    const result = await collections.contact.deleteOne(query);
     return result && result.deletedCount > 0;
   }
 
@@ -64,6 +115,14 @@ class UserServiceClass {
         i.documentId = new ObjectId(i.documentId);
       });
     }
+    return o;
+  }
+
+  sanitizeContact(o: IContact): IContact {
+    if (!o.name) delete o.name;
+    if (!o.message) delete o.message;
+    if (!o.phone) delete o.phone;
+    if (!o.email) delete o.email;
     return o;
   }
 }

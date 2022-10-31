@@ -21,6 +21,7 @@ export const collections: {
   units?: mongoDB.Collection;
   users?: mongoDB.Collection;
   orders?: mongoDB.Collection;
+  contact?: mongoDB.Collection;
 } = {};
 
 /**
@@ -66,6 +67,7 @@ export async function connectToDatabase() {
   collections.units = db.collection(AppConfig.mongoCollections.units);
   collections.users = db.collection(AppConfig.mongoCollections.user);
   collections.orders = db.collection(AppConfig.mongoCollections.orders);
+  collections.contact = db.collection(AppConfig.mongoCollections.contact);
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -225,7 +227,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       $jsonSchema: {
         bsonType: "object",
         required: ["name", "merchantId", "categoryId", "subCategoryId", "status", "createdAt"],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
           _id: {},
           name: { bsonType: "string" },
@@ -237,7 +239,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           description: { bsonType: "string" },
           variantParameters: {
             bsonType: "object",
-            additionalProperties: false,
+            additionalProperties: true,
             required: [
               "styleEnabled",
               "styleList",
@@ -275,9 +277,9 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 "priority",
                 "minPurchaseQuantity",
                 "availableQuantity",
-                "price",
+                "price"
               ],
-              additionalProperties: false,
+              additionalProperties: true,
               properties: {
                 _id: {},
                 name: { bsonType: "string" },
@@ -297,7 +299,16 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 minPurchaseQuantity: { bsonType: "number" },
                 availableQuantity: { bsonType: "number" },
                 discountPercentage: { bsonType: "number" },
-                price: { bsonType: "double" },
+                price: { bsonType: "number" },
+                warranty_period: {
+                  bsonType: "number"
+                },
+                material_type: {
+                  bsonType: "string"
+                },
+                material_finish: {
+                  bsonType: "string"
+                },
                 images: {
                   bsonType: "array",
                   items: {
@@ -324,6 +335,22 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               },
             },
           },
+          review: {
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              required: ["userId", "orderId", "description", "rating", "reviewId"],
+              additionalProperties: false,
+              properties: {
+                reviewId: { bsonType: "objectId" },
+                userId: { bsonType: "objectId" },
+                orderId: { bsonType: "objectId" },
+                description: { bsonType: "string" },
+                rating: { bsonType: "number" },
+              },
+            },
+          },
+          rating: { bsonType: "number" },
           seo: {
             bsonType: "object",
             additionalProperties: false,
@@ -499,4 +526,124 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   })
+  // LOG.info(`Validating collection ${AppConfig.mongoCollections.mainPage}`)
+  // await db.command({
+  //   collMod: AppConfig.mongoCollections.mainPage,
+  //   validator: {
+  //     $jsonSchema: {
+  //       bsonType: "object",
+  //       required: ["About_Us", "Material_Selection_1", "Material_Selection_2", "Shop_By_Category", "Featured_Products", "createdAt", "updatedAt", "SmallBanner1", "SmallBanner2", "MainBanner"], //Sr_No
+  //       additionalProperties: true,
+  //       properties: {
+  //         About_Us: { bsonType: "string" },
+  //         Material_Selection_1: {
+  //           bsonType: "object",
+  //           additionalProperties: true,
+  //           required: [
+  //             "categoryId",
+  //             "nameOfCategory"
+  //           ],
+  //           properties: {
+  //             categoryId: { bsonType: "objectId" },
+  //             nameOfCategory: { bsonType: "string" },
+  //             priority: { bsonType: "number" },
+  //             images: { bsonType: "objectId" }
+  //           },
+  //         },
+  //         Material_Selection_2: {
+  //           bsonType: "object",
+  //           additionalProperties: true,
+  //           required: [
+  //             "categoryId",
+  //             "nameOfCategory"
+  //           ],
+  //           properties: {
+  //             categoryId: { bsonType: "objectId" },
+  //             nameOfCategory: { bsonType: "string" },
+  //             priority: { bsonType: "number" },
+  //             images: { bsonType: "objectId" }
+  //           },
+  //         },
+  //         Shop_By_Category: {
+  //           bsonType: "object",
+  //           additionalProperties: true,
+  //           required: [
+  //             "categoryId",
+  //             "nameOfCategory"
+  //           ],
+  //           properties: {
+  //             categoryId: { bsonType: "objectId" },
+  //             nameOfCategory: { bsonType: "string" },
+  //             priority: { bsonType: "number" },
+  //             images: { bsonType: "objectId" }
+  //           },
+  //         },
+  //         Featured_Products: {
+  //           bsonType: "object",
+  //           additionalProperties: true,
+  //           required: [
+  //             "categoryId",
+  //             "nameOfCategory"
+  //           ],
+  //           properties: {
+  //             categoryId: { bsonType: "objectId" },
+  //             nameOfCategory: { bsonType: "string" },
+  //             priority: { bsonType: "number" },
+  //             images: { bsonType: "objectId" }
+  //           },
+  //         },
+  //         SmallBanner1: { bsonType: "objectId" },
+  //         SmallBanner2: { bsonType: "objectId" },
+  //         MainBanner: { bsonType: "objectId" },
+  //         updatedAt: { bsonType: "number" },
+  //         createdAt: { bsonType: "number" },
+  //       },
+  //     },
+  //   },
+  // })
+  // LOG.info(`Validating collection ${AppConfig.mongoCollections.banner}`)
+  // await db.command({
+  //   collMod: AppConfig.mongoCollections.banner,
+  //   validator: {
+  //     $jsonSchema: {
+  //       bsonType: "object",
+  //       additionalProperties: true,
+  //       required: [
+  //         "Banner_Title",
+  //         "Button_Link",
+  //         "Banner_Type",
+  //         "images",
+  //       ],
+  //       properties: {
+  //         Banner_Title: { bsonType: "string" },
+  //         Button_Title: { bsonType: "string" },
+  //         Button_Link: { bsonType: "string" },
+  //         priority: { bsonType: "number" },
+  //         images: { bsonType: "objectId" },
+  //         Banner_Type: {
+  //           enum: ["Small1", "Small2", "Main"]
+  //         }
+  //       },
+  //     },
+  //   },
+  // })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.contact}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.contact,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["name", "email", "phone", "message", "createdAt"], //Sr_No
+        additionalProperties: true,
+        properties: {
+          message: { bsonType: "string" },
+          name: { bsonType: "string" },
+          email: { bsonType: "string" },
+          phone: { bsonType: "number" },
+          createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  })
 };
+//IContact

@@ -30,7 +30,10 @@ class AppConfigClass {
     colors: string;
     units: string;
     user: string;
-    orders: string
+    orders: string;
+    contact: string;
+    // mainPage: string;
+    // banner: string;
   };
 }
 
@@ -62,6 +65,9 @@ let AppConfigObject: AppConfigClass = {
     units: process.env.COLLECTION_UNITS,
     user: process.env.COLLECTION_USER,
     orders: process.env.COLLECTION_ORDER,
+    contact: process.env.COLLECTION_CONTACT,
+    // mainPage: process.env.COLLECTION_MAINPAGE,
+    // banner: process.env.COLLECTION_BANNER,
   },
 };
 

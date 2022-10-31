@@ -1,9 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, IProduct } from "../interfaces";
-// import {
-//     ObjectId
-//   } from 'mongodb';
+import { EProductStatus, IProduct, IReview, Order } from "../interfaces";
 
 class ProductServiceClass {
 
@@ -19,39 +16,6 @@ class ProductServiceClass {
         }
         return (await collections.products.find(query).sort({ createdAt: -1 }).toArray()) as IProduct[];
     }
-
-    // async searchSpecific(categoryId: string, searchVal: string): Promise<any[]> {
-    //     // let products = []
-    //     // let subCategories = []
-    //     // let agg = [
-    //     //     {
-    //     //         '$match': {
-    //     //             'categoryId': new ObjectId("633e5fe9ec7281a86622615b")
-    //     //         }
-    //     //     }, {
-    //     //         '$match': {
-    //     //             '$or': [
-    //     //                 {
-    //     //                     'name': {
-    //     //                         '$regex': `${searchVal}`
-    //     //                     }
-    //     //                 }
-    //     //             ]
-    //     //         }
-    //     //     }, {
-    //     //         '$project': {
-    //     //             '_id': 0,
-    //     //             'name': 1
-    //     //         }
-    //     //     }
-    //     // ];
-    //     // console.log(agg)
-    //     let products = await collections.products.find({'status': "INACTIVE"})
-    //     console.log(products)
-    //     // let subCategories = await collections.subCategories.aggregate(agg)
-    //     // console.log(subCategories)
-    //     return [{ products: products }] //, { subCategories: subCategories }
-    // }
 
     async searchSpecific(categoryId: string | ObjectId, searchVal: string): Promise<any[]> {
         let query: any = { categoryId: new ObjectId(categoryId) }
@@ -75,7 +39,7 @@ class ProductServiceClass {
         ];
         let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
         let subCategories = await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
-        return [{products:products},{subCategories:subCategories}]
+        return [{ products: products }, { subCategories: subCategories }]
     }
 
     async getAllByMerchant(merchantId: string | ObjectId, activeOnly: boolean): Promise<IProduct[]> {
@@ -147,12 +111,156 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
+    async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string): Promise<IProduct[]> {
+        let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
+        if (colorId != "") {
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        }
+        if (sortByName == "Asc") {
+            return (await collections.products
+                .find(query)
+                .sort({ name: -1 })
+                .limit(PageLimit).skip(Start - 1)
+                .toArray()) as IProduct[];
+        } else if (sortByName == "Desc") {
+            return (await collections.products
+                .find(query)
+                .sort({ name: 1 })
+                .limit(PageLimit).skip(Start - 1)
+                .toArray()) as IProduct[];
+        }
+        return (await collections.products
+            .find(query)
+            .limit(PageLimit).skip(Start - 1)
+            .toArray()) as IProduct[];
+    }
+
+    async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string): Promise<Number> {
+        let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
+        if (colorId != "") {
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        }
+        return (await collections.products
+            .find(query)
+            .toArray()).length;
+    }
+
+    async getAllBySubCategoryFilterNew(subCategoryId: Array<string>, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string): Promise<IProduct[]> {
+        let k = []
+        subCategoryId.forEach(element => {
+            k.push(new ObjectId(element))
+        });
+        console.log(k)
+        let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
+        if (colorId != "") {
+            query = { subCategoryId: { "$in": subCategoryId }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        }
+        if (sortByName == "Asc") {
+            return (await collections.products
+                .find(query)
+                .sort({ name: -1 })
+                .limit(PageLimit).skip(Start - 1)
+                .toArray()) as IProduct[];
+        } else if (sortByName == "Desc") {
+            return (await collections.products
+                .find(query)
+                .sort({ name: 1 })
+                .limit(PageLimit).skip(Start - 1)
+                .toArray()) as IProduct[];
+        }
+        return (await collections.products
+            .find(query)
+            .limit(PageLimit).skip(Start - 1)
+            .toArray()) as IProduct[];
+    }
+
+    async getAllBySubCategoryFilterNewVal(subCategoryId: Array<string>, pfrom: number, pto: number, colorId: string): Promise<Number> {
+        let k = []
+        subCategoryId.forEach(element => {
+            k.push(new ObjectId(element))
+        });
+        let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
+        if (colorId != "") {
+            query = { subCategoryId: { "$in": subCategoryId }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        }
+        return (await collections.products
+            .find(query)
+            .toArray()).length;
+    }
+
+    async get_Colors_MaxPrice(categoryId: string): Promise<any> {
+        let agg = [
+            {
+                '$match': {
+                    'categoryId': new ObjectId(categoryId)
+                }
+            }, {
+                '$group': {
+                    '_id': 'null',
+                    'colors': {
+                        '$push': '$variants.colorId'
+                    },
+                    'maxPrice': {
+                        '$max': '$variants.price'
+                    }
+                }
+            }
+        ]
+        let res = await collections.products.aggregate(agg).toArray()
+        let arr = [];
+        for (let item of res[0].colors) for (let color of item) arr.push(color);
+        let agg2 = [
+            {
+                '$match': {
+                    '_id': { "$in" : arr}
+                }
+            }
+        ]
+        let res2 = await collections.colors.aggregate(agg2).toArray()
+        return {colors:res2, maxPrice:res[0].maxPrice}
+    }
+
     async getAllBySubCategoryFilter(subCategoryId: string, pfrom: number, pto: number): Promise<IProduct[]> {
+        console.log(subCategoryId, pfrom, pto)
         let query: any = { subCategoryId: new ObjectId(subCategoryId), "variants.price": { $gte: pfrom, $lte: pto } }
         return (await collections.products
             .find(query)
             .sort({ createdAt: -1 })
             .toArray()) as IProduct[];
+    }
+
+    async doReview(review: IReview, productId: string): Promise<any> {
+        let update = false
+        let thisId = new ObjectId(productId)
+        let product: IProduct = await collections.products.findOne(thisId) as IProduct
+        let Order: Order = await collections.orders.findOne(review.orderId) as Order
+        const query2 = { _id: new ObjectId(Order._id.toString()) };
+        let rating: number = product.rating
+        let len = product.review.length
+        let allReview: Array<IReview> = product.review
+        async function func() {
+            await Order.products.map(async item => {
+                if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
+                    let newRating = (rating * len + review.rating) / (len + 1)
+                    product.rating = newRating;
+                    allReview.push(review)
+                    product.review = allReview
+                    const query1 = { _id: new ObjectId(product._id.toString()) };
+                    console.log(product)
+                    await collections.products.updateOne(query1, { $set: product })
+                    item.reviewFlagOfThisProduct = true
+                    await collections.orders.updateOne(query2, { $set: Order })
+                    update = true
+                    return update
+                }
+            })
+            return update
+        }
+        return {
+            Update: await func().then((val) => {
+                return val
+            }), Review: review
+        }
     }
 
     sanitize(o: IProduct): IProduct {
@@ -164,6 +272,8 @@ class ProductServiceClass {
         if (o.images) o.images.forEach(i => {
             i.documentId = new ObjectId(i.documentId)
         })
+        if (!o.rating) o.rating = 0;
+        if (!o.review) o.review = [];
         if (o.variantParameters) {
             if (o.variantParameters.dimensionUnitId) {
                 o.variantParameters.dimensionUnitId = new ObjectId(o.variantParameters.dimensionUnitId)
@@ -173,6 +283,9 @@ class ProductServiceClass {
             if (!v.priority || v.priority < 0 || Number.isNaN(v.priority)) {
                 delete v.priority
             }
+            if (v.images) v.images.forEach(i => {
+                i.documentId = new ObjectId(i.documentId)
+            })
             if (!v.colorId) delete v.colorId
             else v.colorId = new ObjectId(v.colorId)
             if (Number.isNaN(v.dimensions.width)) delete v.dimensions.width
@@ -181,6 +294,7 @@ class ProductServiceClass {
             if (Number.isNaN(v.availableQuantity)) delete v.availableQuantity
             if (Number.isNaN(v.discountPercentage)) delete v.discountPercentage
             if (Number.isNaN(v.price)) delete v.price
+            if (Number.isNaN(v.warranty_period)) delete v.warranty_period
             if (!Number.isNaN(v.price)) v.price = new Double(Number.parseFloat(v.price.toString()))
             if (v.dimensions) {
                 if (!Number.isNaN(v.dimensions.height)) v.dimensions.height = new Double(Number.parseFloat(v.dimensions.height.toString()))

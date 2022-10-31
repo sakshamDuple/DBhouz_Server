@@ -7,6 +7,14 @@ export interface IAdmin {
   secret: string;
   createdAt: number;
 }
+export interface IContact {
+  _id: ObjectId;
+  name: string;
+  email: string;
+  phone: number;
+  message: string;
+  createdAt: number;
+}
 export interface IClient {
   _id: ObjectId;
   name?: string;
@@ -96,11 +104,13 @@ export interface IProduct {
   categoryId: ObjectId;
   subCategoryId: ObjectId;
   description?: string;
+  rating?: number;
+  review?: IReview[];
   images?: {
     documentId: ObjectId;
     priority: number;
   }[];
-  price:number;
+  price: number;
   seo?: {
     metaTagTitle?: string;
     metaTagDescription?: string;
@@ -111,6 +121,7 @@ export interface IProduct {
     styleList: string[];
     sizeEnabled: boolean;
     sizeList: string[];
+    colorsList: string[];
     colorEnabled: boolean;
     dimensionHeightEnabled: boolean;
     dimensionWidthEnabled: boolean;
@@ -120,12 +131,20 @@ export interface IProduct {
   variants: IProductVariant[];
   createdAt: number;
 }
+export interface IReview {
+  reviewId: ObjectId
+  userId: ObjectId;
+  orderId: ObjectId;
+  description: string;
+  rating: number;
+}
 export interface IProductVariant {
   name: string;
   priority: number;
   style: string;
   size: string;
   colorId: ObjectId;
+  color: string;
   dimensions: {
     height: number | Double;
     width?: number | Double;
@@ -135,6 +154,9 @@ export interface IProductVariant {
   availableQuantity: number;
   discountPercentage: number;
   price: number | Double;
+  warranty_period?: number;
+  material_type?: string;
+  material_finish?: string;
   // stock:number;
   images?: {
     documentId: ObjectId;
@@ -193,42 +215,80 @@ export interface IUnit {
   createdAt: number;
   priority: number;
 }
+export interface MainPage {
+  _id: ObjectId;
+  About_Us: string;
+  Material_Selection_1: DisplayCategory[];
+  Material_Selection_2: DisplayCategory[];
+  Shop_By_Category: DisplayCategory[];
+  Featured_Products: DisplayCategory[];
+  createdAt: number;
+  updatedAt: number;
+  MainBanner: ObjectId[];
+  SmallBanner1: ObjectId;
+  SmallBanner2: ObjectId;
+}
+export interface Banner {
+  _id: ObjectId;
+  Banner_Title: string;
+  Button_Title?: string;
+  Button_Link: string;
+  images?: ObjectId;
+  Banner_Type: Banner_Type;
+}
+export enum Banner_Type {
+  Small1 = "Small1",
+  Small2 = "Small2",
+  Main = "Main"
+}
+export interface DisplayCategory {
+  categoryId: ObjectId;
+  priority: number;
+  nameOfCategory: string;
+  images?: ObjectId;
+}
 export interface Order {
   _id: ObjectId;
   // Sr_No: number;
   products: {
-    sellerId:string,
-    productId:string,
-    saleId:ObjectId
+    sellerId: string,
+    productId: string,
+    saleId: ObjectId,
+    variant_Name: string,
+    count: number,
+    totalPriceOfThisProducts: number
+    reviewFlagOfThisProduct: boolean
   }[];
   address: {
-    addressId:ObjectId,
-    country:string,
-    state:string,
-    city:string,
-    postal_code:string,
-    main_address_text:string
+    addressId: ObjectId,
+    country: string,
+    state: string,
+    city: string,
+    postal_code: string,
+    main_address_text: string
   };
-  total_price:number;
-  customerDetail:{
-    userId:string,
-    name:string,
-    phone:number,
-    email:string,
-    customerId:ObjectId
+  total_price: number;
+  customerDetail: {
+    userId: string,
+    name: string,
+    phone: number,
+    email: string,
+    customerId: ObjectId
   };
-  seller:string;
-  discount:string[];
-  coupon:string[];
-  order_status:OrderStatus;
-  transactionDetail:{
+  seller: string;
+  discount: string[];
+  coupon: string[];
+  order_status: OrderStatus;
+  reviewFlag?: boolean;
+  orderCompleteFlag?: boolean;
+  transactionDetail: {
     transactionId: ObjectId,
     transactionDate: number,
     status: string,
     transactionMethod: transactionMethod,
     transactionNumber: string
   };
-  createdAt:number;
+  createdAt: number;
   expectedDeliveryDate: number;
 }
 export enum transactionMethod {
@@ -237,5 +297,6 @@ export enum transactionMethod {
   UPI = "UPI",
   PAYTM = "PAYTM",
   GPAY = "GPAY",
-  CASH_ON_DELIVERY = "CASH_ON_DELIVERY"
+  CASH_ON_DELIVERY = "CASH_ON_DELIVERY",
+  NETBANKING = "NETBANKING"
 }

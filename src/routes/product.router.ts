@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import { rename } from "fs";
 import path from "path";
-import { IDocument, IMerchant } from "../interfaces";
+import { IBrand, IDocument, IMerchant, IReview } from "../interfaces";
 import { LOG } from "../logger";
 import { uploadImages } from "../multer";
 import { DocumentService } from "../services/document.service";
@@ -9,7 +9,11 @@ import { ProductService } from "../services/product.service";
 import { IProduct } from "../interfaces";
 import { AppConfig } from "../config";
 import { MerchantService } from "../services/merchant.service";
+import jwt from "jsonwebtoken";
 import { OrderService } from "../services/order.service";
+import { ObjectID } from "bson";
+import { BrandService } from "../services/brand.service";
+import { ColorService } from "../services/color.service";
 
 const productRouter: Router = express.Router();
 productRouter.use(express.json());
@@ -34,8 +38,8 @@ productRouter.post("/getProductsByCategory", async (req: Request, res: Response)
 productRouter.post("/getProductsByCategory/filter", async (req: Request, res: Response) => {
   try {
     let categoryId: string = req.body.categoryId;
-    let priceRangefrom: number = req?.body?.pricefrom?parseInt(req?.body?.pricefrom):1;
-    let priceRangeto: number = req?.body?.priceto?parseInt(req?.body?.priceto):100000;
+    let priceRangefrom: number = req?.body?.pricefrom ? parseInt(req?.body?.pricefrom) : 1;
+    let priceRangeto: number = req?.body?.priceto ? parseInt(req?.body?.priceto) : 100000;
     let activeProducts: IProduct[] = await ProductService.getAllByCategoryFilter(categoryId, priceRangefrom, priceRangeto);
     res.status(200).json({ status: "success", data: activeProducts });
   } catch (error: any) {
@@ -47,9 +51,11 @@ productRouter.post("/getProductsByCategory/filter", async (req: Request, res: Re
 productRouter.post("/getProductsBySubCategory/filter", async (req: Request, res: Response) => {
   try {
     let subCategoryId: string = req.body.subCategoryId;
-    let priceRangefrom: number = req?.body?.pricefrom?parseInt(req?.body?.pricefrom):1;
-    let priceRangeto: number = req?.body?.priceto?parseInt(req?.body?.priceto):100000;
+    let priceRangefrom: number = req?.body?.pricefrom ? parseInt(req?.body?.pricefrom) : 1;
+    let priceRangeto: number = req?.body?.priceto ? parseInt(req?.body?.priceto) : 1000000;
+    // let colors: string = req.
     let activeProducts: IProduct[] = await ProductService.getAllBySubCategoryFilter(subCategoryId, priceRangefrom, priceRangeto);
+    console.log(activeProducts)
     res.status(200).json({ status: "success", data: activeProducts });
   } catch (error: any) {
     LOG.error(error);
@@ -68,10 +74,56 @@ productRouter.post("/getProductsBySubCategory", async (req: Request, res: Respon
   }
 });
 
+productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, res: Response) => {
+  try {
+    let categoryId: string = req.query?.categoryId ? String(req.query.categoryId) : "";
+    let subCategoryId: string = req.query?.subCategoryId ? String(req.query.subCategoryId) : "";
+    let thisSubCat = subCategoryId.split(',')
+    console.log(thisSubCat)
+    let priceRangefrom: number = req?.query?.pricefrom ? parseInt(String(req?.query?.pricefrom)) : 1;
+    let priceRangeto: number = req?.query?.priceto ? parseInt(String(req?.query?.priceto)) : 100000;
+    let sortByName: string = req?.query?.sortByDate ? String(req?.query?.sortByDate) : "";
+    let PageLimit: number = req?.query?.PageLimit ? parseInt(String(req?.query?.PageLimit)) : 10;
+    let colorId: string = req?.query?.colorId ? String(req?.query?.colorId) : "";
+    let Page: number = req?.query?.page ? parseInt(String(req?.query?.page)) : 1;
+    let Start: number = PageLimit * (Page - 1) + 1;
+    console.log(priceRangefrom, priceRangeto, subCategoryId, categoryId)
+    console.log(categoryId != "")
+    let activeProducts: IProduct[] = []
+    let totalValCatOrSub: Number = 0;
+    let get_Colors_MaxPrice = await ProductService.get_Colors_MaxPrice(categoryId)
+    if (subCategoryId != "") {
+      if(thisSubCat[0]==""){
+        return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice:get_Colors_MaxPrice });
+      }
+      activeProducts = await ProductService.getAllBySubCategoryFilterNew(thisSubCat, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, colorId);
+      totalValCatOrSub = await ProductService.getAllBySubCategoryFilterNewVal(thisSubCat, priceRangefrom, priceRangeto, colorId)
+    } else if (categoryId != "") {
+      activeProducts = await ProductService.getAllByCategoryFilterNew(categoryId, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, colorId);
+      totalValCatOrSub = await ProductService.getAllByCategoryFilterNewVal(categoryId, priceRangefrom, priceRangeto, colorId)
+      return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice:get_Colors_MaxPrice });
+    }
+    return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.get('/getAllColors', async (req: Request, res: Response) => {
+  try {
+      res.status(200).json({ colors: (await ColorService.getAll()) });
+  } catch (error: any) {
+      LOG.error(error)
+      res.status(500).json({ error: error.message });
+  }
+})
+
 productRouter.post(
   "/newProductImages",
   uploadImages.array("image"),
   async (req: Request, res: Response) => {
+    console.log(req.body)
     try {
       let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
       if (!filesToUpload || filesToUpload.length < 0)
@@ -116,6 +168,90 @@ productRouter.post(
   }
 );
 
+productRouter.post("/doReview", async (req: Request, res: Response) => {
+  try {
+    let review: any = req.body.review;
+    let orderId: ObjectID = new ObjectID(review.orderId)
+    let description = review.description
+    let rating: number = review.rating
+    let productId: string = review.productId
+    let token = req.body.token;
+    let decoded: any = jwt.decode(token);
+    if (decoded.user.type == "user") {
+      let userId = new ObjectID((decoded.user._id))
+      let reviewId = new ObjectID
+      let newReview: IReview = {
+        reviewId, userId, orderId, description, rating
+      }
+      let result = await ProductService.doReview(newReview, productId)
+      res.status(200).json({ result })
+    } else {
+      res.status(401).json({ error: "Only User Can Do Reviews Of This Of Products" })
+    }
+  } catch (e) {
+    LOG.error(e);
+    res.status(500).json({ error: e.message });
+  }
+})
+
+productRouter.post(
+  "/newVariantImages",
+  uploadImages.array("image"),
+  async (req: Request, res: Response) => {
+    try {
+      console.log(req.body)
+      let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+      if (!filesToUpload || filesToUpload.length < 0)
+        throw new Error(`Files not available for upload`);
+      const productId: string = req.body.productId;
+      const product: IProduct = await ProductService.get(productId);
+      if (!product) throw new Error(`Product ${productId} does not exist`);
+      let variants = product.variants
+      variants.map(async element => {
+        if (element.name == req.body.name) {
+          if (!element.images) element.images = []
+          for (let image of element.images) {
+            if (image.documentId) {
+              await DocumentService.delete(image.documentId);
+            }
+          }
+          element.images = [];
+          let priority: number = 1;
+          for (const currentFile of filesToUpload) {
+            let newDocument: IDocument = {
+              _id: null,
+              fileName: currentFile.originalname,
+              createdAt: Date.now(),
+              sizeInBytes: currentFile.size,
+            };
+            newDocument = await DocumentService.create(newDocument);
+            console.log(newDocument)
+            await element.images.push({ documentId: newDocument._id, priority: priority++ });
+            const newPath: string = path.resolve(
+              AppConfig.directories.documents,
+              newDocument._id.toString()
+            );
+            await new Promise<void>((resolve, reject) => {
+              rename(currentFile.path, newPath, (err) => {
+                if (err) reject(err);
+                else resolve();
+              });
+            });
+          }
+          console.log(element.images)
+          console.log("variants", variants);
+        }
+      });
+      console.log("product", product)
+      await ProductService.update(product);
+      res.status(200).json({ product });
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+
 productRouter.get("/admin/getAll", async (req: Request, res: Response) => {
   try {
     res.status(200).json({ products: await ProductService.getAll(false) });
@@ -125,15 +261,16 @@ productRouter.get("/admin/getAll", async (req: Request, res: Response) => {
   }
 });
 
-productRouter.post("/category/search", async (req:Request, res:Response) => {
+productRouter.post("/category/search", async (req: Request, res: Response) => {
   try {
     let categoryId = req.body.categoryId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId,searchVal) });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal) });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
-  }})
+  }
+})
 
 productRouter.get("/getAll", async (req: Request, res: Response) => {
   try {
@@ -146,8 +283,18 @@ productRouter.get("/getAll", async (req: Request, res: Response) => {
 
 productRouter.post("/createProduct", async (req: Request, res: Response) => {
   try {
-    let product: IProduct = req.body.product;
-    product = await ProductService.create(product);
+    let product: any = req.body.product;
+    let brand: string = req.body.brand
+    let newBrand: IBrand = {
+      _id: undefined,
+      name: brand,
+      priority: 1,
+      createdAt: Date.now(),
+    };
+    let thisBrand = await BrandService.create(newBrand)
+    product.brandId = thisBrand._id
+    let newProduct: IProduct = product
+    product = await ProductService.create(newProduct);
     res.status(200).json({ product });
   } catch (error: any) {
     LOG.error(error);
@@ -169,10 +316,9 @@ productRouter.get("/getOne/:productId", async (req: Request, res: Response) => {
 
 productRouter.post("/updateOne", async (req: Request, res: Response) => {
   try {
-    console.log(req.body.product)
     const product: IProduct = req.body.product;
-    await ProductService.update(product);
-    res.status(200).json({});
+    let result = await ProductService.update(product);
+    res.status(200).json({ result });
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
