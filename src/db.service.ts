@@ -22,6 +22,8 @@ export const collections: {
   users?: mongoDB.Collection;
   orders?: mongoDB.Collection;
   contact?: mongoDB.Collection;
+  mainPage?: mongoDB.Collection;
+  banner?: mongoDB.Collection;
 } = {};
 
 /**
@@ -68,6 +70,8 @@ export async function connectToDatabase() {
   collections.users = db.collection(AppConfig.mongoCollections.user);
   collections.orders = db.collection(AppConfig.mongoCollections.orders);
   collections.contact = db.collection(AppConfig.mongoCollections.contact);
+  collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);
+  collections.banner = db.collection(AppConfig.mongoCollections.banner);
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -526,107 +530,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   })
-  // LOG.info(`Validating collection ${AppConfig.mongoCollections.mainPage}`)
-  // await db.command({
-  //   collMod: AppConfig.mongoCollections.mainPage,
-  //   validator: {
-  //     $jsonSchema: {
-  //       bsonType: "object",
-  //       required: ["About_Us", "Material_Selection_1", "Material_Selection_2", "Shop_By_Category", "Featured_Products", "createdAt", "updatedAt", "SmallBanner1", "SmallBanner2", "MainBanner"], //Sr_No
-  //       additionalProperties: true,
-  //       properties: {
-  //         About_Us: { bsonType: "string" },
-  //         Material_Selection_1: {
-  //           bsonType: "object",
-  //           additionalProperties: true,
-  //           required: [
-  //             "categoryId",
-  //             "nameOfCategory"
-  //           ],
-  //           properties: {
-  //             categoryId: { bsonType: "objectId" },
-  //             nameOfCategory: { bsonType: "string" },
-  //             priority: { bsonType: "number" },
-  //             images: { bsonType: "objectId" }
-  //           },
-  //         },
-  //         Material_Selection_2: {
-  //           bsonType: "object",
-  //           additionalProperties: true,
-  //           required: [
-  //             "categoryId",
-  //             "nameOfCategory"
-  //           ],
-  //           properties: {
-  //             categoryId: { bsonType: "objectId" },
-  //             nameOfCategory: { bsonType: "string" },
-  //             priority: { bsonType: "number" },
-  //             images: { bsonType: "objectId" }
-  //           },
-  //         },
-  //         Shop_By_Category: {
-  //           bsonType: "object",
-  //           additionalProperties: true,
-  //           required: [
-  //             "categoryId",
-  //             "nameOfCategory"
-  //           ],
-  //           properties: {
-  //             categoryId: { bsonType: "objectId" },
-  //             nameOfCategory: { bsonType: "string" },
-  //             priority: { bsonType: "number" },
-  //             images: { bsonType: "objectId" }
-  //           },
-  //         },
-  //         Featured_Products: {
-  //           bsonType: "object",
-  //           additionalProperties: true,
-  //           required: [
-  //             "categoryId",
-  //             "nameOfCategory"
-  //           ],
-  //           properties: {
-  //             categoryId: { bsonType: "objectId" },
-  //             nameOfCategory: { bsonType: "string" },
-  //             priority: { bsonType: "number" },
-  //             images: { bsonType: "objectId" }
-  //           },
-  //         },
-  //         SmallBanner1: { bsonType: "objectId" },
-  //         SmallBanner2: { bsonType: "objectId" },
-  //         MainBanner: { bsonType: "objectId" },
-  //         updatedAt: { bsonType: "number" },
-  //         createdAt: { bsonType: "number" },
-  //       },
-  //     },
-  //   },
-  // })
-  // LOG.info(`Validating collection ${AppConfig.mongoCollections.banner}`)
-  // await db.command({
-  //   collMod: AppConfig.mongoCollections.banner,
-  //   validator: {
-  //     $jsonSchema: {
-  //       bsonType: "object",
-  //       additionalProperties: true,
-  //       required: [
-  //         "Banner_Title",
-  //         "Button_Link",
-  //         "Banner_Type",
-  //         "images",
-  //       ],
-  //       properties: {
-  //         Banner_Title: { bsonType: "string" },
-  //         Button_Title: { bsonType: "string" },
-  //         Button_Link: { bsonType: "string" },
-  //         priority: { bsonType: "number" },
-  //         images: { bsonType: "objectId" },
-  //         Banner_Type: {
-  //           enum: ["Small1", "Small2", "Main"]
-  //         }
-  //       },
-  //     },
-  //   },
-  // })
   LOG.info(`Validating collection ${AppConfig.mongoCollections.contact}`);
   await db.command({
     collMod: AppConfig.mongoCollections.contact,
@@ -641,6 +544,122 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           email: { bsonType: "string" },
           phone: { bsonType: "number" },
           createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.mainPage}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.mainPage,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["About_Us", "Material_Selection_1", "Material_Selection_2", "Shop_By_Category", "Featured_Products", "createdAt", "updatedAt", "SmallBanner1", "SmallBanner2", "MainBanner"],
+        additionalProperties: true,
+        properties: {
+          About_Us: { bsonType: "string" },
+          Material_Selection_1: {
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              additionalProperties: true,
+              required: [
+                "categoryId",
+                "nameOfCategory"
+              ],
+              properties: {
+                categoryId: { bsonType: "objectId" },
+                nameOfCategory: { bsonType: "string" },
+                priority: { bsonType: "number" },
+                images: { bsonType: "objectId" }
+              },
+            }
+          },
+          Material_Selection_2: {
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              additionalProperties: true,
+              required: [
+                "categoryId",
+                "nameOfCategory"
+              ],
+              properties: {
+                categoryId: { bsonType: "objectId" },
+                nameOfCategory: { bsonType: "string" },
+                priority: { bsonType: "number" },
+                images: { bsonType: "objectId" }
+              },
+            }
+          },
+          Shop_By_Category: {
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              additionalProperties: true,
+              required: [
+                "categoryId",
+                "nameOfCategory"
+              ],
+              properties: {
+                categoryId: { bsonType: "objectId" },
+                nameOfCategory: { bsonType: "string" },
+                priority: { bsonType: "number" },
+                images: { bsonType: "objectId" }
+              },
+            }
+          },
+          Featured_Products: {
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              additionalProperties: true,
+              required: [
+                "categoryId",
+                "nameOfCategory"
+              ],
+              properties: {
+                categoryId: { bsonType: "objectId" },
+                nameOfCategory: { bsonType: "string" },
+                priority: { bsonType: "number" },
+                images: { bsonType: "objectId" }
+              },
+            }
+          },
+          SmallBanner1: { bsonType: "objectId" },
+          SmallBanner2: { bsonType: "objectId" },
+          MainBanner: {
+            bsonType: "array",
+            items: { bsonType: "objectId" }
+          },
+          updatedAt: { bsonType: "number" },
+          createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.banner}`)
+  await db.command({
+    collMod: AppConfig.mongoCollections.banner,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        additionalProperties: true,
+        required: [
+          "Banner_Title",
+          "Button_Link",
+          "Banner_Type",
+          "images",
+        ],
+        properties: {
+          Banner_Title: { bsonType: "string" },
+          Button_Title: { bsonType: "string" },
+          Button_Link: { bsonType: "string" },
+          priority: { bsonType: "number" },
+          images: { bsonType: "objectId" },
+          Banner_Type: {
+            enum: ["Small1", "Small2", "Main"]
+          },
         },
       },
     },

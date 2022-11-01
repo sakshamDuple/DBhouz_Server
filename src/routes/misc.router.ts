@@ -1,8 +1,10 @@
 import express, { Request, Response, Router } from 'express'
 import { LOG } from '../logger';
-import { IColor, IUnit } from '../interfaces';
+import { Banner, Banner_Type, DisplayCategory, IColor, IUnit, MainPage } from '../interfaces';
 import { ColorService } from '../services/color.service';
 import { UnitService } from '../services/unit.service';
+import { mainPageService } from '../services/mainPage.service';
+import { ObjectID } from 'bson';
 
 const miscRouter: Router = express.Router()
 miscRouter.use(express.json())
@@ -26,6 +28,90 @@ miscRouter.get('/getColor/:colorId', async (req: Request, res: Response) => {
         res.status(500).json({ error: `Unable to find matching color with colorId: ${req.params.colorId}` });
     }
 })
+
+miscRouter.post("/mainBannerCreation", async (req: Request, res: Response) => {
+    try {
+        let banner: Banner = req.body;
+        if (banner.Banner_Type == Banner_Type.Main) {
+            if (banner.images)
+                banner.images = new ObjectID(banner.images)
+            console.log(banner.images)
+            banner = await mainPageService.createNewMainB(banner);
+        }
+        res.status(200).json({ banner });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.post("/smallBanner2Creation", async (req: Request, res: Response) => {
+    try {
+        let banner: Banner = req.body;
+        if (banner.Banner_Type == Banner_Type.Small2) {
+            if (banner.images)
+                banner.images = new ObjectID
+            console.log(banner.images)
+            banner = await mainPageService.createOrReplaceSmallB2(banner);
+        }
+        res.status(200).json({ banner });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.post("/smallBanner1Creation", async (req: Request, res: Response) => {
+    try {
+        let banner: Banner = req.body;
+        if (banner.Banner_Type == Banner_Type.Small1) {
+            if (banner.images)
+                banner.images = new ObjectID
+            console.log(banner.images)
+            banner = await mainPageService.createOrReplaceSmallB2(banner);
+        }
+        res.status(200).json({ banner });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+function doInDCforImageCatObjectId (m: DisplayCategory[]) {
+    let k = []
+    m.forEach(element => {
+        let newelement:DisplayCategory = element;
+        newelement.categoryId = new ObjectID(element.categoryId)
+        newelement.images = new ObjectID(element.images)
+        k.push(newelement)
+    });
+    return k
+}
+
+miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
+        main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
+        main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
+        main.Featured_Products = doInDCforImageCatObjectId(main.Featured_Products)
+        let MainPage = await mainPageService.mainPageCreation(main);
+        res.status(200).json({ MainPage });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/getAllMainBannerIds", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json(await mainPageService.getAllMainBannerIds());
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
 miscRouter.post('/createColor', async (req: Request, res: Response) => {
     try {
         let color: IColor = req.body;
@@ -66,6 +152,7 @@ miscRouter.get('/getAllUnits', async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 })
+
 miscRouter.post('/createUnit', async (req: Request, res: Response) => {
     try {
         let unit: IUnit = req.body;

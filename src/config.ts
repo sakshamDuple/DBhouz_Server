@@ -32,8 +32,8 @@ class AppConfigClass {
     user: string;
     orders: string;
     contact: string;
-    // mainPage: string;
-    // banner: string;
+    mainPage: string;
+    banner: string;
   };
 }
 
@@ -66,8 +66,8 @@ let AppConfigObject: AppConfigClass = {
     user: process.env.COLLECTION_USER,
     orders: process.env.COLLECTION_ORDER,
     contact: process.env.COLLECTION_CONTACT,
-    // mainPage: process.env.COLLECTION_MAINPAGE,
-    // banner: process.env.COLLECTION_BANNER,
+    mainPage: process.env.COLLECTION_MAINPAGE,
+    banner: process.env.COLLECTION_BANNER,
   },
 };
 

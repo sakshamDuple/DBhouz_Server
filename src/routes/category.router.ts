@@ -60,6 +60,7 @@ categoryRouter.post(
   uploadImages.single("image"),
   async (req: Request, res: Response) => {
     try {
+      console.log(req.body)
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
       const subCategoryId: string = req.body.subCategoryId;

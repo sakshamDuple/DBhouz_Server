@@ -224,7 +224,7 @@ export interface MainPage {
   Featured_Products: DisplayCategory[];
   createdAt: number;
   updatedAt: number;
-  MainBanner: ObjectId[];
+  MainBanner?: ObjectId[];
   SmallBanner1: ObjectId;
   SmallBanner2: ObjectId;
 }
@@ -235,6 +235,7 @@ export interface Banner {
   Button_Link: string;
   images?: ObjectId;
   Banner_Type: Banner_Type;
+  priority?: number;
 }
 export enum Banner_Type {
   Small1 = "Small1",
