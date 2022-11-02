@@ -107,15 +107,22 @@ authRouter.post(
 
 const sendEmail = async (email, subject, text) => {
   try {
+    // const transporter = nodemailer.createTransport({
+    //   host: process.env.HOST,
+    //   port: 587,
+    //   secure: false,
+    //   tls: { ciphers: 'SSLv3' },
+    //   auth: {
+    //     user: process.env.USER,
+    //     pass: process.env.PASS,
+    //   },
+    // });
     const transporter = nodemailer.createTransport({
-      host: process.env.HOST,
-      port: 587,
-      secure: false,
-      tls: { ciphers: 'SSLv3' },
+      service: 'gmail',
       auth: {
         user: process.env.USER,
-        pass: process.env.PASS,
-      },
+        pass: process.env.PASS   // app password in get from gmail
+      }
     });
     await transporter.sendMail({
       from: process.env.USER,
@@ -240,7 +247,7 @@ authRouter.delete('/contactUsDel/:Id', async (req, res) => {
 
 authRouter.put('/contactUsUpdate', async (req, res) => {
   try {
-    const contact:IContact = req?.body?.contact;
+    const contact: IContact = req?.body?.contact;
     // let contactId:ObjectID = contact._id
     await userService.updateC(contact)
     res.status(200).json({});

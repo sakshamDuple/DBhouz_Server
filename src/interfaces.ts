@@ -42,6 +42,7 @@ export interface IMerchant {
     approvedByAdmin: boolean;
     priority: number;
   }[];
+  accessToCoupon?:string[];
   createdAt: number;
 }
 
@@ -106,6 +107,7 @@ export interface IProduct {
   description?: string;
   rating?: number;
   review?: IReview[];
+  applicableCoupons?:string[];
   images?: {
     documentId: ObjectId;
     priority: number;
@@ -137,6 +139,23 @@ export interface IReview {
   orderId: ObjectId;
   description: string;
   rating: number;
+}
+export interface ICoupon {
+  _id:ObjectId;
+  name: string;
+  discountPerc: number;
+  PriceRange:{
+    max:number;
+    min:number;
+  };
+  eligiblity:{
+    cardType:string;
+    cardName:string;
+  }
+  validity:{
+    from:number;
+    to:number;
+  }
 }
 export interface IProductVariant {
   name: string;

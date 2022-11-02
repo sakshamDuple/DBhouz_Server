@@ -85,23 +85,22 @@ productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, 
     let sortByName: string = req?.query?.sortByDate ? String(req?.query?.sortByDate) : "";
     let PageLimit: number = req?.query?.PageLimit ? parseInt(String(req?.query?.PageLimit)) : 10;
     let colorId: string = req?.query?.colorId ? String(req?.query?.colorId) : "";
+    let thisColors = colorId.split(',')
     let Page: number = req?.query?.page ? parseInt(String(req?.query?.page)) : 1;
     let Start: number = PageLimit * (Page - 1) + 1;
-    console.log(priceRangefrom, priceRangeto, subCategoryId, categoryId)
-    console.log(categoryId != "")
     let activeProducts: IProduct[] = []
     let totalValCatOrSub: Number = 0;
     let get_Colors_MaxPrice = await ProductService.get_Colors_MaxPrice(categoryId)
     if (subCategoryId != "") {
-      if(thisSubCat[0]==""){
-        return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice:get_Colors_MaxPrice });
+      if (thisSubCat[0] == "" || (thisSubCat[0] == "" && thisColors[0] == "")) {
+        return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice: get_Colors_MaxPrice });
       }
-      activeProducts = await ProductService.getAllBySubCategoryFilterNew(thisSubCat, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, colorId);
-      totalValCatOrSub = await ProductService.getAllBySubCategoryFilterNewVal(thisSubCat, priceRangefrom, priceRangeto, colorId)
+      activeProducts = await ProductService.getAllBySubCategoryFilterNew(thisSubCat, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors);
+      totalValCatOrSub = await ProductService.getAllBySubCategoryFilterNewVal(thisSubCat, priceRangefrom, priceRangeto, thisColors)
     } else if (categoryId != "") {
-      activeProducts = await ProductService.getAllByCategoryFilterNew(categoryId, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, colorId);
-      totalValCatOrSub = await ProductService.getAllByCategoryFilterNewVal(categoryId, priceRangefrom, priceRangeto, colorId)
-      return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice:get_Colors_MaxPrice });
+      activeProducts = await ProductService.getAllByCategoryFilterNew(categoryId, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors);
+      totalValCatOrSub = await ProductService.getAllByCategoryFilterNewVal(categoryId, priceRangefrom, priceRangeto, thisColors)
+      return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice: get_Colors_MaxPrice });
     }
     return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub });
   } catch (error: any) {
@@ -112,10 +111,10 @@ productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, 
 
 productRouter.get('/getAllColors', async (req: Request, res: Response) => {
   try {
-      res.status(200).json({ colors: (await ColorService.getAll()) });
+    res.status(200).json({ colors: (await ColorService.getAll()) });
   } catch (error: any) {
-      LOG.error(error)
-      res.status(500).json({ error: error.message });
+    LOG.error(error)
+    res.status(500).json({ error: error.message });
   }
 })
 

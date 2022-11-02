@@ -49,6 +49,40 @@ class OrderServiceClass {
         return transactions
     }
 
+    async getProductByOrderId(OrderId: string, type: number, PageLimit: number): Promise<any[]> {
+        let agg = [
+            {
+                '$match': {
+                    '_id': new ObjectId(OrderId)
+                }
+            }, {
+                '$project': {
+                    "_id":0,
+                    'products.productId': 1,
+                }
+            }
+        ];
+        let AllProductId = await collections.orders.aggregate(agg).toArray()
+        let arr = [];
+        for (let product of AllProductId) for (let eachProduct of product.products) arr.push(eachProduct);
+        if (arr[0].productId != "" && arr.length>0) {
+            let m = []
+            arr.forEach(element => {
+                m.push(new ObjectId(element.productId))
+            });
+            arr = m
+        }
+        let agg2 = [
+            {
+                '$match': {
+                    '_id': { "$in" : arr}
+                }
+            }
+        ]
+        let AllProducts = await collections.products.aggregate(agg2).toArray()
+        return AllProducts
+    }
+
     async getTransaction(id: string, type: string): Promise<any[]> {
         let agg = [
             {

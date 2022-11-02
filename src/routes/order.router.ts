@@ -92,6 +92,18 @@ orderRouter.get("/getOrderForUser/:userId/:page/:limit/:SortByDate/:OrderType", 
     }
 })
 
+orderRouter.get("/getProductByOrderId/:id/:page/:limit", async (req:Request, res:Response) => {
+    let OrderId = req.params?.id;
+    let Page: number = req.params?.page ? parseInt(req.params.page) : 1;
+    let PageLimit: number = req?.params?.limit ? parseInt(req.params.limit) : 10;
+    let Start: number = PageLimit * (Page - 1) + 1
+    if(OrderId != "" || OrderId == undefined) {
+        console.log(PageLimit, Start, OrderId)
+        return res.status(200).json({ result: await OrderService.getProductByOrderId(OrderId, Start, PageLimit)});
+    }
+    return res.status(404).json({error: "OrderID Not Found,Please Provide Correct OrderID"})
+})
+
 orderRouter.get("/getAllTransaction/action", async (req: Request, res: Response) => {
     let Page: number = req.query?.page ? parseInt(String(req.query.page)) : 1;
     let newOrderType: string = String(req.query.OrderType)

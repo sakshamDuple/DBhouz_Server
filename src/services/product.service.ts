@@ -111,10 +111,14 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string): Promise<IProduct[]> {
+    async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[]): Promise<IProduct[]> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId != "") {
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        if (colorId[0] != "") {
+            let m = []
+            colorId.forEach(element => {
+                m.push(new ObjectId(element))
+            });
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -135,25 +139,32 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string): Promise<Number> {
+    async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string[]): Promise<Number> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId != "") {
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        if (colorId[0] != "") {
+            let m = []
+            colorId.forEach(element => {
+                m.push(new ObjectId(element))
+            });
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
         }
         return (await collections.products
             .find(query)
             .toArray()).length;
     }
 
-    async getAllBySubCategoryFilterNew(subCategoryId: Array<string>, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string): Promise<IProduct[]> {
+    async getAllBySubCategoryFilterNew(subCategoryId: Array<string>, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[]): Promise<IProduct[]> {
         let k = []
         subCategoryId.forEach(element => {
             k.push(new ObjectId(element))
         });
-        console.log(k)
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId != "") {
-            query = { subCategoryId: { "$in": subCategoryId }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        if (colorId[0] != "" && colorId.length>0) {
+            let m = []
+            colorId.forEach(element => {
+                m.push(new ObjectId(element))
+            });
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -174,14 +185,18 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllBySubCategoryFilterNewVal(subCategoryId: Array<string>, pfrom: number, pto: number, colorId: string): Promise<Number> {
+    async getAllBySubCategoryFilterNewVal(subCategoryId: Array<string>, pfrom: number, pto: number, colorId: string[]): Promise<Number> {
         let k = []
         subCategoryId.forEach(element => {
             k.push(new ObjectId(element))
         });
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId != "") {
-            query = { subCategoryId: { "$in": subCategoryId }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": new ObjectId(colorId) }
+        if (colorId[0] != "" && colorId.length>0) {
+            let m = []
+            colorId.forEach(element => {
+                m.push(new ObjectId(element))
+            });
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
         }
         return (await collections.products
             .find(query)
@@ -189,35 +204,39 @@ class ProductServiceClass {
     }
 
     async get_Colors_MaxPrice(categoryId: string): Promise<any> {
-        let agg = [
-            {
-                '$match': {
-                    'categoryId': new ObjectId(categoryId)
-                }
-            }, {
-                '$group': {
-                    '_id': 'null',
-                    'colors': {
-                        '$push': '$variants.colorId'
-                    },
-                    'maxPrice': {
-                        '$max': '$variants.price'
+        try{
+            let agg = [
+                {
+                    '$match': {
+                        'categoryId': new ObjectId(categoryId)
+                    }
+                }, {
+                    '$group': {
+                        '_id': 'null',
+                        'colors': {
+                            '$push': '$variants.colorId'
+                        },
+                        'maxPrice': {
+                            '$max': '$variants.price'
+                        }
                     }
                 }
-            }
-        ]
-        let res = await collections.products.aggregate(agg).toArray()
-        let arr = [];
-        for (let item of res[0].colors) for (let color of item) arr.push(color);
-        let agg2 = [
-            {
-                '$match': {
-                    '_id': { "$in" : arr}
+            ]
+            let res = await collections.products.aggregate(agg).toArray()
+            let arr = [];
+            for (let item of res[0].colors) for (let color of item) arr.push(color);
+            let agg2 = [
+                {
+                    '$match': {
+                        '_id': { "$in" : arr}
+                    }
                 }
-            }
-        ]
-        let res2 = await collections.colors.aggregate(agg2).toArray()
-        return {colors:res2, maxPrice:res[0].maxPrice}
+            ]
+            let res2 = await collections.colors.aggregate(agg2).toArray()
+            return {colors:res2, maxPrice:res[0].maxPrice}
+        } catch(error) {
+            return {}
+        }
     }
 
     async getAllBySubCategoryFilter(subCategoryId: string, pfrom: number, pto: number): Promise<IProduct[]> {
