@@ -86,10 +86,10 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
 merchantRouter.get("/getAllCouponsForThisMerchant/:merchantId", async (req: Request, res: Response) => {
     try {
         const merchantId: string = req.params.merchantId;
-        res.status(200).json({ coupons: await couponService.getAllCouponsForThisMerchant(merchantId) })
+        res.status(200).json({ coupons: await couponService.getAllCouponsForThisMerchant(merchantId) });
     } catch (error) {
-        console.error(error)
-        LOG.error(error)
+        console.error(error);
+        LOG.error(error);
         res.status(500).json({ error: error.message });
     }
 });
