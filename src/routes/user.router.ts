@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from "express";
-import { IDocument, IUser, IProduct } from "../interfaces";
+import { IDocument, IUser, IProduct, ICart } from "../interfaces";
 import { ObjectId } from "mongodb";
 import { LOG } from "../logger";
 import { userService } from "../services/user.service";
@@ -88,6 +88,30 @@ userRouter.post("/updateOne", async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+userRouter.put("/updateCartAndWishlist", async (req:Request, res:Response) => {
+  try{
+    const userId = req.body.userId;
+    const cart:ICart[] = req.body?.cart;
+    const wishList: IProduct[] = req.body?.wishList
+    res.status(200).json({result:await userService.update_Cart_Wishlist(userId,cart,wishList)});
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.get('/getCartAndWishlist/:id', async (req:Request, res:Response) => {
+  try{
+    const userId = req.params.id;
+    res.status(200).json({result:await userService.getCartAndWishlist(userId)});
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
 
 userRouter.post("/checkData", async (req: Request, res: Response) => {
   try {

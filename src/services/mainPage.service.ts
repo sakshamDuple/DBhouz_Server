@@ -133,13 +133,15 @@ class mainPageServiceClass {
     async mainPageCreation(mainPage: MainPage): Promise<MainPage> {
         mainPage.createdAt = Date.now()
         mainPage.updatedAt = Date.now()
-        mainPage.MainBanner = await this.getAllMainBannerIds()
-        mainPage.SmallBanner1 = await this.getSmallBanner1Id()
-        mainPage.SmallBanner2 = await this.getSmallBanner2Id()
-        console.log(mainPage)
+        mainPage.MainBanner = await this.getAllMainBannerIds();
+        mainPage.SmallBanner1 = await this.getSmallBanner1Id();
+        mainPage.SmallBanner2 = await this.getSmallBanner2Id();
         let k:any = await collections.mainPage.find().toArray();
-        const query = { _id: k[0]._id };
-        await collections.mainPage.deleteOne(query)
+        const query = { _id: k[0]?._id };
+        if(k){
+            console.log(k)
+            await collections.mainPage.deleteOne(query)
+        }
         const result: InsertOneResult<MainPage> = await collections.mainPage.insertOne(mainPage);
         mainPage._id = result.insertedId
         return mainPage

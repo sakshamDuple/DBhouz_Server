@@ -9,6 +9,7 @@ import path from 'path';
 import { AppConfig } from '../config';
 import { rename } from 'fs';
 import { ProductService } from '../services/product.service';
+import { couponService } from '../services/coupon.service';
 
 const merchantRouter: Router = express.Router()
 merchantRouter.use(express.json())
@@ -82,13 +83,36 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
     }
 });
 
+merchantRouter.get("/getAllCouponsForThisMerchant/:merchantId", async (req: Request, res: Response) => {
+    try {
+        const merchantId: string = req.params.merchantId;
+        res.status(200).json({ coupons: await couponService.getAllCouponsForThisMerchant(merchantId) })
+    } catch (error) {
+        console.error(error)
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
+merchantRouter.put("/merchantGiveAccessToThisProduct", async (req: Request, res: Response) => {
+    try {
+        const productId: string = req.body.productId;
+        const couponName: string = req.body.couponName;
+        res.status(200).json(await couponService.merchantGiveAccessToThisProduct(couponName, productId));
+    } catch (error) {
+        console.error(error)
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
 merchantRouter.post("/checkData", async (req: Request, res: Response) => {
     try {
         const merchantId: string = req.body.merchantId;
         let merchant: IMerchant = await MerchantService.get(merchantId)
         if (!merchant) throw new Error(`Merchant ${merchantId} does not exist`)
         let products: IProduct[] = await ProductService.getAllByMerchant(merchantId, false)
-        res.status(200).json({ totalProducts: products.length })
+        res.status(200).json({ totalProducts: products.length, products: products })
     } catch (error) {
         console.error(error)
         LOG.error(error)

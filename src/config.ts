@@ -34,6 +34,7 @@ class AppConfigClass {
     contact: string;
     mainPage: string;
     banner: string;
+    coupon: string;
   };
 }
 
@@ -68,6 +69,7 @@ let AppConfigObject: AppConfigClass = {
     contact: process.env.COLLECTION_CONTACT,
     mainPage: process.env.COLLECTION_MAINPAGE,
     banner: process.env.COLLECTION_BANNER,
+    coupon: process.env.COLLECTION_COUPON
   },
 };
 

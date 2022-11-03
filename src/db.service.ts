@@ -24,6 +24,7 @@ export const collections: {
   contact?: mongoDB.Collection;
   mainPage?: mongoDB.Collection;
   banner?: mongoDB.Collection;
+  coupon?: mongoDB.Collection;
 } = {};
 
 /**
@@ -72,6 +73,7 @@ export async function connectToDatabase() {
   collections.contact = db.collection(AppConfig.mongoCollections.contact);
   collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);
   collections.banner = db.collection(AppConfig.mongoCollections.banner);
+  collections.coupon = db.collection(AppConfig.mongoCollections.coupon);
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -233,7 +235,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
         required: ["name", "merchantId", "categoryId", "subCategoryId", "status", "createdAt"],
         additionalProperties: true,
         properties: {
-          _id: {},
           name: { bsonType: "string" },
           merchantId: { bsonType: "objectId" },
           status: { enum: ["ACTIVE", "INACTIVE"] },
@@ -285,7 +286,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               ],
               additionalProperties: true,
               properties: {
-                _id: {},
                 name: { bsonType: "string" },
                 priority: { bsonType: "number" },
                 style: { bsonType: "string" },
@@ -324,6 +324,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                     },
                   },
                 },
+                createdAt: { bsonType: "number" },
               },
             },
           },
@@ -355,6 +356,13 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
             },
           },
           rating: { bsonType: "number" },
+          applicableCoupons: {
+            bsonType: "array",
+            items: {
+              bsonType: "string"
+            }
+          },
+          price: { bsonType: "number" },
           seo: {
             bsonType: "object",
             additionalProperties: false,
@@ -664,5 +672,76 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.coupon}`)
+  await db.command({
+    collMod: AppConfig.mongoCollections.coupon,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        additionalProperties: true,
+        required: [
+          "name",
+          "discountPerc",
+          "PriceRange",
+          "eligiblity",
+          "validity"
+        ],
+        properties: {
+          name: { bsonType: "string" },
+          discountPerc: { bsonType: "number" },
+          PriceRange: {
+            bsonType: "object",
+            additionalProperties: false,
+            required: [
+              "max",
+              "min"
+            ],
+            properties: {
+              max: { bsonType: "number" },
+              min: { bsonType: "number" },
+            },
+          },
+          eligiblity: {
+            bsonType: "object",
+            additionalProperties: false,
+            required: [
+              "cardType",
+              "cardName"
+            ],
+            properties: {
+              cardType: { bsonType: "string" },
+              cardName: { bsonType: "string" },
+            },
+          },
+          validity: {
+            bsonType: "object",
+            additionalProperties: false,
+            required: [
+              "from",
+              "to"
+            ],
+            properties: {
+              cardType: { bsonType: "number" },
+              cardName: { bsonType: "number" },
+            },
+          },
+          AccessToMerchantWithProduct:{
+            bsonType: "array",
+            items: {
+              bsonType: "object",
+              additionalProperties: false,
+              required: [
+                "merchantId",
+                "productId"
+              ],
+              properties: {
+                merchantId: { bsonType: "objectId" },
+                productId: { bsonType: "objectId" }
+              },
+            }
+          },
+        },
+      },
+    },
+  })
 };
-//IContact

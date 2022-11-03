@@ -79,7 +79,6 @@ productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, 
     let categoryId: string = req.query?.categoryId ? String(req.query.categoryId) : "";
     let subCategoryId: string = req.query?.subCategoryId ? String(req.query.subCategoryId) : "";
     let thisSubCat = subCategoryId.split(',')
-    console.log(thisSubCat)
     let priceRangefrom: number = req?.query?.pricefrom ? parseInt(String(req?.query?.pricefrom)) : 1;
     let priceRangeto: number = req?.query?.priceto ? parseInt(String(req?.query?.priceto)) : 100000;
     let sortByName: string = req?.query?.sortByDate ? String(req?.query?.sortByDate) : "";
@@ -282,17 +281,20 @@ productRouter.get("/getAll", async (req: Request, res: Response) => {
 
 productRouter.post("/createProduct", async (req: Request, res: Response) => {
   try {
-    let product: any = req.body.product;
-    let brand: string = req.body.brand
-    let newBrand: IBrand = {
-      _id: undefined,
-      name: brand,
-      priority: 1,
-      createdAt: Date.now(),
-    };
-    let thisBrand = await BrandService.create(newBrand)
-    product.brandId = thisBrand._id
+    let product: IProduct = req.body.product;
+    let brand: string = req.body?.brand
+    if(brand){
+      let newBrand: IBrand = {
+        _id: undefined,
+        name: brand,
+        priority: 1,
+        createdAt: Date.now(),
+      };
+      let thisBrand = await BrandService.create(newBrand)
+      product.brandId = thisBrand._id
+    }
     let newProduct: IProduct = product
+    console.log(newProduct)
     product = await ProductService.create(newProduct);
     res.status(200).json({ product });
   } catch (error: any) {

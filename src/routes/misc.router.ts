@@ -1,10 +1,11 @@
 import express, { Request, Response, Router } from 'express'
 import { LOG } from '../logger';
-import { Banner, Banner_Type, DisplayCategory, IColor, IUnit, MainPage } from '../interfaces';
+import { Banner, Banner_Type, DisplayCategory, IColor, ICoupon, IUnit, MainPage } from '../interfaces';
 import { ColorService } from '../services/color.service';
 import { UnitService } from '../services/unit.service';
 import { mainPageService } from '../services/mainPage.service';
 import { ObjectID } from 'bson';
+import { couponService } from '../services/coupon.service';
 
 const miscRouter: Router = express.Router()
 miscRouter.use(express.json())
@@ -77,10 +78,10 @@ miscRouter.post("/smallBanner1Creation", async (req: Request, res: Response) => 
     }
 })
 
-function doInDCforImageCatObjectId (m: DisplayCategory[]) {
+function doInDCforImageCatObjectId(m: DisplayCategory[]) {
     let k = []
     m.forEach(element => {
-        let newelement:DisplayCategory = element;
+        let newelement: DisplayCategory = element;
         newelement.categoryId = new ObjectID(element.categoryId)
         newelement.images = new ObjectID(element.images)
         k.push(newelement)
@@ -189,11 +190,42 @@ miscRouter.delete("/deleteUnit/:unitId", async (req: Request, res: Response) => 
     const unitId = req?.params?.unitId;
     try {
         await UnitService.delete(unitId)
-        res.status(200).json({})
+        res.status(201).json({})
     } catch (error) {
         LOG.error(error)
         res.status(500).json({ error: error.message });
     }
 });
+miscRouter.post("/createCoupon", async (req: Request, res: Response) => {
+    const coupon: ICoupon = req.body?.coupon;
+    console.log(coupon)
+    try {
+        res.status(200).json({ createdCoupon: await couponService.createCoupon(coupon) })
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+})
+
+miscRouter.put("/giveAccessOfCouponToThisMerchant", async (req: Request, res: Response) => {
+    const couponName: string = req.body?.couponName;
+    const merchantId: string = req.body.merchantId;
+    console.log(couponName, merchantId)
+    try {
+        res.status(200).json({ createdCoupon: await couponService.giveAccessOfCouponToThisMerchant(couponName, merchantId) })
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+})
+
+miscRouter.get("/getAllCoupons", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ result: await couponService.getAllCoupons() })
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+})
 
 export { miscRouter }

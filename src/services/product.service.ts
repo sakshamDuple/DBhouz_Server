@@ -113,6 +113,7 @@ class ProductServiceClass {
 
     async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[]): Promise<IProduct[]> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
+        // console.log(pfrom, pto)
         if (colorId[0] != "") {
             let m = []
             colorId.forEach(element => {

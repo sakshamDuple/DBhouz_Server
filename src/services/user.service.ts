@@ -1,6 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { ECommisionType, IContact, IMerchant, IUser } from "../interfaces";
+import { ECommisionType, ICart, IContact, IMerchant, IProduct, IUser } from "../interfaces";
 
 class UserServiceClass {
   async get(userId: string | ObjectId): Promise<IUser> {
@@ -8,7 +8,7 @@ class UserServiceClass {
     return (await collections.users.findOne({})) as IUser;
   }
 
-  async makeContact(contact:IContact): Promise<IContact> {
+  async makeContact(contact: IContact): Promise<IContact> {
     contact = { ...contact }
     contact = this.sanitizeContact(contact);
     const result: InsertOneResult<IContact> = await collections.contact.insertOne(contact);
@@ -24,7 +24,7 @@ class UserServiceClass {
 
   async getSpecificUser(userId: string | ObjectId): Promise<IUser> {
     const query = { _id: userId };
-    return (await collections.users.findOne({query})) as IUser;
+    return (await collections.users.findOne({ query })) as IUser;
   }
 
   async getByEmail(email: string): Promise<IUser> {
@@ -70,7 +70,7 @@ class UserServiceClass {
     return result.modifiedCount > 0;
   }
 
-  async updateC(contact:IContact): Promise<boolean> {
+  async updateC(contact: IContact): Promise<boolean> {
     contact = { ...contact };
     const existingMerchant: IUser = await this.getByEmail(contact.email);
     if (existingMerchant && existingMerchant._id.toString() !== contact._id.toString()) {
@@ -85,10 +85,10 @@ class UserServiceClass {
     return result.modifiedCount > 0;
   }
 
-  async verifyUser(userId:ObjectId): Promise<boolean> {
+  async verifyUser(userId: ObjectId): Promise<boolean> {
     const query = { _id: userId };
     let result: UpdateResult = await collections.users.updateOne(query, {
-      $set: {isEmailVerified:true},
+      $set: { isEmailVerified: true },
     });
     return result.modifiedCount > 0;
   }
@@ -99,17 +99,34 @@ class UserServiceClass {
     return result && result.deletedCount > 0;
   }
 
-  async deleteC(contactId:string|ObjectId): Promise<boolean> {
+  async deleteC(contactId: string | ObjectId): Promise<boolean> {
     const query = { _id: new ObjectId(contactId) };
     const result = await collections.contact.deleteOne(query);
     return result && result.deletedCount > 0;
+  }
+
+  async update_Cart_Wishlist(userId: string, cart: ICart[], wishList: IProduct[]): Promise<any> {
+    let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    foundUser.cart = cart;
+    foundUser.wishList = wishList;
+    let resultedUser = await collections.users.findOneAndUpdate({_id: foundUser._id},{"$set":foundUser})
+    if (resultedUser.ok == 1) {
+      return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    }
+    return resultedUser
+  }
+
+  async getCartAndWishlist(userId:string): Promise<any> {
+    let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    return {cart:foundUser.cart,wishList:foundUser.wishList}
   }
 
   sanitize(o: IUser): IUser {
     if (!o.firstName) delete o.firstName;
     if (!o.lastName) delete o.lastName;
     if (!o.isEmailVerified) o.isEmailVerified = false;
-
+    if (!o.cart) delete o.cart;
+    if (!o.wishList) delete o.wishList;
     if (o.identification) {
       o.identification.forEach((i) => {
         i.documentId = new ObjectId(i.documentId);

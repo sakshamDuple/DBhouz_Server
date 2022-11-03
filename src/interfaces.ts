@@ -53,6 +53,8 @@ export interface IUser {
   email: string;
   isEmailVerified: boolean;
   secret: string;
+  cart?: ICart[];
+  wishList?: IProduct[];
   identification?: {
     documentId: ObjectId;
     approvedByAdmin: boolean;
@@ -105,19 +107,6 @@ export interface IProduct {
   categoryId: ObjectId;
   subCategoryId: ObjectId;
   description?: string;
-  rating?: number;
-  review?: IReview[];
-  applicableCoupons?:string[];
-  images?: {
-    documentId: ObjectId;
-    priority: number;
-  }[];
-  price: number;
-  seo?: {
-    metaTagTitle?: string;
-    metaTagDescription?: string;
-    metaTagKeywords?: string;
-  };
   variantParameters: {
     styleEnabled: boolean;
     styleList: string[];
@@ -131,6 +120,19 @@ export interface IProduct {
     dimensionUnitId?: ObjectId;
   };
   variants: IProductVariant[];
+  images?: {
+    documentId: ObjectId;
+    priority: number;
+  }[];
+  review?: IReview[];
+  rating?: number;
+  applicableCoupons?:string[];
+  price?: number;
+  seo?: {
+    metaTagTitle?: string;
+    metaTagDescription?: string;
+    metaTagKeywords?: string;
+  };
   createdAt: number;
 }
 export interface IReview {
@@ -151,11 +153,16 @@ export interface ICoupon {
   eligiblity:{
     cardType:string;
     cardName:string;
-  }
+  };
   validity:{
     from:number;
     to:number;
-  }
+  };
+  AccessToMerchantWithProduct?:AccessToMerchantWithProduct[];
+}
+export interface AccessToMerchantWithProduct {
+  merchantId: ObjectId,
+  productId: ObjectId
 }
 export interface IProductVariant {
   name: string;
@@ -163,15 +170,15 @@ export interface IProductVariant {
   style: string;
   size: string;
   colorId: ObjectId;
-  color: string;
-  dimensions: {
+  color?: string;
+  dimensions?: {
     height: number | Double;
     width?: number | Double;
     thickness?: number | Double;
   };
   minPurchaseQuantity: number;
   availableQuantity: number;
-  discountPercentage: number;
+  discountPercentage?: number;
   price: number | Double;
   warranty_period?: number;
   material_type?: string;
@@ -181,7 +188,7 @@ export interface IProductVariant {
     documentId: ObjectId;
     priority: number;
   }[];
-  createdAt: number;
+  createdAt?: number;
 }
 export enum EProductStatus {
   Active = "ACTIVE",
@@ -319,4 +326,9 @@ export enum transactionMethod {
   GPAY = "GPAY",
   CASH_ON_DELIVERY = "CASH_ON_DELIVERY",
   NETBANKING = "NETBANKING"
+}
+export interface ICart {
+  product:IProduct;
+  quantity: number;
+  variant: IProductVariant;
 }
