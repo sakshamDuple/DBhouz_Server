@@ -244,10 +244,11 @@ export interface IUnit {
 export interface MainPage {
   _id: ObjectId;
   About_Us: string;
+  Benefits_of_having_Marble?: string;
   Material_Selection_1: DisplayCategory[];
   Material_Selection_2: DisplayCategory[];
   Shop_By_Category: DisplayCategory[];
-  Featured_Products: DisplayCategory[];
+  Featured_Products: DisplayProducts[];
   createdAt: number;
   updatedAt: number;
   MainBanner?: ObjectId[];
@@ -272,6 +273,12 @@ export interface DisplayCategory {
   categoryId: ObjectId;
   priority: number;
   nameOfCategory: string;
+  images?: ObjectId;
+}
+export interface DisplayProducts {
+  productId: ObjectId;
+  priority: number;
+  nameOfProduct: string;
   images?: ObjectId;
 }
 export interface Order {

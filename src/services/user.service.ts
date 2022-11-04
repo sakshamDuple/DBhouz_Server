@@ -109,24 +109,50 @@ class UserServiceClass {
     let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
     foundUser.cart = cart;
     foundUser.wishList = wishList;
-    let resultedUser = await collections.users.findOneAndUpdate({_id: foundUser._id},{"$set":foundUser})
+    // foundUser.wishList.forEach(element => {
+    //   element.name == 
+    // });
+    let resultedUser = await collections.users.findOneAndUpdate({ _id: foundUser._id }, { "$set": foundUser })
     if (resultedUser.ok == 1) {
       return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
     }
     return resultedUser
   }
 
-  async getCartAndWishlist(userId:string): Promise<any> {
+  async getCartAndWishlist(userId: string): Promise<any> {
     let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
-    return {cart:foundUser.cart,wishList:foundUser.wishList}
+    return { cart: foundUser.cart, wishList: foundUser.wishList }
+  }
+
+  async deleteOneWishlist(userId: string, productId: string): Promise<any> {
+    let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    let newWishlist = []
+    foundUser.wishList?.forEach(element => {
+      if (element?._id?.toString() != productId) {
+        newWishlist.push(element)
+        console.log("true")
+      }
+    });
+    foundUser.wishList = newWishlist;
+    let resultedUser = await collections.users.findOneAndUpdate({ _id: foundUser._id }, { "$set": foundUser })
+    if (resultedUser.ok == 1) {
+      return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    }
+    return resultedUser
   }
 
   sanitize(o: IUser): IUser {
     if (!o.firstName) delete o.firstName;
     if (!o.lastName) delete o.lastName;
     if (!o.isEmailVerified) o.isEmailVerified = false;
-    if (!o.cart) delete o.cart;
-    if (!o.wishList) delete o.wishList;
+    if (!o.cart) {
+      delete o.cart
+      o.cart = [];
+    };
+    if (!o.wishList) {
+      delete o.wishList
+      o.wishList = [];
+    };
     if (o.identification) {
       o.identification.forEach((i) => {
         i.documentId = new ObjectId(i.documentId);

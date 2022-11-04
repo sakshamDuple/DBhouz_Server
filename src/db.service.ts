@@ -566,6 +566,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
         additionalProperties: true,
         properties: {
           About_Us: { bsonType: "string" },
+          Benefits_of_having_Marble: { bsonType: "string" },
           Material_Selection_1: {
             bsonType: "array",
             items: {
@@ -627,8 +628,8 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 "nameOfCategory"
               ],
               properties: {
-                categoryId: { bsonType: "objectId" },
-                nameOfCategory: { bsonType: "string" },
+                productId: { bsonType: "objectId" },
+                nameOfProduct: { bsonType: "string" },
                 priority: { bsonType: "number" },
                 images: { bsonType: "objectId" }
               },
@@ -725,7 +726,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               cardName: { bsonType: "number" },
             },
           },
-          AccessToMerchantWithProduct:{
+          AccessToMerchantWithProduct: {
             bsonType: "array",
             items: {
               bsonType: "object",

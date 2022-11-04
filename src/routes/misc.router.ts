@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express'
 import { LOG } from '../logger';
-import { Banner, Banner_Type, DisplayCategory, IColor, ICoupon, IUnit, MainPage } from '../interfaces';
+import { Banner, Banner_Type, DisplayCategory, DisplayProducts, IColor, ICoupon, IUnit, MainPage } from '../interfaces';
 import { ColorService } from '../services/color.service';
 import { UnitService } from '../services/unit.service';
 import { mainPageService } from '../services/mainPage.service';
@@ -89,13 +89,25 @@ function doInDCforImageCatObjectId(m: DisplayCategory[]) {
     return k
 }
 
+function doInDCforImageProObjectId(m: DisplayProducts[]) {
+    let k = []
+    m.forEach(element => {
+        let newelement: DisplayProducts = element;
+        newelement.productId = new ObjectID(element.productId)
+        newelement.images = new ObjectID(element.images)
+        k.push(newelement)
+    });
+    return k
+}
+
+
 miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
         main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
         main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
         main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
-        main.Featured_Products = doInDCforImageCatObjectId(main.Featured_Products)
+        main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
         let MainPage = await mainPageService.mainPageCreation(main);
         res.status(200).json({ MainPage });
     } catch (e: any) {

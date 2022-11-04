@@ -89,12 +89,12 @@ userRouter.post("/updateOne", async (req: Request, res: Response) => {
   }
 });
 
-userRouter.put("/updateCartAndWishlist", async (req:Request, res:Response) => {
-  try{
+userRouter.put("/updateCartAndWishlist", async (req: Request, res: Response) => {
+  try {
     const userId = req.body.userId;
-    const cart:ICart[] = req.body?.cart;
+    const cart: ICart[] = req.body?.cart;
     const wishList: IProduct[] = req.body?.wishList
-    res.status(200).json({result:await userService.update_Cart_Wishlist(userId,cart,wishList)});
+    res.status(200).json({ result: await userService.update_Cart_Wishlist(userId, cart, wishList) });
   } catch (error) {
     console.error(error);
     LOG.error(error);
@@ -102,10 +102,23 @@ userRouter.put("/updateCartAndWishlist", async (req:Request, res:Response) => {
   }
 })
 
-userRouter.get('/getCartAndWishlist/:id', async (req:Request, res:Response) => {
-  try{
+userRouter.get('/getCartAndWishlist/:id', async (req: Request, res: Response) => {
+  try {
     const userId = req.params.id;
-    res.status(200).json({result:await userService.getCartAndWishlist(userId)});
+    res.status(200).json({ result: await userService.getCartAndWishlist(userId) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.delete('/deleteOneWishlist/:id/:productId', async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.id;
+    const productId = req.params.productId;
+    console.log(userId, productId)
+    res.status(200).json({ result: await userService.deleteOneWishlist(userId, productId) });
   } catch (error) {
     console.error(error);
     LOG.error(error);
@@ -119,7 +132,7 @@ userRouter.post("/checkData", async (req: Request, res: Response) => {
     let user: IUser = await userService.get(userId);
     if (!user) throw new Error(`user ${userId} does not exist`);
     let products: IProduct[] = await ProductService.getAllByMerchant(userId, false);
-    res.status(200).json({ totalProducts: products.length, products:products });
+    res.status(200).json({ totalProducts: products.length, products: products });
   } catch (error) {
     console.error(error);
     LOG.error(error);
