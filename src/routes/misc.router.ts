@@ -69,9 +69,36 @@ miscRouter.post("/smallBanner1Creation", async (req: Request, res: Response) => 
             if (banner.images)
                 banner.images = new ObjectID
             console.log(banner.images)
-            banner = await mainPageService.createOrReplaceSmallB2(banner);
+            banner = await mainPageService.createOrReplaceSmallB1(banner);
         }
         res.status(200).json({ banner });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/getAllBanners", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ banners: await mainPageService.getAllBanner() });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/getSmallBannersAfterAdding", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ smallBanner1: await mainPageService.getSmallBanner1Id(), smallBanner2: await mainPageService.getSmallBanner2Id() });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/getMainPage", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ MainPage: await mainPageService.getMainPageIfAdded() });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

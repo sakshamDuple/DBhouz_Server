@@ -119,7 +119,7 @@ class ProductServiceClass {
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -147,7 +147,7 @@ class ProductServiceClass {
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
         }
         return (await collections.products
             .find(query)
@@ -160,12 +160,12 @@ class ProductServiceClass {
             k.push(new ObjectId(element))
         });
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId[0] != "" && colorId.length>0) {
+        if (colorId[0] != "" && colorId.length > 0) {
             let m = []
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
-            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -192,12 +192,12 @@ class ProductServiceClass {
             k.push(new ObjectId(element))
         });
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
-        if (colorId[0] != "" && colorId.length>0) {
+        if (colorId[0] != "" && colorId.length > 0) {
             let m = []
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
-            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": {"$in": m} }
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
         }
         return (await collections.products
             .find(query)
@@ -205,7 +205,7 @@ class ProductServiceClass {
     }
 
     async get_Colors_MaxPrice(categoryId: string): Promise<any> {
-        try{
+        try {
             let agg = [
                 {
                     '$match': {
@@ -229,13 +229,13 @@ class ProductServiceClass {
             let agg2 = [
                 {
                     '$match': {
-                        '_id': { "$in" : arr}
+                        '_id': { "$in": arr }
                     }
                 }
             ]
             let res2 = await collections.colors.aggregate(agg2).toArray()
-            return {colors:res2, maxPrice:res[0].maxPrice}
-        } catch(error) {
+            return { colors: res2, maxPrice: res[0].maxPrice }
+        } catch (error) {
             return {}
         }
     }
@@ -292,6 +292,7 @@ class ProductServiceClass {
         if (o.images) o.images.forEach(i => {
             i.documentId = new ObjectId(i.documentId)
         })
+        if (o.brandId) delete o.brandId
         if (!o.rating) o.rating = 0;
         if (!o.review) o.review = [];
         if (o.variantParameters) {

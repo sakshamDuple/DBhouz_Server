@@ -42,7 +42,7 @@ export interface IMerchant {
     approvedByAdmin: boolean;
     priority: number;
   }[];
-  accessToCoupon?:string[];
+  accessToCoupon?: string[];
   createdAt: number;
 }
 
@@ -60,7 +60,22 @@ export interface IUser {
     approvedByAdmin: boolean;
     priority: number;
   }[];
+  gender?: Gender;
+  phone?: number;
   createdAt: number;
+  address?: {
+    addressId: ObjectId,
+    addressName: string,
+    country: string,
+    state: string,
+    city: string,
+    postal_code: string,
+    main_address_text: string
+  }[];
+}
+export enum Gender {
+  Male = "MALE",
+  Female = "FEMALE",
 }
 
 export enum EMerchantStatus {
@@ -126,7 +141,7 @@ export interface IProduct {
   }[];
   review?: IReview[];
   rating?: number;
-  applicableCoupons?:string[];
+  applicableCoupons?: string[];
   price?: number;
   seo?: {
     metaTagTitle?: string;
@@ -143,22 +158,22 @@ export interface IReview {
   rating: number;
 }
 export interface ICoupon {
-  _id:ObjectId;
+  _id: ObjectId;
   name: string;
   discountPerc: number;
-  PriceRange:{
-    max:number;
-    min:number;
+  PriceRange: {
+    max: number;
+    min: number;
   };
-  eligiblity:{
-    cardType:string;
-    cardName:string;
+  eligiblity: {
+    cardType: string;
+    cardName: string;
   };
-  validity:{
-    from:number;
-    to:number;
+  validity: {
+    from: number;
+    to: number;
   };
-  AccessToMerchantWithProduct?:AccessToMerchantWithProduct[];
+  AccessToMerchantWithProduct?: AccessToMerchantWithProduct[];
 }
 export interface AccessToMerchantWithProduct {
   merchantId: ObjectId,
@@ -335,7 +350,7 @@ export enum transactionMethod {
   NETBANKING = "NETBANKING"
 }
 export interface ICart {
-  product:IProduct;
+  product: IProduct;
   quantity: number;
   variant: IProductVariant;
 }

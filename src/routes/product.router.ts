@@ -10,7 +10,6 @@ import { IProduct } from "../interfaces";
 import { AppConfig } from "../config";
 import { MerchantService } from "../services/merchant.service";
 import jwt from "jsonwebtoken";
-import { OrderService } from "../services/order.service";
 import { ObjectID } from "bson";
 import { BrandService } from "../services/brand.service";
 import { ColorService } from "../services/color.service";
@@ -282,6 +281,7 @@ productRouter.get("/getAll", async (req: Request, res: Response) => {
 productRouter.post("/createProduct", async (req: Request, res: Response) => {
   try {
     let product: IProduct = req.body.product;
+    console.log(product)
     let brand: string = req.body?.brand
     if(brand){
       let newBrand: IBrand = {

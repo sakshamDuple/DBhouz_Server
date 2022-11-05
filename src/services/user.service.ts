@@ -1,6 +1,7 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
 import { ECommisionType, ICart, IContact, IMerchant, IProduct, IUser } from "../interfaces";
+import bcrypt from "bcrypt";
 
 class UserServiceClass {
   async get(userId: string | ObjectId): Promise<IUser> {
@@ -83,6 +84,60 @@ class UserServiceClass {
       $set: contact,
     });
     return result.modifiedCount > 0;
+  }
+
+  async editProfile(profile: any): Promise<IUser> {
+    console.log(profile)
+    const query = { _id: new ObjectId(profile.userId) };
+    let ThisProf: IUser = await collections.users.findOne(query) as IUser
+    if (ThisProf) {
+      ThisProf.firstName = profile.firstName
+      ThisProf.lastName = profile.lastName
+      ThisProf.gender = profile.gender
+      ThisProf.email = profile.email
+      ThisProf.phone = profile.phone
+      bcrypt.compare(profile.curpassword, ThisProf.secret, function (err, result) {
+        if (result) {
+          bcrypt.hash(profile.newpassword, 10, function (err, hash) {
+            ThisProf.secret = hash
+          });
+        }
+      });
+    }
+    let result: UpdateResult = await collections.users.updateOne(query, {
+      $set: ThisProf,
+    });
+    return (result.modifiedCount > 0) ? await collections.users.findOne(query) as IUser : ThisProf;
+  }
+
+  async manangeAddress(address: any, userId): Promise<any> {
+    const query = { _id: new ObjectId(userId) };
+    let ThisUser: IUser = await collections.users.findOne(query) as IUser
+    let address_Update = false
+    let message
+    if (ThisUser) {
+      ThisUser.address.map(element => {
+        if (element.addressName == address.addressName) {
+          element.country = address.country
+          element.state = address.state
+          element.city = address.city
+          element.postal_code = address.postal_code
+          element.main_address_text = address.main_address_text
+          address_Update = true
+          message = "Address Updated"
+        }
+      });
+      if (address_Update == false) {
+        let newAddress: { addressId, addressName, country, state, city, postal_code, main_address_text } = address
+        newAddress.addressId = new ObjectId
+        message = "New Address Added"
+        ThisUser.address.push(newAddress)
+      }
+    }
+    let result: UpdateResult = await collections.users.updateOne(query, {
+      $set: ThisUser,
+    });
+    return (result.modifiedCount > 0) ? {User: await collections.users.findOne(query) as IUser, message:message} : ThisUser;
   }
 
   async verifyUser(userId: ObjectId): Promise<boolean> {

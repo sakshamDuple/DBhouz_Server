@@ -118,11 +118,11 @@ const sendEmail = async (email, subject, text) => {
     //   },
     // });
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: process.env.USER,
-        pass: process.env.PASS   // app password in get from gmail
-      }
+      host: 'smtp.office365.com',
+      port: '587',
+      auth: { user: process.env.USER, pass: process.env.PASS }, // todo in process.env
+      secureConnection: false,
+      tls: { ciphers: 'SSLv3' }
     });
     await transporter.sendMail({
       from: process.env.USER,

@@ -89,6 +89,17 @@ userRouter.post("/updateOne", async (req: Request, res: Response) => {
   }
 });
 
+userRouter.post("/editProfile", async (req: Request, res: Response) => {
+  try {
+    const profile: { userId, firstName, lastName, email, phone, gender, curpassword, newpassword } = req.body;
+    res.status(200).json({ updatedUser: await userService.editProfile(profile) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 userRouter.put("/updateCartAndWishlist", async (req: Request, res: Response) => {
   try {
     const userId = req.body.userId;

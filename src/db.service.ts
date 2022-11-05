@@ -514,7 +514,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               state: { bsonType: "string" },
               city: { bsonType: "string" },
               main_address_text: { bsonType: "string" },
-              postal_code: { bsonType: "number" },
+              postal_code: { bsonType: "string" },
             },
           },
           transactionDetail: {

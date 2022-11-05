@@ -38,10 +38,6 @@ class mainPageServiceClass {
         newBanner = { ...newBanner }
         newBanner = this.sanitizeSmallB(newBanner)
         await collections.banner.findOneAndDelete({ Banner_Type: Banner_Type.Small1 })
-        // const existingBanner: Banner = await this.getByName(newBanner.Banner_Title)
-        // if (existingBanner) {
-        //     throw new Error(`Banner with this title name ${newBanner.Banner_Title} already exists`)
-        // }
         const result: InsertOneResult<Banner> = await collections.banner.insertOne(newBanner);
         newBanner._id = result.insertedId
         return newBanner
@@ -51,10 +47,6 @@ class mainPageServiceClass {
         newBanner = { ...newBanner }
         newBanner = this.sanitizeSmallB(newBanner)
         await collections.banner.findOneAndDelete({ Banner_Type: Banner_Type.Small2 })
-        // const existingBanner: Banner = await this.getByName(newBanner.Banner_Title)
-        // if (existingBanner) {
-        //     throw new Error(`Banner with this title name ${newBanner.Banner_Title} already exists`)
-        // }
         const result: InsertOneResult<Banner> = await collections.banner.insertOne(newBanner);
         newBanner._id = result.insertedId
         return newBanner
@@ -111,6 +103,7 @@ class mainPageServiceClass {
             }
         ]
         let m = await collections.banner.aggregate(agg).toArray()
+        console.log(m)
         return m[0]._id
     }
 
@@ -127,6 +120,7 @@ class mainPageServiceClass {
             }
         ]
         let m = await collections.banner.aggregate(agg).toArray()
+        console.log(m)
         return m[0]._id
     }
 
@@ -145,6 +139,10 @@ class mainPageServiceClass {
         const result: InsertOneResult<MainPage> = await collections.mainPage.insertOne(mainPage);
         mainPage._id = result.insertedId
         return mainPage
+    }
+
+    async getMainPageIfAdded(): Promise<MainPage[]> {
+        return await collections.mainPage.find().toArray() as MainPage[];
     }
 
     sanitizeSmallB(b: Banner): Banner {
