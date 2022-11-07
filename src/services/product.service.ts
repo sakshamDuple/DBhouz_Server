@@ -98,8 +98,10 @@ class ProductServiceClass {
     }
 
     async delete(productId: string | ObjectId): Promise<boolean> {
-        const query = { _id: new ObjectId(productId) };
-        const result = await collections.products.deleteOne(query);
+        console.log(productId)
+        // let nproductId = new ObjectId(productId.toString())
+        // const query = { _id: productId };
+        const result = await collections.products.deleteOne({ _id: new ObjectId(productId) });
         return (result && result.deletedCount > 0)
     }
 

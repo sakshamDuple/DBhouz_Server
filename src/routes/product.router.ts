@@ -329,8 +329,9 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
 productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response) => {
   const productId: string = req?.params?.productId;
   try {
-    await ProductService.delete(productId);
-    res.status(200).json({});
+    if (await ProductService.delete(productId))
+    return res.status(200).json({message:"product deleted"});
+    res.status(404).json({message:"product not deleted"});
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });

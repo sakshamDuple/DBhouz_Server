@@ -26,12 +26,17 @@ class CategoryServiceClass {
         return (await collections.categories.findOne({ name })) as ICategory;
     }
 
+    // async getSubCategoryByName(name: string): Promise<ISubCategory> {
+    //     return (await collections.subCategories.findOne({ name })) as ISubCategory;
+    // }
+
     async getAllCategories(): Promise<ICategory[]> {
         return (await collections.categories.find({}).sort({ createdAt: -1 }).toArray()) as ICategory[];
     }
 
     async createCategory(newCategory: ICategory): Promise<ICategory> {
         newCategory = { ...newCategory }
+        newCategory.name = newCategory.name.toLowerCase()
         const existingCategory: ICategory = await this.getCategoryByName(newCategory.name)
         if (existingCategory) {
             throw new Error(`Category with name ${newCategory.name} already exists`)
@@ -85,6 +90,7 @@ class CategoryServiceClass {
         if (!category) {
             throw new Error(`Category ${newSubCategory.categoryId} does not exist`)
         }
+        newSubCategory.name = newSubCategory.name.toLowerCase()
         let query = { categoryId: new ObjectId(newSubCategory.categoryId), name: newSubCategory.name };
         const existingSubCategory: ISubCategory = (await collections.subCategories.findOne(query)) as ISubCategory
         if (existingSubCategory) {
@@ -124,7 +130,7 @@ class CategoryServiceClass {
     }
 
     sanitizeSubCat(o: ISubCategory): ISubCategory {
-        if(o.categoryId) o.categoryId = new ObjectId(o.categoryId)
+        if (o.categoryId) o.categoryId = new ObjectId(o.categoryId)
         if (!o.description) delete o.description
         if (!o.imageDocumentId) delete o.imageDocumentId
         else o.imageDocumentId = new ObjectId(o.imageDocumentId)
