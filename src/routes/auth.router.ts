@@ -199,10 +199,8 @@ authRouter.post(
   "/verifyUJwt",
   passport.authenticate("jwt", { session: false }),
   async (req, res, next) => {
-    console.log(req.user);
     if (req.user && (req.user as any)._id) {
       const merchant: IUser = await userService.get((req.user as any)._id);
-      console.log(merchant);
       if (merchant) {
         res.status(200).json({ merchant });
       } else res.status(500).json({ error: `Failed to fetch user` });

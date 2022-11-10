@@ -6,7 +6,7 @@ import bcrypt from "bcrypt";
 class UserServiceClass {
   async get(userId: string | ObjectId): Promise<IUser> {
     const query = { _id: new ObjectId(userId) };
-    return (await collections.users.findOne({})) as IUser;
+    return (await collections.users.findOne(query)) as IUser;
   }
 
   async makeContact(contact: IContact): Promise<IContact> {
