@@ -93,11 +93,11 @@ productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, 
       if (thisSubCat[0] == "" || (thisSubCat[0] == "" && thisColors[0] == "")) {
         return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice: get_Colors_MaxPrice });
       }
-      activeProducts = await ProductService.getAllBySubCategoryFilterNew(thisSubCat, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors);
-      totalValCatOrSub = await ProductService.getAllBySubCategoryFilterNewVal(thisSubCat, priceRangefrom, priceRangeto, thisColors)
+      activeProducts = await ProductService.getAllBySubCategoryFilterNew(thisSubCat, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors, true);
+      totalValCatOrSub = await ProductService.getAllBySubCategoryFilterNewVal(thisSubCat, priceRangefrom, priceRangeto, thisColors, true)
     } else if (categoryId != "") {
-      activeProducts = await ProductService.getAllByCategoryFilterNew(categoryId, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors);
-      totalValCatOrSub = await ProductService.getAllByCategoryFilterNewVal(categoryId, priceRangefrom, priceRangeto, thisColors)
+      activeProducts = await ProductService.getAllByCategoryFilterNew(categoryId, priceRangefrom, priceRangeto, sortByName, PageLimit, Start, thisColors, true);
+      totalValCatOrSub = await ProductService.getAllByCategoryFilterNewVal(categoryId, priceRangefrom, priceRangeto, thisColors, true)
       return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub, get_Colors_MaxPrice: get_Colors_MaxPrice });
     }
     return res.status(200).json({ status: "success", data: activeProducts, Total: totalValCatOrSub });
@@ -283,7 +283,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
     let product: IProduct = req.body.product;
     console.log(product)
     let brand: string = req.body?.brand
-    if(brand){
+    if (brand) {
       let newBrand: IBrand = {
         _id: undefined,
         name: brand,
@@ -291,14 +291,19 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
         createdAt: Date.now(),
       };
       let thisBrand = await BrandService.create(newBrand)
+      if(thisBrand == "Brand with this name already exists"){
+        return res.status(400).json({ thisBrand });
+      }
       product.brandId = thisBrand._id
     }
     let newProduct: IProduct = product
     console.log(newProduct)
     product = await ProductService.create(newProduct);
     res.status(200).json({ product });
-  } catch (error: any) {
+  }
+   catch (error: any) {
     LOG.error(error);
+    if (error.message == "Brand with this name already exists") res.status(401).json({ error: error.message });
     res.status(500).json({ error: error.message });
   }
 });
@@ -330,8 +335,8 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
   const productId: string = req?.params?.productId;
   try {
     if (await ProductService.delete(productId))
-    return res.status(200).json({message:"product deleted"});
-    res.status(404).json({message:"product not deleted"});
+      return res.status(200).json({ message: "product deleted" });
+    res.status(404).json({ message: "product not deleted" });
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });

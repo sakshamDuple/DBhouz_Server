@@ -209,7 +209,7 @@ orderRouter.get("/getOrderForSeller/:sellerId/:page/:limit/:SortByDate/:OrderTyp
     console.log(SellerId, Page, SortByDate, PageLimit)
     let Start: number = PageLimit * (Page - 1) + 1
     let End: number = PageLimit * (Page)
-    if (OrderType[0] == ':OrderType') {
+    if (OrderType[0] == 'undefined') {
         OrderType = ["Recieved", "Payment_Accepted", "Inprogress", "Delivered", "Cancelled", "Refund_Inprogress", "Refund_Done", "Payment_Pending"]
     }
     try {
@@ -236,7 +236,7 @@ orderRouter.get("/getAllOrder/:page/:limit/:SortByDate/:OrderType", async (req: 
     let Page: number = req?.params?.page ? parseInt(req?.params?.page) : 1;
     let newOrderType: string = req.params?.OrderType
     let OrderType = newOrderType.split(',')
-    if (OrderType[0] == ':OrderType') {
+    if (OrderType[0] == 'undefined') {
         OrderType = ["Recieved", "Payment_Accepted", "Inprogress", "Delivered", "Cancelled", "Refund_Inprogress", "Refund_Done", "Payment_Pending"]
     }
     console.log(OrderType)

@@ -113,8 +113,11 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[]): Promise<IProduct[]> {
+    async getAllByCategoryFilterNew(categoryId: string, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[], boolean): Promise<IProduct[]> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
+        if (boolean) {
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
+        }
         // console.log(pfrom, pto)
         if (colorId[0] != "") {
             let m = []
@@ -122,6 +125,9 @@ class ProductServiceClass {
                 m.push(new ObjectId(element))
             });
             query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
+            if (boolean) {
+                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m }, status: "ACTIVE" }
+            }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -142,32 +148,44 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string[]): Promise<Number> {
+    async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string[], boolean): Promise<Number> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
+        if (boolean) {
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto} , status: "ACTIVE" }
+        }
         if (colorId[0] != "") {
             let m = []
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
             query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
+            if (boolean) {
+                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } , status: "ACTIVE" }
+            }
         }
         return (await collections.products
             .find(query)
             .toArray()).length;
     }
 
-    async getAllBySubCategoryFilterNew(subCategoryId: Array<string>, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[]): Promise<IProduct[]> {
+    async getAllBySubCategoryFilterNew(subCategoryId: Array<string>, pfrom: number, pto: number, sortByName: string, PageLimit: number, Start: number, colorId: string[], boolean): Promise<IProduct[]> {
         let k = []
         subCategoryId.forEach(element => {
             k.push(new ObjectId(element))
         });
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
+        if (boolean) {
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
+        }
         if (colorId[0] != "" && colorId.length > 0) {
             let m = []
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
             query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
+            if (boolean) {
+                query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m }, status: "ACTIVE" }
+            }
         }
         if (sortByName == "Asc") {
             return (await collections.products
@@ -188,18 +206,24 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    async getAllBySubCategoryFilterNewVal(subCategoryId: Array<string>, pfrom: number, pto: number, colorId: string[]): Promise<Number> {
+    async getAllBySubCategoryFilterNewVal(subCategoryId: Array<string>, pfrom: number, pto: number, colorId: string[], boolean): Promise<Number> {
         let k = []
         subCategoryId.forEach(element => {
             k.push(new ObjectId(element))
         });
         let query: any = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto } }
+        if (boolean) {
+            query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
+        }
         if (colorId[0] != "" && colorId.length > 0) {
             let m = []
             colorId.forEach(element => {
                 m.push(new ObjectId(element))
             });
             query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
+            if (boolean) {
+                query = { subCategoryId: { "$in": k }, "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m }, status: "ACTIVE" }
+            }
         }
         return (await collections.products
             .find(query)

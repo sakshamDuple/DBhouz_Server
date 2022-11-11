@@ -17,11 +17,11 @@ class BrandServiceClass {
         return (await collections.brands.find({}).sort({ priority: 1 }).toArray()) as IBrand[];
     }
 
-    async create(newBrand: IBrand): Promise<IBrand> {
+    async create(newBrand: IBrand): Promise<any> {
         newBrand = { ...newBrand }
         const existingBrand: IBrand = (await collections.brands.findOne({ name: newBrand.name })) as IBrand
         if (existingBrand) {
-            throw new Error(`Brand with this name already exists`)
+            return "Brand with this name already exists"
         }
         newBrand.createdAt = Date.now()
         const result: InsertOneResult<IBrand> = await collections.brands.insertOne(newBrand);

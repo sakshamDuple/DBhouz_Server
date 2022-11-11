@@ -118,7 +118,7 @@ const sendEmail = async (email, subject, text) => {
     //   },
     // });
     const transporter = nodemailer.createTransport({
-      host: 'smtp.office365.com',
+      host: 'smtp-relay.gmail.com',
       port: '587',
       auth: { user: process.env.USER, pass: process.env.PASS }, // todo in process.env
       secureConnection: false,

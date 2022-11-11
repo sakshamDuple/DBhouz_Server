@@ -57,7 +57,7 @@ class OrderServiceClass {
                 }
             }, {
                 '$project': {
-                    "_id":0,
+                    "_id": 0,
                     'products.productId': 1,
                 }
             }
@@ -65,7 +65,7 @@ class OrderServiceClass {
         let AllProductId = await collections.orders.aggregate(agg).toArray()
         let arr = [];
         for (let product of AllProductId) for (let eachProduct of product.products) arr.push(eachProduct);
-        if (arr[0].productId != "" && arr.length>0) {
+        if (arr[0].productId != "" && arr.length > 0) {
             let m = []
             arr.forEach(element => {
                 m.push(new ObjectId(element.productId))
@@ -75,7 +75,7 @@ class OrderServiceClass {
         let agg2 = [
             {
                 '$match': {
-                    '_id': { "$in" : arr}
+                    '_id': { "$in": arr }
                 }
             }
         ]
@@ -218,25 +218,77 @@ class OrderServiceClass {
             }).sort({ createdAt: 1 })
             .toArray()).length
     }
+    // async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
+    //     if (SortByDate == "Desc") {
+    //         return (await collections.orders
+    //             .find({
+    //                 "products.sellerId": Id, 'order_status': {
+    //                     '$in': OrderType
+    //                 }
+    //             }).sort({ createdAt: 1 })
+    //             .limit(PageLimit).skip(Start - 1)
+    //             .toArray()) as Order[]
+    //     }
+    //     return (await collections.orders
+    //         .find({
+    //             "products.sellerId": Id, 'order_status': {
+    //                 '$in': OrderType
+    //             }
+    //         }).sort({ createdAt: -1 })
+    //         .limit(PageLimit).skip(Start - 1)
+    //         .toArray()) as Order[]
+    // }
     async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
-        if (SortByDate == "Desc") {
-            return (await collections.orders
-                .find({
-                    "products.sellerId": Id, 'order_status': {
+        let start = Start - 1;
+        console.log(start)
+        let agg = [
+            {
+                '$match': {
+                    'products.sellerId': Id, 'order_status': {
                         '$in': OrderType
                     }
-                }).sort({ createdAt: 1 })
-                .limit(PageLimit).skip(Start - 1)
-                .toArray()) as Order[]
-        }
-        return (await collections.orders
-            .find({
-                "products.sellerId": Id, 'order_status': {
-                    '$in': OrderType
                 }
-            }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
-            .toArray()) as Order[]
+            }, {
+                '$sort': { "createdAt": -1 },
+            }, {
+                '$limit': PageLimit
+            }, {
+                '$skip': start
+            }
+        ]
+        if (SortByDate == "Desc") {
+            agg = [
+                {
+                    '$match': {
+                        'products.sellerId': Id, 'order_status': {
+                            '$in': OrderType
+                        }
+                    }
+                }, {
+                    '$sort': { "createdAt": 1 },
+                }, {
+                    '$limit': PageLimit
+                }, {
+                    '$skip': start
+                }
+            ]
+        }
+        let TheseOrders = await collections.orders.aggregate(agg)
+        let ThisSellerOrders = []
+        await TheseOrders.forEach(order => {
+            let totalPrice = 0
+            let products = []
+            order.products.forEach(element => {
+                if (element.sellerId == Id) {
+                    totalPrice += element.totalPriceOfThisProducts
+                    products.push(element)
+                }
+            });
+            let object = order
+            object.products = products
+            ThisSellerOrders.push(object)
+        });
+        return ThisSellerOrders as Order[]
     }
     async get(): Promise<Order[]> {
         return (await collections.orders
