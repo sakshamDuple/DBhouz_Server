@@ -195,6 +195,8 @@ export interface IProductVariant {
   availableQuantity: number;
   discountPercentage?: number;
   price: number | Double;
+  priceByAdmin?: number;
+  priceByMerchant?: number;
   warranty_period?: number;
   material_type?: string;
   material_finish?: string;

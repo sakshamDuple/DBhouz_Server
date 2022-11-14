@@ -341,6 +341,8 @@ class ProductServiceClass {
             if (Number.isNaN(v.availableQuantity)) delete v.availableQuantity
             if (Number.isNaN(v.discountPercentage)) delete v.discountPercentage
             if (Number.isNaN(v.price)) delete v.price
+            if (Number.isNaN(v.priceByAdmin)) delete v.priceByAdmin
+            if (Number.isNaN(v.priceByMerchant)) delete v.priceByMerchant
             if (Number.isNaN(v.warranty_period)) delete v.warranty_period
             if (!Number.isNaN(v.price)) v.price = new Double(Number.parseFloat(v.price.toString()))
             if (v.dimensions) {

@@ -74,8 +74,13 @@ merchantRouter.get('/getOne/:merchantId', async (req: Request, res: Response) =>
 merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
     try {
         const merchant: IMerchant = req.body.merchant;
-        await MerchantService.update(merchant)
-        res.status(200).json({})
+        const ToDoInactiveProducts = req.body.ToDoInactiveProducts
+        let merchantUpdate = await MerchantService.update(merchant)
+        let k = true;
+        if (ToDoInactiveProducts) {
+            k = await MerchantService.doInactiveMerchantProduct(new ObjectId(merchant._id))
+        }
+        res.status(200).json({ update: merchantUpdate && k })
     } catch (error) {
         console.error(error)
         LOG.error(error)

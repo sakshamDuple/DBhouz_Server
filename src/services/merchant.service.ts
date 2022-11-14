@@ -1,6 +1,7 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { ECommisionType, EMerchantStatus, IMerchant } from "../interfaces";
+import { ECommisionType, EMerchantStatus, EProductStatus, IMerchant, IProduct } from "../interfaces";
+import { ProductService } from "./product.service";
 
 class MerchantServiceClass {
 
@@ -44,6 +45,19 @@ class MerchantServiceClass {
         merchant = this.sanitize(merchant)
         let result: UpdateResult = await collections.merchants.updateOne(query, { $set: merchant });
         return (result.modifiedCount > 0)
+    }
+
+    async doInactiveMerchantProduct(merchantId: ObjectId): Promise<boolean> {
+        let products:IProduct[] = await ProductService.getAllByMerchant(merchantId, true)
+        let m = false
+        products.forEach(element => {
+            let k = true;
+            element.status = EProductStatus.InActive
+            ProductService.update(element)
+            k = true;
+            m = m && k;
+        });
+        return m;
     }
 
     async delete(merchantId: string | ObjectId): Promise<boolean> {
