@@ -1,6 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, IProduct, IReview, Order } from "../interfaces";
+import { EProductStatus, IProduct, IProductVariant, IReview, Order } from "../interfaces";
 
 class ProductServiceClass {
 
@@ -273,6 +273,33 @@ class ProductServiceClass {
             .find(query)
             .sort({ createdAt: -1 })
             .toArray()) as IProduct[];
+    }
+
+    getVariant(product: IProduct, variant: string): IProductVariant{
+        let nvariant:IProductVariant 
+        if(product.variants){
+            product.variants.forEach(element => {
+                if(element.name == variant){
+                    console.log(true)
+                    nvariant = element
+                }
+            });
+        }
+        return nvariant
+    }
+
+    async getProductVariant(productId: string, variant: string): Promise<any> {
+        let thisId = new ObjectId(productId)
+        let product: IProduct = (await collections.products.findOne(thisId)) as IProduct
+        product = { ...product }
+        let k = await this.getVariant(product, variant)
+        // product.variants.forEach(element => {
+        //     if(element.name == variant)
+        //     return element
+        // });
+        console.log(k)
+        if(k) return k
+        return "variant not found"
     }
 
     async doReview(review: IReview, productId: string): Promise<any> {

@@ -196,7 +196,7 @@ productRouter.post(
   uploadImages.array("image"),
   async (req: Request, res: Response) => {
     try {
-      console.log(req.body)
+      console.log(req.files)
       let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
       if (!filesToUpload || filesToUpload.length < 0)
         throw new Error(`Files not available for upload`);
@@ -248,6 +248,16 @@ productRouter.post(
     }
   }
 );
+productRouter.post("/user/getProductVariant", async (req:Request, res:Response) => {
+  try {
+    let productId:string = req.body.productId;
+    let variant:string = req.body.variant;
+    res.status(200).json({ variant: await ProductService.getProductVariant(productId,variant) });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
 
 productRouter.get("/admin/getAll", async (req: Request, res: Response) => {
   try {

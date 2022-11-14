@@ -16,7 +16,7 @@ class MerchantServiceClass {
 
     async getAll(activeOnly: boolean): Promise<IMerchant[]> {
         let query: any = {}
-        if(activeOnly) query.status = EMerchantStatus.Active
+        if (activeOnly) query.status = EMerchantStatus.Active
         return (await collections.merchants.find(query).sort({ createdAt: -1 }).toArray()) as IMerchant[];
     }
 
@@ -48,8 +48,11 @@ class MerchantServiceClass {
     }
 
     async doInactiveMerchantProduct(merchantId: ObjectId): Promise<boolean> {
-        let products:IProduct[] = await ProductService.getAllByMerchant(merchantId, true)
+        let products: IProduct[] = await ProductService.getAllByMerchant(merchantId, true)
         let m = false
+        if (products.length == 0) {
+            m = true
+        }
         products.forEach(element => {
             let k = true;
             element.status = EProductStatus.InActive
@@ -59,6 +62,7 @@ class MerchantServiceClass {
         });
         return m;
     }
+
 
     async delete(merchantId: string | ObjectId): Promise<boolean> {
         const query = { _id: new ObjectId(merchantId) };
@@ -73,9 +77,9 @@ class MerchantServiceClass {
         if (o.commisionType !== ECommisionType.Fixed && o.commisionType !== ECommisionType.Percentage) {
             delete o.commisionType
         }
-        if(o.commisionPercentage) o.commisionPercentage = new Double(Number.parseFloat(o.commisionPercentage.toString()))
-        if(o.commisionAmount) o.commisionAmount = new Double(Number.parseFloat(o.commisionAmount.toString()))
-        if(o.onboardingAmount) o.onboardingAmount = new Double(Number.parseFloat(o.onboardingAmount.toString()))
+        if (o.commisionPercentage) o.commisionPercentage = new Double(Number.parseFloat(o.commisionPercentage.toString()))
+        if (o.commisionAmount) o.commisionAmount = new Double(Number.parseFloat(o.commisionAmount.toString()))
+        if (o.onboardingAmount) o.onboardingAmount = new Double(Number.parseFloat(o.onboardingAmount.toString()))
         if (o.identification) {
             o.identification.forEach(i => {
                 i.documentId = new ObjectId(i.documentId)
