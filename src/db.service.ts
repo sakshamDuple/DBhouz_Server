@@ -294,10 +294,11 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 dimensions: {
                   bsonType: "object",
                   required: ["height"],
+                  additionalProperties: true,
                   properties: {
-                    height: { bsonType: "double" },
-                    width: { bsonType: "double" },
-                    thickness: { bsonType: "double" },
+                    height: { bsonType: "number" },
+                    width: { bsonType: "number" },
+                    thickness: { bsonType: "number" },
                   },
                 },
                 minPurchaseQuantity: { bsonType: "number" },
@@ -685,7 +686,8 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           "discountPerc",
           "PriceRange",
           "eligiblity",
-          "validity"
+          "validity",
+          "AccessToMerchantWithProduct"
         ],
         properties: {
           name: { bsonType: "string" },
@@ -722,8 +724,8 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               "to"
             ],
             properties: {
-              cardType: { bsonType: "number" },
-              cardName: { bsonType: "number" },
+              from: { bsonType: "number" },
+              to: { bsonType: "number" },
             },
           },
           AccessToMerchantWithProduct: {

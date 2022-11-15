@@ -293,47 +293,56 @@ class ProductServiceClass {
         let product: IProduct = (await collections.products.findOne(thisId)) as IProduct
         product = { ...product }
         let k = await this.getVariant(product, variant)
-        // product.variants.forEach(element => {
-        //     if(element.name == variant)
-        //     return element
-        // });
         console.log(k)
         if(k) return k
         return "variant not found"
     }
 
+    func(Order:Order, product:IProduct, rating:number, allReview: Array<IReview>, len:number, review: IReview): boolean {
+        let update:boolean = false
+        // console.log("hge \n \n \n \n",Order, product, rating, allReview, len, review)
+        const query2 = { _id: new ObjectId(Order._id.toString()) };
+        if(Order.products)
+        Order.products.forEach(async item => {
+            console.log(item.reviewFlagOfThisProduct == false)
+            console.log(product._id.toString(),item.productId)
+            if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
+                let newRating = (rating * len + review.rating) / (len + 1)
+                product.rating = newRating;
+                allReview.push(review)
+                review.orderId = new ObjectId(review.orderId)
+                review.reviewId = new ObjectId(review.reviewId)
+                review.userId = new ObjectId(review.userId)
+                product.review = allReview
+                const query1 = { _id: new ObjectId(product._id.toString()) };
+                console.log(product)
+                await collections.products.updateOne(query1, { $set: product })
+                console.log("HIi")
+                item.reviewFlagOfThisProduct = true
+                await collections.orders.updateOne(query2, { $set: Order })
+                console.log("Hiii")
+                update = true
+                return update
+            }
+        })
+        return update
+    }
+
     async doReview(review: IReview, productId: string): Promise<any> {
-        let update = false
         let thisId = new ObjectId(productId)
+        console.log(thisId)
         let product: IProduct = await collections.products.findOne(thisId) as IProduct
         let Order: Order = await collections.orders.findOne(review.orderId) as Order
-        const query2 = { _id: new ObjectId(Order._id.toString()) };
+        console.log("product",product)
         let rating: number = product.rating
         let len = product.review.length
         let allReview: Array<IReview> = product.review
-        async function func() {
-            await Order.products.map(async item => {
-                if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
-                    let newRating = (rating * len + review.rating) / (len + 1)
-                    product.rating = newRating;
-                    allReview.push(review)
-                    product.review = allReview
-                    const query1 = { _id: new ObjectId(product._id.toString()) };
-                    console.log(product)
-                    await collections.products.updateOne(query1, { $set: product })
-                    item.reviewFlagOfThisProduct = true
-                    await collections.orders.updateOne(query2, { $set: Order })
-                    update = true
-                    return update
-                }
-            })
-            return update
-        }
+        let Update = await this.func(Order, product, rating, allReview, len, review)
+        // console.log(Order, product, rating, allReview, len, review)
         return {
-            Update: await func().then((val) => {
-                return val
-            }), Review: review
+            Update, Review: review
         }
+        // return "review not made"
     }
 
     sanitize(o: IProduct): IProduct {

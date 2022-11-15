@@ -7,11 +7,17 @@ class couponServiceClass {
 
     async createCoupon(coupon: ICoupon): Promise<ICoupon> {
         let thisCoupon = this.sanitize(coupon)
+        thisCoupon._id = new ObjectId
         const existingCoupon: ICoupon = await this.getCouponByName(thisCoupon.name)
         if (existingCoupon) {
-            throw new Error(`Banner with this title name '${existingCoupon.name}' already exists`)
+            throw new Error(`Coupon with this title name '${existingCoupon.name}' already exists`)
         }
-        const result: InsertOneResult<ICoupon> = await collections.banner.insertOne(thisCoupon);
+        thisCoupon.AccessToMerchantWithProduct.forEach(element => {
+            element.merchantId = new ObjectId(element.merchantId)
+            element.productId = new ObjectId(element.productId)
+        });
+        console.log(thisCoupon)
+        const result: InsertOneResult<ICoupon> = await collections.coupon.insertOne(thisCoupon);
         thisCoupon._id = result.insertedId
         console.log(thisCoupon)
         return thisCoupon

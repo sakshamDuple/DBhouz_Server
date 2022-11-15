@@ -237,7 +237,6 @@ miscRouter.delete("/deleteUnit/:unitId", async (req: Request, res: Response) => 
 });
 miscRouter.post("/createCoupon", async (req: Request, res: Response) => {
     const coupon: ICoupon = req.body?.coupon;
-    console.log(coupon)
     try {
         res.status(200).json({ createdCoupon: await couponService.createCoupon(coupon) })
     } catch (error) {
