@@ -226,7 +226,7 @@ productRouter.post(
             };
             newDocument = await DocumentService.create(newDocument);
             console.log(newDocument)
-            await element.images.push({ documentId: newDocument._id, priority: priority++ });
+            element.images.push({ documentId: newDocument._id, priority: priority++ });
             const newPath: string = path.resolve(
               AppConfig.directories.documents,
               newDocument._id.toString()
@@ -238,7 +238,7 @@ productRouter.post(
               });
             });
           }
-          console.log(element.images)
+          console.log(element.images);
           console.log("variants", variants);
         }
       });
