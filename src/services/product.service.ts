@@ -92,6 +92,11 @@ class ProductServiceClass {
         product = { ...product }
         product = this.sanitize(product)
         const query = { _id: new ObjectId(product._id) };
+        product.review.forEach(element => {
+            element.orderId= new ObjectId(element.orderId)
+            element.reviewId= new ObjectId(element.reviewId)
+            element.userId= new ObjectId(element.userId)
+        });
         delete product._id;
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)

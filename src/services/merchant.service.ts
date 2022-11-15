@@ -55,6 +55,7 @@ class MerchantServiceClass {
         }
         products.forEach(element => {
             let k = true;
+            console.log("element",element)
             element.status = EProductStatus.InActive
             ProductService.update(element)
             k = true;
