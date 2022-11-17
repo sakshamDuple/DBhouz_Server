@@ -13,6 +13,7 @@ import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { BrandService } from "../services/brand.service";
 import { ColorService } from "../services/color.service";
+let future = require('future')
 
 const productRouter: Router = express.Router();
 productRouter.use(express.json());
@@ -211,8 +212,9 @@ productRouter.post(
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
           for (let image of element.images) {
+            console.log("image.documentId",image.documentId)
             if (image.documentId) {
-              await DocumentService.delete(image.documentId);
+              DocumentService.delete(image.documentId);
             }
           }
           element.images = [];
@@ -225,12 +227,13 @@ productRouter.post(
               sizeInBytes: currentFile.size,
             };
             newDocument = await DocumentService.create(newDocument);
-            console.log(newDocument)
+            console.log("newDocument",newDocument)
             element.images.push({ documentId: newDocument._id, priority: priority++ });
             const newPath: string = path.resolve(
               AppConfig.directories.documents,
               newDocument._id.toString()
             );
+            console.log("element.images",element.images)
             await new Promise<void>((resolve, reject) => {
               rename(currentFile.path, newPath, (err) => {
                 if (err) reject(err);
@@ -238,11 +241,10 @@ productRouter.post(
               });
             });
           }
-          console.log(element.images);
-          console.log("variants", variants);
+          console.log("variants", variants[0].images);
         }
       });
-      console.log("product", product)
+      console.log("product", product.variants[0].images)
       await ProductService.update(product);
       res.status(200).json({ product });
     } catch (error: any) {

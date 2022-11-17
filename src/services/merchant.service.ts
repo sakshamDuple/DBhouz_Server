@@ -10,6 +10,17 @@ class MerchantServiceClass {
         return (await collections.merchants.findOne(query)) as IMerchant;
     }
 
+    async getMultipleMerchant(merchants: Array<string>): Promise<IMerchant[]> {
+        let merchantsObj: Array<ObjectId> = []
+        merchants.forEach((element,i) => {
+            merchantsObj[i] = new ObjectId(element)
+        });
+        console.log(merchantsObj)
+        let query = { '_id': { '$in': merchantsObj } }
+        let Mmerchants: IMerchant[] = await collections.merchants.find(query).sort({ createdAt: -1 }).toArray() as IMerchant[];
+        return Mmerchants
+    }
+
     async getByEmail(email: string): Promise<IMerchant> {
         return (await collections.merchants.findOne({ email })) as IMerchant;
     }
@@ -55,7 +66,7 @@ class MerchantServiceClass {
         }
         products.forEach(element => {
             let k = true;
-            console.log("element",element)
+            console.log("element", element)
             element.status = EProductStatus.InActive
             ProductService.update(element)
             k = true;

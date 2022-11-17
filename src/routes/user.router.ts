@@ -9,6 +9,7 @@ import path from "path";
 import { AppConfig } from "../config";
 import { rename } from "fs";
 import { ProductService } from "../services/product.service";
+import { MerchantService } from "../services/merchant.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
@@ -150,6 +151,20 @@ userRouter.post("/checkData", async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 });
+
+userRouter.get('/getMultipleMerchant/action', async (req: Request, res: Response) => {
+  const merchantIds: string = String(req?.query?.merchantId);
+  let merchants = merchantIds.split(',')
+  if (merchants[0] == 'undefined') {
+      res.status(500).json({ error: `Unable to find matching document with given merchantId` });
+  }
+  try {
+      res.status(200).json({ merchants: await MerchantService.getMultipleMerchant(merchants) });
+  } catch (error) {
+      LOG.error(error)
+      res.status(500).json({ error: `Unable to find matching document with given merchantId` });
+  }
+})
 
 userRouter.delete("/deleteOne/:userId", async (req: Request, res: Response) => {
   try {
