@@ -306,6 +306,89 @@ class OrderServiceClass {
             .toArray()).length
     }
 
+    async getAdminTotalOrderForDashboard(): Promise<number> {
+        return (await collections.orders
+            .find().sort({ createdAt: -1 })
+            .toArray()).length
+    }
+
+    async getMerchantTotalOrderForDashboard(merchantId:string): Promise<number> {
+        return (await collections.orders
+            .find({'products.sellerId': merchantId}).sort({ createdAt: -1 })
+            .toArray()).length
+    }
+
+    async getMerchantTotalPaymentForDashboard(merchantId:string): Promise<number> {
+        let agg = [
+            {
+                '$match': {
+                    'products.sellerId': merchantId
+                }
+            }, {
+                '$project': {
+                    'products': {
+                        '$filter': {
+                            'input': '$products', 
+                            'as': 'theseproducts', 
+                            'cond': {
+                                '$eq': [
+                                    '$$theseproducts.sellerId', merchantId
+                                ]
+                            }
+                        }
+                    }
+                }
+            }, {
+                '$addFields': {
+                    'totalMerchantAmount': {
+                        '$sum': '$products.totalPriceOfThisProducts'
+                    }
+                }
+            }, {
+                '$group': {
+                    '_id': '', 
+                    'Amount': {
+                        '$sum': '$totalMerchantAmount'
+                    }
+                }
+            }
+        ]
+        let k = collections.orders.aggregate(agg)
+        let l:number;
+        await k.forEach(element => {
+            console.log("element", element)
+            l = element.Amount
+        });
+        console.log("l", l)
+        return l
+    }
+
+    async getAdminTotalPaymentForDashboard(): Promise<number> {
+        let agg = [
+            {
+                '$group': {
+                    '_id': '',
+                    'Amount': {
+                        '$sum': '$total_price'
+                    }
+                }
+            }, {
+                '$project': {
+                    '_id': 0,
+                    'TotalAmount': '$Amount'
+                }
+            }
+        ]
+        let k = collections.orders.aggregate(agg)
+        let l:number;
+        await k.forEach(element => {
+            console.log("element", element)
+            l = element.TotalAmount
+        });
+        console.log("l", l)
+        return l
+    }
+
     async getFilterByOrderType(Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
         if (SortByDate == "Desc") {
             return (await collections.orders

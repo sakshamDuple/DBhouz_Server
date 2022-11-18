@@ -10,6 +10,7 @@ import { AppConfig } from "../config";
 import { rename } from "fs";
 import { ProductService } from "../services/product.service";
 import { MerchantService } from "../services/merchant.service";
+import { mainPageService } from "../services/mainPage.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
@@ -111,6 +112,24 @@ userRouter.put("/updateCartAndWishlist", async (req: Request, res: Response) => 
     console.error(error);
     LOG.error(error);
     res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.get("/getMainPage", async (req: Request, res: Response) => {
+  try {
+      res.status(200).json({ MainPage: await mainPageService.getMainPageIfAdded() });
+  } catch (e: any) {
+      LOG.error(e)
+      res.status(500).json({ error: e.message });
+  }
+})
+
+userRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => {
+  try {
+      res.status(200).json({ mainBanners: await mainPageService.getAllMainBanners(), smallBanner1: await mainPageService.getSmallBanner1(), smallBanner2: await mainPageService.getSmallBanner2() });
+  } catch (e: any) {
+      LOG.error(e)
+      res.status(500).json({ error: e.message });
   }
 })
 

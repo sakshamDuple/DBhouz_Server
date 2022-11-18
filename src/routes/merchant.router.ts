@@ -10,6 +10,7 @@ import { AppConfig } from '../config';
 import { rename } from 'fs';
 import { ProductService } from '../services/product.service';
 import { couponService } from '../services/coupon.service';
+import { OrderService } from '../services/order.service';
 
 const merchantRouter: Router = express.Router()
 merchantRouter.use(express.json())
@@ -68,6 +69,16 @@ merchantRouter.get('/getOne/:merchantId', async (req: Request, res: Response) =>
     } catch (error) {
         LOG.error(error)
         res.status(500).json({ error: `Unable to find matching document with merchantId: ${merchantId}` });
+    }
+})
+
+merchantRouter.get("/dashboard", async (req: Request, res: Response) => {
+    try {
+        let merchantId = req.body.merchantId
+        res.status(200).json({ orderTotal: await OrderService.getMerchantTotalOrderForDashboard(merchantId), totalProducts: (await ProductService.getAllByMerchant(merchantId, false)).length, totalPayments: await OrderService.getMerchantTotalPaymentForDashboard(merchantId) });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
     }
 })
 

@@ -6,6 +6,8 @@ import { UnitService } from '../services/unit.service';
 import { mainPageService } from '../services/mainPage.service';
 import { ObjectID } from 'bson';
 import { couponService } from '../services/coupon.service';
+import { OrderService } from '../services/order.service';
+import { ProductService } from '../services/product.service';
 
 const miscRouter: Router = express.Router()
 miscRouter.use(express.json())
@@ -81,6 +83,24 @@ miscRouter.post("/smallBanner1Creation", async (req: Request, res: Response) => 
 miscRouter.get("/getAllBanners", async (req: Request, res: Response) => {
     try {
         res.status(200).json({ banners: await mainPageService.getAllBanner() });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ mainBanners: await mainPageService.getAllMainBanners(), smallBanner1: await mainPageService.getSmallBanner1(), smallBanner2: await mainPageService.getSmallBanner2() });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.get("/dashboard", async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ orderTotal: await OrderService.getAdminTotalOrderForDashboard(), totalProducts: (await ProductService.getAll(false)).length, totalPayments: await OrderService.getAdminTotalPaymentForDashboard() });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

@@ -90,6 +90,44 @@ class mainPageServiceClass {
         return m[0].mainBanners
     }
 
+    async getAllMainBanners(): Promise<any[]> {
+        let agg = [
+            {
+                '$match': {
+                    'Banner_Type': 'Main'
+                }
+            }
+        ]
+        let m = await collections.banner.aggregate(agg).toArray()
+        return m
+    }
+
+    async getSmallBanner1(): Promise<any> {
+        let agg = [
+            {
+                '$match': {
+                    'Banner_Type': 'Small1'
+                }
+            }
+        ]
+        let m = await collections.banner.aggregate(agg).toArray()
+        console.log(m)
+        return m[0]
+    }
+
+    async getSmallBanner2(): Promise<any> {
+        let agg = [
+            {
+                '$match': {
+                    'Banner_Type': 'Small2'
+                }
+            }
+        ]
+        let m = await collections.banner.aggregate(agg).toArray()
+        console.log(m)
+        return m[0]
+    }
+
     async getSmallBanner1Id(): Promise<ObjectId> {
         let agg = [
             {
