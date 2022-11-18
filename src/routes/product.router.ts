@@ -121,8 +121,6 @@ productRouter.post(
   "/newProductImages",
   uploadImages.array("image"),
   async (req: Request, res: Response) => {
-    console.log(req.files)
-    console.log("req.body",req.body)
     try {
       let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
       if (!filesToUpload || filesToUpload.length < 0)
@@ -198,8 +196,6 @@ productRouter.post(
   uploadImages.array("image"),
   async (req: Request, res: Response) => {
     try {
-      console.log(req.files)
-      console.log("req.body",req.body)
       let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
       if (!filesToUpload || filesToUpload.length < 0)
         throw new Error(`Files not available for upload`);
@@ -207,7 +203,7 @@ productRouter.post(
       const product: IProduct = await ProductService.get(productId);
       if (!product) throw new Error(`Product ${productId} does not exist`);
       let variants = product.variants
-      variants.map(async element => {
+      await variants.map(async element => {
         console.log(element.name == req.body.name)
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
@@ -243,7 +239,7 @@ productRouter.post(
           }
           console.log("variants", variants[0].images);
         }
-      });
+      })
       console.log("product", product.variants[0].images)
       await ProductService.update(product);
       res.status(200).json({ product });
