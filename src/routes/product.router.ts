@@ -203,12 +203,12 @@ productRouter.post(
       const product: IProduct = await ProductService.get(productId);
       if (!product) throw new Error(`Product ${productId} does not exist`);
       let variants = product.variants
-      await variants.map(async element => {
-        console.log(element.name == req.body.name)
+      variants.map(async element => {
+        // console.log("1",element.name == req.body.name)
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
           for (let image of element.images) {
-            console.log("image.documentId",image.documentId)
+            // console.log("2 image.documentId", image.documentId)
             if (image.documentId) {
               DocumentService.delete(image.documentId);
             }
@@ -223,13 +223,13 @@ productRouter.post(
               sizeInBytes: currentFile.size,
             };
             newDocument = await DocumentService.create(newDocument);
-            console.log("newDocument",newDocument)
+            // console.log("3 newDocument", newDocument)
             element.images.push({ documentId: newDocument._id, priority: priority++ });
             const newPath: string = path.resolve(
               AppConfig.directories.documents,
               newDocument._id.toString()
             );
-            console.log("element.images",element.images)
+            // console.log("4 element.images", element.images)
             await new Promise<void>((resolve, reject) => {
               rename(currentFile.path, newPath, (err) => {
                 if (err) reject(err);
@@ -237,10 +237,10 @@ productRouter.post(
               });
             });
           }
-          console.log("variants", variants[0].images);
+          // console.log("5 variants", variants[0].images);
         }
       })
-      console.log("product", product.variants[0].images)
+      // console.log("6 product", product.variants[0].images)
       await ProductService.update(product);
       res.status(200).json({ product });
     } catch (error: any) {
@@ -249,11 +249,11 @@ productRouter.post(
     }
   }
 );
-productRouter.post("/user/getProductVariant", async (req:Request, res:Response) => {
+productRouter.post("/user/getProductVariant", async (req: Request, res: Response) => {
   try {
-    let productId:string = req.body.productId;
-    let variant:string = req.body.variant;
-    res.status(200).json({ variant: await ProductService.getProductVariant(productId,variant) });
+    let productId: string = req.body.productId;
+    let variant: string = req.body.variant;
+    res.status(200).json({ variant: await ProductService.getProductVariant(productId, variant) });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -302,7 +302,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
         createdAt: Date.now(),
       };
       let thisBrand = await BrandService.create(newBrand)
-      if(thisBrand == "Brand with this name already exists"){
+      if (thisBrand == "Brand with this name already exists") {
         return res.status(400).json({ thisBrand });
       }
       product.brandId = thisBrand._id
@@ -312,7 +312,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
     product = await ProductService.create(newProduct);
     res.status(200).json({ product });
   }
-   catch (error: any) {
+  catch (error: any) {
     LOG.error(error);
     if (error.message == "Brand with this name already exists") res.status(401).json({ error: error.message });
     res.status(500).json({ error: error.message });

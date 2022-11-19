@@ -25,6 +25,7 @@ class UserServiceClass {
 
   async getSpecificUser(userId: string | ObjectId): Promise<IUser> {
     const query = { _id: userId };
+    console.log(userId)
     return (await collections.users.findOne({ query })) as IUser;
   }
 

@@ -9,6 +9,7 @@ import { rename } from "fs";
 import { AppConfig } from "../config";
 import { ProductService } from "../services/product.service";
 import { collections } from "../db.service";
+import { ObjectId } from "mongodb";
 
 const categoryRouter: Router = express.Router();
 categoryRouter.use(express.json());
@@ -145,6 +146,42 @@ categoryRouter.post("/updateCategory", async (req: Request, res: Response) => {
     res.status(200).json({});
   } catch (error) {
     LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+categoryRouter.post("/updateOneCategoryAcInAc", async (req: Request, res: Response) => {
+  try {
+    let category: ICategory = req.body.category;
+    let ToDoInactiveProducts = req.body?.ToDoInactiveProducts
+    let categoryUpdate = await CategoryService.updateCategory(category)
+    let k = true;
+    console.log("ToDoInactiveProducts", ToDoInactiveProducts)
+    if (ToDoInactiveProducts) {
+      k = await CategoryService.doInactiveCategoryProduct(new ObjectId(category._id))
+    }
+    res.status(200).json({ update: categoryUpdate && k })
+  } catch (error) {
+    console.error(error)
+    LOG.error(error)
+    res.status(500).json({ error: error.message });
+  }
+});
+
+categoryRouter.post("/updateOneSubCategoryAcInAc", async (req: Request, res: Response) => {
+  try {
+    let subCategory: ISubCategory = req.body.subCategory;
+    let ToDoInactiveProducts = req.body?.ToDoInactiveProducts
+    let categoryUpdate = await CategoryService.updateSubCategory(subCategory)
+    let k = true;
+    console.log("ToDoInactiveProducts", ToDoInactiveProducts)
+    if (ToDoInactiveProducts) {
+      k = await CategoryService.doInactiveSubCategoryProduct(new ObjectId(subCategory._id))
+    }
+    res.status(200).json({ update: categoryUpdate && k })
+  } catch (error) {
+    console.error(error)
+    LOG.error(error)
     res.status(500).json({ error: error.message });
   }
 });

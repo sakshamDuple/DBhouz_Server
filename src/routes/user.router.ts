@@ -11,6 +11,8 @@ import { rename } from "fs";
 import { ProductService } from "../services/product.service";
 import { MerchantService } from "../services/merchant.service";
 import { mainPageService } from "../services/mainPage.service";
+import { OrderService } from "../services/order.service";
+import { TransactionService } from "../services/transaction.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
@@ -79,6 +81,21 @@ userRouter.get("/getOne/:userId", async (req: Request, res: Response) => {
   }
 });
 
+userRouter.get("/dashboard/:userId", async (req: Request, res: Response) => {
+  try {
+    let userId = req.params.userId
+    let obUserId = new ObjectId(userId)
+    let wishList: IUser = await userService.get(obUserId) as IUser
+    let Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
+    let TransactionMethod = ["DEBIT_CARD", "CREDIT_CARD", "UPI", "PAYTM", "GPAY", "CASH_ON_DELIVERY"]
+    let OrderType = ["Recieved", "Payment_Accepted", "Inprogress", "Delivered", "Cancelled", "Refund_Inprogress", "Refund_Done", "Payment_Pending"]
+    res.status(200).json({ orderTotal: (await OrderService.getByUser(userId)).length, totalWishList: wishList ? wishList.wishList.length : 0, totalTransaction: await TransactionService.getTotalTransactionFilter(OrderType, TransactionMethod, "user", userId, Status) });
+  } catch (e: any) {
+    LOG.error(e)
+    res.status(500).json({ error: e.message });
+  }
+});
+
 userRouter.post("/updateOne", async (req: Request, res: Response) => {
   try {
     const user: IUser = req.body.user;
@@ -117,19 +134,19 @@ userRouter.put("/updateCartAndWishlist", async (req: Request, res: Response) => 
 
 userRouter.get("/getMainPage", async (req: Request, res: Response) => {
   try {
-      res.status(200).json({ MainPage: await mainPageService.getMainPageIfAdded() });
+    res.status(200).json({ MainPage: await mainPageService.getMainPageIfAdded() });
   } catch (e: any) {
-      LOG.error(e)
-      res.status(500).json({ error: e.message });
+    LOG.error(e)
+    res.status(500).json({ error: e.message });
   }
 })
 
 userRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => {
   try {
-      res.status(200).json({ mainBanners: await mainPageService.getAllMainBanners(), smallBanner1: await mainPageService.getSmallBanner1(), smallBanner2: await mainPageService.getSmallBanner2() });
+    res.status(200).json({ mainBanners: await mainPageService.getAllMainBanners(), smallBanner1: await mainPageService.getSmallBanner1(), smallBanner2: await mainPageService.getSmallBanner2() });
   } catch (e: any) {
-      LOG.error(e)
-      res.status(500).json({ error: e.message });
+    LOG.error(e)
+    res.status(500).json({ error: e.message });
   }
 })
 
@@ -175,13 +192,13 @@ userRouter.get('/getMultipleMerchant/action', async (req: Request, res: Response
   const merchantIds: string = String(req?.query?.merchantId);
   let merchants = merchantIds.split(',')
   if (merchants[0] == 'undefined') {
-      res.status(500).json({ error: `Unable to find matching document with given merchantId` });
+    res.status(500).json({ error: `Unable to find matching document with given merchantId` });
   }
   try {
-      res.status(200).json({ merchants: await MerchantService.getMultipleMerchant(merchants) });
+    res.status(200).json({ merchants: await MerchantService.getMultipleMerchant(merchants) });
   } catch (error) {
-      LOG.error(error)
-      res.status(500).json({ error: `Unable to find matching document with given merchantId` });
+    LOG.error(error)
+    res.status(500).json({ error: `Unable to find matching document with given merchantId` });
   }
 })
 

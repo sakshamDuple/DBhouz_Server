@@ -1,6 +1,7 @@
 import { InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { ECategoryStatus, ESubCategoryStatus, ICategory, IProduct, ISubCategory } from "../interfaces";
+import { ECategoryStatus, EProductStatus, ESubCategoryStatus, ICategory, IProduct, ISubCategory } from "../interfaces";
+import { ProductService } from "./product.service";
 
 class CategoryServiceClass {
 
@@ -120,6 +121,40 @@ class CategoryServiceClass {
         const query = { _id: new ObjectId(subCategoryId) };
         const result = await collections.subCategories.deleteOne(query);
         return (result && result.deletedCount > 0)
+    }
+
+    async doInactiveCategoryProduct(categoryId: ObjectId): Promise<boolean> {
+        let products: IProduct[] = await ProductService.getAllByCategory(categoryId, true)
+        let m = false
+        if (products.length == 0) {
+            m = true
+        }
+        products.forEach(element => {
+            let k = true;
+            console.log("element", element)
+            element.status = EProductStatus.InActive
+            ProductService.update(element)
+            k = true;
+            m = m && k;
+        });
+        return m;
+    }
+
+    async doInactiveSubCategoryProduct(subCategoryId: ObjectId): Promise<boolean> {
+        let products: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, true)
+        let m = false
+        if (products.length == 0) {
+            m = true
+        }
+        products.forEach(element => {
+            let k = true;
+            console.log("element", element)
+            element.status = EProductStatus.InActive
+            ProductService.update(element)
+            k = true;
+            m = m && k;
+        });
+        return m;
     }
 
     sanitizeCat(o: ICategory): ICategory {
