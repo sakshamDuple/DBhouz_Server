@@ -141,7 +141,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       $jsonSchema: {
         bsonType: "object",
         required: ["email", "secret", "status", "createdAt"],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
           _id: {},
           firstName: { bsonType: "string" },
@@ -154,6 +154,12 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           commisionType: { enum: ["PERCENTAGE", "FIXED"] },
           commisionPercentage: { bsonType: "double" },
           commisionAmount: { bsonType: "double" },
+          accessToCoupon: {
+            bsonType: "array",
+            items: {
+              bsonType: "string"
+            }
+          },
           identification: {
             bsonType: "array",
             items: {
@@ -566,7 +572,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
         required: ["About_Us", "Material_Selection_1", "Material_Selection_2", "Shop_By_Category", "Featured_Products", "createdAt", "updatedAt", "SmallBanner1", "SmallBanner2", "MainBanner"],
         additionalProperties: true,
         properties: {
-          _id:{bsonType:"objectId"},
+          _id: { bsonType: "objectId" },
           About_Us: { bsonType: "string" },
           Benefits_of_having_Marble: { bsonType: "string" },
           Material_Selection_1: {

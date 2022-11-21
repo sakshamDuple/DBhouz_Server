@@ -160,7 +160,9 @@ export interface IReview {
 export interface ICoupon {
   _id: ObjectId;
   name: string;
-  discountPerc: number;
+  discountType?: IdiscountType;
+  flatValue?: number;
+  discountPerc?: number;
   PriceRange: {
     max: number;
     min: number;
@@ -174,6 +176,10 @@ export interface ICoupon {
     to: number;
   };
   AccessToMerchantWithProduct?: AccessToMerchantWithProduct[];
+}
+export enum IdiscountType {
+  Percentage = "PERCENTAGE",
+  Flat = "FLAT",
 }
 export interface AccessToMerchantWithProduct {
   merchantId: ObjectId,

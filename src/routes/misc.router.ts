@@ -264,7 +264,15 @@ miscRouter.post("/createCoupon", async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 })
-
+miscRouter.delete("/deleteThisCoupon/:id", async (req:Request, res:Response) => {
+    const couponId: string = req.params?.id;
+    try {
+        res.status(200).json({ deleteCoupon: await couponService.deleteCoupon(couponId) })
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+})
 miscRouter.put("/giveAccessOfCouponToThisMerchant", async (req: Request, res: Response) => {
     const couponName: string = req.body?.couponName;
     const merchantId: string = req.body.merchantId;
