@@ -690,7 +690,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
         additionalProperties: true,
         required: [
           "name",
-          "discountPerc",
+          "discountType",
           "PriceRange",
           "eligiblity",
           "validity",
