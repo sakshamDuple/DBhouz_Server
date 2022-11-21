@@ -711,6 +711,8 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               min: { bsonType: "number" },
             },
           },
+          discountType: { enum: ["PERCENTAGE", "FLAT"] },
+          flatValue: { bsonType: "number" },
           eligiblity: {
             bsonType: "object",
             additionalProperties: false,

@@ -1,6 +1,6 @@
 import { InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { ICoupon, IMerchant, IProduct } from "../interfaces";
+import { ICoupon, IdiscountType, IMerchant, IProduct } from "../interfaces";
 import { LOG } from "../logger";
 
 class couponServiceClass {
@@ -100,6 +100,7 @@ class couponServiceClass {
 
     sanitize(b: ICoupon): ICoupon {
         if (b._id) delete b._id
+        if (!b.discountType) b.discountType = IdiscountType.Percentage
         return b
     }
 }
