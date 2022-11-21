@@ -1,6 +1,6 @@
 import express, { Request, Response, Router } from 'express'
 import { LOG } from '../logger';
-import { Banner, Banner_Type, DisplayCategory, DisplayProducts, IColor, ICoupon, IUnit, MainPage } from '../interfaces';
+import { Banner, Banner_Type, DisplayCategory, DisplayProducts, IColor, ICoupon, IDocument, IUnit, MainPage } from '../interfaces';
 import { ColorService } from '../services/color.service';
 import { UnitService } from '../services/unit.service';
 import { mainPageService } from '../services/mainPage.service';
@@ -8,6 +8,11 @@ import { ObjectID } from 'bson';
 import { couponService } from '../services/coupon.service';
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../services/product.service';
+import { uploadImages } from '../multer';
+import { DocumentService } from '../services/document.service';
+import { AppConfig } from '../config';
+import path from 'path';
+import { rename } from 'fs';
 
 const miscRouter: Router = express.Router()
 miscRouter.use(express.json())
@@ -264,7 +269,7 @@ miscRouter.post("/createCoupon", async (req: Request, res: Response) => {
         res.status(500).json({ error: error.message });
     }
 })
-miscRouter.delete("/deleteThisCoupon/:id", async (req:Request, res:Response) => {
+miscRouter.delete("/deleteThisCoupon/:id", async (req: Request, res: Response) => {
     const couponId: string = req.params?.id;
     try {
         res.status(200).json({ deleteCoupon: await couponService.deleteCoupon(couponId) })
@@ -284,6 +289,50 @@ miscRouter.put("/giveAccessOfCouponToThisMerchant", async (req: Request, res: Re
         res.status(500).json({ error: error.message });
     }
 })
+
+miscRouter.post(
+    "/newBannerImages",
+    uploadImages.array("image"),
+    async (req: Request, res: Response) => {
+        try {
+            let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+            console.log("filesToUpload",filesToUpload)
+            if (!filesToUpload || filesToUpload.length < 0)
+                throw new Error(`Files not available for upload`);
+            if (filesToUpload.length > 1) throw new Error(`Only single file can be uploaded`);
+            const BannerId: string = req.body.BannerId;
+            const BannerType: Banner_Type = req.body.BannerType;
+            const banner: Banner = await mainPageService.get(BannerId);
+            if (!banner) throw new Error(`Product ${BannerId} does not exist`);
+            if (banner.images) {
+                await DocumentService.delete(banner.images);
+            }
+            let newDocument: IDocument = {
+                _id: null,
+                fileName: filesToUpload[0].originalname,
+                createdAt: Date.now(),
+                sizeInBytes: filesToUpload[0].size,
+            };
+            newDocument = await DocumentService.create(newDocument);
+            banner.images = newDocument._id;
+            const newPath: string = path.resolve(
+                AppConfig.directories.documents,
+                newDocument._id.toString()
+            );
+            await new Promise<void>((resolve, reject) => {
+                rename(filesToUpload[0].path, newPath, (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+            await mainPageService.bannerUpdate(banner, BannerType);
+            res.status(200).json({ banner });
+        } catch (error: any) {
+            LOG.error(error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
 
 miscRouter.get("/getAllCoupons", async (req: Request, res: Response) => {
     try {

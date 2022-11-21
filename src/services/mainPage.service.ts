@@ -34,6 +34,19 @@ class mainPageServiceClass {
         return newBanner
     }
 
+    async bannerUpdate(banner: Banner, BannerType: Banner_Type): Promise<boolean> {
+        banner = { ...banner }
+        if (BannerType == Banner_Type.Main) { 
+            banner = this.sanitizeMainB(banner) 
+        } else { 
+            banner = this.sanitizeSmallB(banner) 
+        }
+        const query = { _id: new ObjectId(banner._id) };
+        delete banner._id;
+        let result: UpdateResult = await collections.banner.updateOne(query, { $set: banner });
+        return (result.modifiedCount > 0)
+    }
+
     async createOrReplaceSmallB1(newBanner: Banner): Promise<Banner> {
         newBanner = { ...newBanner }
         newBanner = this.sanitizeSmallB(newBanner)
@@ -168,9 +181,9 @@ class mainPageServiceClass {
         mainPage.MainBanner = await this.getAllMainBannerIds();
         mainPage.SmallBanner1 = await this.getSmallBanner1Id();
         mainPage.SmallBanner2 = await this.getSmallBanner2Id();
-        let k:any = await collections.mainPage.find().toArray();
+        let k: any = await collections.mainPage.find().toArray();
         const query = { _id: k[0]?._id };
-        if(k){
+        if (k) {
             console.log(k)
             await collections.mainPage.deleteOne(query)
         }
