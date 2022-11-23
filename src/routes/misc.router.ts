@@ -58,7 +58,7 @@ miscRouter.post("/smallBanner2Creation", async (req: Request, res: Response) => 
         let banner: Banner = req.body;
         if (banner.Banner_Type == Banner_Type.Small2) {
             if (banner.images)
-                banner.images = new ObjectID
+                banner.images = new ObjectID(banner.images)
             console.log(banner.images)
             banner = await mainPageService.createOrReplaceSmallB2(banner);
         }
@@ -74,7 +74,7 @@ miscRouter.post("/smallBanner1Creation", async (req: Request, res: Response) => 
         let banner: Banner = req.body;
         if (banner.Banner_Type == Banner_Type.Small1) {
             if (banner.images)
-                banner.images = new ObjectID
+                banner.images = new ObjectID(banner.images)
             console.log(banner.images)
             banner = await mainPageService.createOrReplaceSmallB1(banner);
         }

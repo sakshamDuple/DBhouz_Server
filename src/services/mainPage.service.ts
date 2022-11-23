@@ -52,6 +52,7 @@ class mainPageServiceClass {
         newBanner = this.sanitizeSmallB(newBanner)
         await collections.banner.findOneAndDelete({ Banner_Type: Banner_Type.Small1 })
         const result: InsertOneResult<Banner> = await collections.banner.insertOne(newBanner);
+        console.log(newBanner)
         newBanner._id = result.insertedId
         return newBanner
     }
