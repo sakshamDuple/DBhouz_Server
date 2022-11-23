@@ -13,6 +13,7 @@ import { MerchantService } from "../services/merchant.service";
 import { mainPageService } from "../services/mainPage.service";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
+import { couponService } from "../services/coupon.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
@@ -112,6 +113,28 @@ userRouter.post("/editProfile", async (req: Request, res: Response) => {
   try {
     const profile: { userId, firstName, lastName, email, phone, gender, curpassword, newpassword } = req.body;
     res.status(200).json({ updatedUser: await userService.editProfile(profile) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.post("/getCouponByName", async (req: Request, res: Response) => {
+  try {
+    const couponName: string = req.body.couponName;
+    res.status(200).json({ coupon: await couponService.getCouponByName(couponName) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.post("/getCouponById/:couponId", async (req: Request, res: Response) => {
+  try {
+    const couponId: ObjectId = new ObjectId(req.params.couponId);
+    res.status(200).json({ coupon: await couponService.getCouponById(couponId) });
   } catch (error) {
     console.error(error);
     LOG.error(error);

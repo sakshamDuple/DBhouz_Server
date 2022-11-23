@@ -334,6 +334,50 @@ miscRouter.post(
     }
 );
 
+miscRouter.post(
+    "/verNewBannerImages",
+    uploadImages.array("image"),
+    async (req: Request, res: Response) => {
+        try {
+            let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+            console.log("filesToUpload",filesToUpload)
+            if (!filesToUpload || filesToUpload.length < 0)
+                throw new Error(`Files not available for upload`);
+            if (filesToUpload.length > 1) throw new Error(`Only single file can be uploaded`);
+            // const BannerId: string = req.body.BannerId;
+            // const BannerType: Banner_Type = req.body.BannerType;
+            // const banner: Banner = await mainPageService.get(BannerId);
+            // if (!banner) throw new Error(`Product ${BannerId} does not exist`);
+            // if (banner.images) {
+            //     await DocumentService.delete(banner.images);
+            // }
+            let newDocument: IDocument = {
+                _id: null,
+                fileName: filesToUpload[0].originalname,
+                createdAt: Date.now(),
+                sizeInBytes: filesToUpload[0].size,
+            };
+            newDocument = await DocumentService.create(newDocument);
+            // banner.images = newDocument._id;
+            const newPath: string = path.resolve(
+                AppConfig.directories.documents,
+                newDocument._id.toString()
+            );
+            await new Promise<void>((resolve, reject) => {
+                rename(filesToUpload[0].path, newPath, (err) => {
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+            // await mainPageService.bannerUpdate(banner, BannerType);
+            res.status(200).json({ images:newDocument._id.toString() });
+        } catch (error: any) {
+            LOG.error(error);
+            res.status(500).json({ error: error.message });
+        }
+    }
+);
+
 miscRouter.get("/getAllCoupons", async (req: Request, res: Response) => {
     try {
         res.status(200).json({ result: await couponService.getAllCoupons() })

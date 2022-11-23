@@ -23,6 +23,10 @@ class couponServiceClass {
         return thisCoupon
     }
 
+    async getCouponById(couponId: ObjectId): Promise<ICoupon> {
+        return await collections.coupon.findOne(couponId) as ICoupon
+    }
+
     async deleteCoupon(couponId: string): Promise<boolean> {
         let query = { _id: new ObjectId(couponId) }
         let deleteThisCoupon = await collections.coupon.deleteOne(query)
