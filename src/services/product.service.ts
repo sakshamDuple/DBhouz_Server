@@ -137,19 +137,19 @@ class ProductServiceClass {
         if (sortByName == "Asc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: -1 })
-                .limit(PageLimit).skip(Start - 1)
+                .sort({ name: -1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as IProduct[];
         } else if (sortByName == "Desc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                .sort({ name: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as IProduct[];
         }
         return (await collections.products
-            .find(query)
-            .limit(PageLimit).skip(Start - 1)
+            .find(query).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as IProduct[];
     }
 
@@ -195,19 +195,19 @@ class ProductServiceClass {
         if (sortByName == "Asc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: -1 })
-                .limit(PageLimit).skip(Start - 1)
+                .sort({ name: -1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as IProduct[];
         } else if (sortByName == "Desc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                .sort({ name: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as IProduct[];
         }
         return (await collections.products
-            .find(query)
-            .limit(PageLimit).skip(Start - 1)
+            .find(query).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as IProduct[];
     }
 

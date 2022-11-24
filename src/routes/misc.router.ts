@@ -105,7 +105,7 @@ miscRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => 
 
 miscRouter.get("/dashboard", async (req: Request, res: Response) => {
     try {
-        res.status(200).json({ orderTotal: await OrderService.getAdminTotalOrderForDashboard(), totalProducts: (await ProductService.getAll(false)).length, totalPayments: await OrderService.getAdminTotalPaymentForDashboard() });
+        res.status(200).json({ orderTotal: await OrderService.getAdminTotalOrderForDashboard(), totalProducts: (await ProductService.getAll(false)).length, totalPayments: await OrderService.getAdminTotalPaymentForDashboard(), total_Customers: await OrderService.getAllCustomersByAdmin(), total_Merchants: await OrderService.getAllMerchantsByAdmin() });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

@@ -173,8 +173,8 @@ class OrderServiceClass {
                     'customerDetail.userId': Id, 'order_status': {
                         '$in': OrderType
                     }
-                }).sort({ createdAt: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                }).sort({ createdAt: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as Order[]
             // Orders.forEach(async Order => {
             //     if (Order.expectedDeliveryDate > Date.now()) {
@@ -193,8 +193,8 @@ class OrderServiceClass {
                 'customerDetail.userId': Id, 'order_status': {
                     '$in': OrderType
                 }
-            }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
+            }).sort({ createdAt: -1 }).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as Order[]
         // Orders.forEach(async Order => {
         //     if (Order.expectedDeliveryDate > Date.now()) {
@@ -240,7 +240,7 @@ class OrderServiceClass {
     // }
     async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
         let start = Start - 1;
-        console.log(start)
+        console.log("start",start,"PageLimit",PageLimit)
         let agg = [
             {
                 '$match': {
@@ -251,9 +251,9 @@ class OrderServiceClass {
             }, {
                 '$sort': { "createdAt": -1 },
             }, {
-                '$limit': PageLimit
-            }, {
                 '$skip': start
+            }, {
+                '$limit': PageLimit
             }
         ]
         if (SortByDate == "Desc") {
@@ -267,15 +267,17 @@ class OrderServiceClass {
                 }, {
                     '$sort': { "createdAt": 1 },
                 }, {
-                    '$limit': PageLimit
-                }, {
                     '$skip': start
+                }, {
+                    '$limit': PageLimit
                 }
             ]
         }
-        let TheseOrders = await collections.orders.aggregate(agg)
+        let TheseOrders = collections.orders.aggregate(agg)
+        // console.log(TheseOrders)
         let ThisSellerOrders = []
         await TheseOrders.forEach(order => {
+            console.log(order)
             let totalPrice = 0
             let products = []
             order.products.forEach(element => {
@@ -312,13 +314,13 @@ class OrderServiceClass {
             .toArray()).length
     }
 
-    async getMerchantTotalOrderForDashboard(merchantId:string): Promise<number> {
+    async getMerchantTotalOrderForDashboard(merchantId: string): Promise<number> {
         return (await collections.orders
-            .find({'products.sellerId': merchantId}).sort({ createdAt: -1 })
+            .find({ 'products.sellerId': merchantId }).sort({ createdAt: -1 })
             .toArray()).length
     }
 
-    async getMerchantTotalPaymentForDashboard(merchantId:string): Promise<number> {
+    async getMerchantTotalPaymentForDashboard(merchantId: string): Promise<number> {
         let agg = [
             {
                 '$match': {
@@ -328,8 +330,8 @@ class OrderServiceClass {
                 '$project': {
                     'products': {
                         '$filter': {
-                            'input': '$products', 
-                            'as': 'theseproducts', 
+                            'input': '$products',
+                            'as': 'theseproducts',
                             'cond': {
                                 '$eq': [
                                     '$$theseproducts.sellerId', merchantId
@@ -346,7 +348,7 @@ class OrderServiceClass {
                 }
             }, {
                 '$group': {
-                    '_id': '', 
+                    '_id': '',
                     'Amount': {
                         '$sum': '$totalMerchantAmount'
                     }
@@ -354,7 +356,7 @@ class OrderServiceClass {
             }
         ]
         let k = collections.orders.aggregate(agg)
-        let l:number;
+        let l: number;
         await k.forEach(element => {
             console.log("element", element)
             l = element.Amount
@@ -380,7 +382,7 @@ class OrderServiceClass {
             }
         ]
         let k = collections.orders.aggregate(agg)
-        let l:number;
+        let l: number;
         await k.forEach(element => {
             console.log("element", element)
             l = element.TotalAmount
@@ -396,8 +398,8 @@ class OrderServiceClass {
                     'order_status': {
                         '$in': OrderType
                     }
-                }).sort({ createdAt: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                }).sort({ createdAt: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as Order[]
         }
         return (await collections.orders
@@ -405,32 +407,46 @@ class OrderServiceClass {
                 "order_status": {
                     '$in': OrderType
                 }
-            }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
+            }).sort({ createdAt: -1 }).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as Order[]
+    }
+    async getAllCustomersByMerchant(merchantId: string): Promise<number> {
+        return (await collections.orders
+            .distinct("customerDetail.customerId", { "products.sellerId": merchantId })).length
+    }
+    async getAllCustomersByAdmin(): Promise<number> {
+        return (await collections.orders
+            .distinct("customerDetail.customerId")).length
+    }
+    async getAllMerchantsByAdmin(): Promise<number> {
+        return (await collections.orders
+            .distinct("products.sellerId")).length
     }
     async getCompletedOrder(Start: number, End: number, SortByDate: string, PageLimit: number, UserId: string): Promise<Order[]> {
         if (SortByDate == "Desc") {
+            console.log("Start-1", Start - 1)
             return (await collections.orders
-                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as Order[]
         }
         return (await collections.orders
-            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Payment_Accepted }).sort({ createdAt: -1 }).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as Order[]
     }
     async getCancelledOrder(Start: number, End: number, SortByDate: string, PageLimit: number, UserId: string): Promise<Order[]> {
         if (SortByDate == "Desc") {
+            console.log("Start-1", Start - 1)
             return (await collections.orders
-                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: 1 })
-                .limit(PageLimit).skip(Start - 1)
+                .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: 1 }).skip(Start - 1)
+                .limit(PageLimit)
                 .toArray()) as Order[]
         }
         return (await collections.orders
-            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 })
-            .limit(PageLimit).skip(Start - 1)
+            .find({ "customerDetail.userId": UserId, "order_status": OrderStatus.Cancelled }).sort({ createdAt: -1 }).skip(Start - 1)
+            .limit(PageLimit)
             .toArray()) as Order[]
     }
 
