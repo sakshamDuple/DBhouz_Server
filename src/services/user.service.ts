@@ -23,6 +23,15 @@ class UserServiceClass {
     // return result[];
   }
 
+  async getUserBlockedOrAllow(user: IUser): Promise<Boolean> {
+    if (!user.AccessBlock) {
+      user.AccessBlock = false;
+      return user.AccessBlock
+    }
+    user.AccessBlock = !user.AccessBlock
+    return user.AccessBlock
+  }
+
   async getSpecificUser(userId: string | ObjectId): Promise<IUser> {
     const query = { _id: userId };
     console.log(userId)
@@ -138,7 +147,7 @@ class UserServiceClass {
     let result: UpdateResult = await collections.users.updateOne(query, {
       $set: ThisUser,
     });
-    return (result.modifiedCount > 0) ? {User: await collections.users.findOne(query) as IUser, message:message} : ThisUser;
+    return (result.modifiedCount > 0) ? { User: await collections.users.findOne(query) as IUser, message: message } : ThisUser;
   }
 
   async verifyUser(userId: ObjectId): Promise<boolean> {

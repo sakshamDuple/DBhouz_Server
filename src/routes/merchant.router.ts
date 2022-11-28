@@ -20,8 +20,14 @@ merchantRouter.post('/newMerchantImages', uploadImages.array('images'), async (r
         if (req.files) {
             const merchantId: string = req.body.merchantId;
             const merchant: IMerchant = await MerchantService.get(merchantId);
+            const imageField: string = req.body?.imageField;
             if (!merchant) throw new Error(`Merchant ${merchantId} does not exist`)
             let newDocumentIds: ObjectId[] = []
+            merchant.identification.forEach(async element => {
+                if (element.identifictaion_Name == imageField) {
+                    await DocumentService.delete(element.documentId);
+                }
+            });
             for (let file of Object.values(req.files)) {
                 let newDoc: IDocument = await DocumentService.create({
                     _id: null,
@@ -42,6 +48,7 @@ merchantRouter.post('/newMerchantImages', uploadImages.array('images'), async (r
             merchant.identification = newDocumentIds.map(i => ({
                 documentId: i,
                 approvedByAdmin: false,
+                identifictaion_Name: imageField,
                 priority: priority++
             }))
             await MerchantService.update(merchant)
@@ -75,7 +82,7 @@ merchantRouter.get('/getOne/:merchantId', async (req: Request, res: Response) =>
 merchantRouter.get("/dashboard/:merchantId", async (req: Request, res: Response) => {
     try {
         let merchantId = req.params.merchantId
-        res.status(200).json({ orderTotal: await OrderService.getMerchantTotalOrderForDashboard(merchantId), totalProducts: (await ProductService.getAllByMerchant(merchantId, false)).length, totalPayments: await OrderService.getMerchantTotalPaymentForDashboard(merchantId), total_Customers: await OrderService.getAllCustomersByMerchant(merchantId)});
+        res.status(200).json({ orderTotal: await OrderService.getMerchantTotalOrderForDashboard(merchantId), totalProducts: (await ProductService.getAllByMerchant(merchantId, false)).length, totalPayments: await OrderService.getMerchantTotalPaymentForDashboard(merchantId), total_Customers: await OrderService.getAllCustomersByMerchant(merchantId) });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

@@ -225,16 +225,17 @@ userRouter.get('/getMultipleMerchant/action', async (req: Request, res: Response
   }
 })
 
-userRouter.delete("/deleteOne/:userId", async (req: Request, res: Response) => {
+userRouter.delete("/getUserBlockedOrAllow/:userId", async (req: Request, res: Response) => {
   try {
     const userId: string = req?.params?.userId;
     let user: IUser = await userService.get(userId);
     if (!user) throw new Error(`user ${userId} does not exist`);
-    let products: IProduct[] = await ProductService.getAllByMerchant(userId, false);
-    if (products.length === 0) {
-      await userService.delete(userId);
-      res.status(200).json({ success: `Successfully removed user with userId ${userId}` });
-    } else throw new Error(`user can not be deleted due to existing products`);
+    // let products: IProduct[] = await ProductService.getAllByMerchant(userId, false);
+    // if (products.length === 0) {
+    //   await userService.delete(userId);
+    //   res.status(200).json({ success: `Successfully removed user with userId ${userId}` });
+    // } else throw new Error(`user can not be deleted due to existing products`);
+    res.status(200).json({ block: await userService.getUserBlockedOrAllow(user) });
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
