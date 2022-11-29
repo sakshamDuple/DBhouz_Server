@@ -18,6 +18,9 @@ class OrderServiceClass {
         }
         const result: InsertOneResult<Order> = await collections.orders.insertOne(newOrder);
         newOrder._id = result.insertedId
+        newOrder.products.forEach(element => {
+            element.productId
+        });
         return newOrder
     }
     async getAllTransaction(): Promise<any[]> {
