@@ -165,10 +165,12 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
             items: {
               bsonType: "object",
               required: ["documentId", "approvedByAdmin", "priority"],
+              additionalProperties: true,
               properties: {
                 documentId: { bsonType: "objectId" },
                 approvedByAdmin: { bsonType: "bool" },
                 priority: { bsonType: "number" },
+                identifictaion_Name: {bsonType: 'string'}
               },
             },
           },
