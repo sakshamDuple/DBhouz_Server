@@ -231,6 +231,15 @@ export interface IProductVariant {
   }[];
   createdAt?: number;
 }
+export interface Inventory {
+  productId: ObjectId;
+  sellingPrice: number;
+  variant_Name: string;
+  stock: number;
+  availableItems: number;
+  taxAmount: number;
+  createdAt?: number;
+}
 export enum EProductStatus {
   Active = "ACTIVE",
   InActive = "INACTIVE",

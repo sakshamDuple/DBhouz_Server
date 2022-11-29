@@ -25,6 +25,7 @@ export const collections: {
   mainPage?: mongoDB.Collection;
   banner?: mongoDB.Collection;
   coupon?: mongoDB.Collection;
+  inventory?: mongoDB.Collection;
 } = {};
 
 /**
@@ -74,6 +75,7 @@ export async function connectToDatabase() {
   collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);
   collections.banner = db.collection(AppConfig.mongoCollections.banner);
   collections.coupon = db.collection(AppConfig.mongoCollections.coupon);
+  collections.inventory = db.collection(AppConfig.mongoCollections.inventory)
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -170,7 +172,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 documentId: { bsonType: "objectId" },
                 approvedByAdmin: { bsonType: "bool" },
                 priority: { bsonType: "number" },
-                identifictaion_Name: {bsonType: 'string'}
+                identifictaion_Name: { bsonType: 'string' }
               },
             },
           },
@@ -754,6 +756,36 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               },
             }
           },
+        },
+      },
+    },
+  })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.inventory}`)
+  await db.command({
+    collMod: AppConfig.mongoCollections.inventory,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        additionalProperties: false,
+        required: [
+          "_id",
+          "productId",
+          "sellingPrice",
+          "variant_Name",
+          "stock",
+          "availableItems",
+          "taxAmount",
+          "createdAt"
+        ],
+        properties: {
+          _id: { bsonType: "objectId" },
+          productId: { bsonType: "objectId" },
+          sellingPrice: { bsonType: "number" },
+          variant_Name: { bsonType: "string" },
+          stock: { bsonType: "number" },
+          availableItems: { bsonType: "number" },
+          taxAmount: { bsonType: "number" },
+          createdAt: { bsonType: "number" },
         },
       },
     },

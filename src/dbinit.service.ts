@@ -30,6 +30,7 @@ export async function dbInit(db: mongoDB.Db) {
   await db.createCollection(AppConfig.mongoCollections.mainPage).catch((e) => console.log(e));
   await db.createCollection(AppConfig.mongoCollections.banner).catch((e) => console.log(e));
   await db.createCollection(AppConfig.mongoCollections.coupon).catch((e) => console.log(e));
+  await db.createCollection(AppConfig.mongoCollections.inventory).catch((e) => console.log(e));
 }
 export async function dataInit(db) {
   let newAdmin: IAdmin = {
