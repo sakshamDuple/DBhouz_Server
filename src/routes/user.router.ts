@@ -14,9 +14,47 @@ import { mainPageService } from "../services/mainPage.service";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
 import { couponService } from "../services/coupon.service";
+import { InventoryService } from "../services/inventory.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
+
+userRouter.post("/randomImageUpload", uploadImages.array("image"),
+  async (req: Request, res: Response) => {
+    try {
+      if (req.files) {
+        let newDocumentIds: ObjectId[] = [];
+        for (let file of Object.values(req.files)) {
+          let newDoc: IDocument = await DocumentService.create({
+            _id: null,
+            fileName: file.originalname,
+            createdAt: Date.now(),
+            sizeInBytes: file.size,
+          });
+          newDocumentIds.push(newDoc._id);
+          const newPath: string = path.resolve(
+            AppConfig.directories.documents,
+            newDoc._id.toString()
+          );
+          await new Promise<void>((resolve, reject) => {
+            rename(file.path, newPath, (err) => {
+              if (err) reject(err);
+              resolve();
+            });
+          });
+        }
+        let priority: number = 1;
+        let images = newDocumentIds.map((i) => ({
+          documentId: i,
+          priority: priority++,
+        }));
+        res.status(200).json({ images });
+      } else throw new Error(`No files received to upload`);
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  })
 
 userRouter.post(
   "/newuserImages",
@@ -81,6 +119,17 @@ userRouter.get("/getOne/:userId", async (req: Request, res: Response) => {
     res.status(500).json({ error: `Unable to find matching document with userId: ${userId}` });
   }
 });
+
+userRouter.get("/getProductInventoryByProductIdAndVariant/:ProductId/:VariantName", async (req: Request, res: Response) => {
+  const ProductId: string = req?.params?.ProductId;
+  const VariantName: string = req?.params?.VariantName;
+  try {
+    res.status(200).json({ inventory: await InventoryService.getByProdIdVarName(ProductId, VariantName) });
+  } catch (error) {
+    LOG.error(error);
+    res.status(500).json({ error: `Unable to find Inventory` });
+  }
+})
 
 userRouter.get("/dashboard/:userId", async (req: Request, res: Response) => {
   try {

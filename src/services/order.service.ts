@@ -1,6 +1,7 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
 import { OrderStatus, Order, transactionMethod } from "../interfaces";
+import { InventoryService } from "./inventory.service";
 
 class OrderServiceClass {
     async create(newOrder: Order): Promise<any> {
@@ -18,9 +19,10 @@ class OrderServiceClass {
         }
         const result: InsertOneResult<Order> = await collections.orders.insertOne(newOrder);
         newOrder._id = result.insertedId
-        // newOrder.products.forEach(element => {  // inventory
-        //     element.productId
-        // });
+        newOrder.products.forEach(async element => {  // inventory
+            console.log(element)
+            await InventoryService.orderServiceImpactInventory(element.productId, element.variantName, element.count)
+        });
         return newOrder
     }
     async getAllTransaction(): Promise<any[]> {
@@ -51,7 +53,6 @@ class OrderServiceClass {
         });
         return transactions
     }
-
     async getProductByOrderId(OrderId: string, type: number, PageLimit: number): Promise<any[]> {
         let agg = [
             {
@@ -243,7 +244,7 @@ class OrderServiceClass {
     // }
     async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
         let start = Start - 1;
-        console.log("start",start,"PageLimit",PageLimit)
+        console.log("start", start, "PageLimit", PageLimit)
         let agg = [
             {
                 '$match': {

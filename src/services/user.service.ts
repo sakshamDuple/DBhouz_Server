@@ -20,7 +20,6 @@ class UserServiceClass {
 
   async getAllContact(): Promise<IContact[]> {
     return await collections.contact.find().toArray() as IContact[];
-    // return result[];
   }
 
   async getUserBlockedOrAllow(user: IUser): Promise<Boolean> {

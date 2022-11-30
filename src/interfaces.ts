@@ -209,6 +209,7 @@ export interface IProductVariant {
   style: string;
   size: string;
   colorId: ObjectId;
+  inventoryId?: ObjectId;
   color?: string;
   dimensions?: {
     height: number | Double;
@@ -218,7 +219,7 @@ export interface IProductVariant {
   minPurchaseQuantity: number;
   availableQuantity: number;
   discountPercentage?: number;
-  price: number | Double;
+  price: number;
   priceByAdmin?: number;
   priceByMerchant?: number;
   warranty_period?: number;
@@ -232,13 +233,16 @@ export interface IProductVariant {
   createdAt?: number;
 }
 export interface Inventory {
+  _id?: ObjectId;
   productId: ObjectId;
   sellingPrice: number;
   variant_Name: string;
-  stock: number;
+  stock?: number;
   availableItems: number;
   taxAmount: number;
   createdAt?: number;
+  modifiedAt?: number;
+  updatation?: number;
 }
 export enum EProductStatus {
   Active = "ACTIVE",
@@ -338,7 +342,7 @@ export interface Order {
     sellerId: string,
     productId: string,
     saleId: ObjectId,
-    variant_Name: string,
+    variantName: string,
     count: number,
     totalPriceOfThisProducts: number
     reviewFlagOfThisProduct: boolean

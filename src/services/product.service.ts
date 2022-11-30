@@ -1,6 +1,7 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, IProduct, IProductVariant, IReview, Order } from "../interfaces";
+import { EProductStatus, Inventory, IProduct, IProductVariant, IReview, Order } from "../interfaces";
+import { InventoryService } from "./inventory.service";
 
 class ProductServiceClass {
 
@@ -103,7 +104,6 @@ class ProductServiceClass {
             metaTagTitle: ""
         }
         delete newProduct._id
-        console.log(newProduct)
         const result: InsertOneResult<IProduct> = await collections.products.insertOne(newProduct);
         newProduct._id = result.insertedId
         return newProduct
@@ -119,6 +119,27 @@ class ProductServiceClass {
             element.userId = new ObjectId(element.userId)
         });
         delete product._id;
+        product.variants.forEach(async element => {
+            if (!element.inventoryId) {
+                let inventory: Inventory = {
+                    productId: query._id,
+                    sellingPrice: element.price,
+                    variant_Name: element.name,
+                    stock: element.availableQuantity,
+                    availableItems: element.availableQuantity,
+                    taxAmount: element.priceByAdmin,
+                }
+                console.log("hii", inventory)
+                element.inventoryId = await InventoryService.createInventoryInside(inventory)
+            } else {
+                let thisVariantInventory: Inventory = await collections.inventory.findOne(element.inventoryId) as Inventory
+                thisVariantInventory.availableItems = element.availableQuantity
+                thisVariantInventory.stock = element.availableQuantity
+                thisVariantInventory.taxAmount = element.priceByAdmin
+                thisVariantInventory.sellingPrice = element.price
+                console.log("variants update " + await InventoryService.updateInventoryInside(thisVariantInventory))
+            }
+        });
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
@@ -392,6 +413,7 @@ class ProductServiceClass {
             if (!v.priority || v.priority < 0 || Number.isNaN(v.priority)) {
                 delete v.priority
             }
+            if (v.inventoryId) v.inventoryId = new ObjectId(v.inventoryId)
             if (v.images) v.images.forEach(i => {
                 i.documentId = new ObjectId(i.documentId)
             })
@@ -406,7 +428,7 @@ class ProductServiceClass {
             if (Number.isNaN(v.priceByAdmin)) delete v.priceByAdmin
             if (Number.isNaN(v.priceByMerchant)) delete v.priceByMerchant
             if (Number.isNaN(v.warranty_period)) delete v.warranty_period
-            if (!Number.isNaN(v.price)) v.price = new Double(Number.parseFloat(v.price.toString()))
+            if (!Number.isNaN(v.price)) v.price = Number.parseFloat(v.price.toString())
             if (v.dimensions) {
                 if (!Number.isNaN(v.dimensions.height)) v.dimensions.height = new Double(Number.parseFloat(v.dimensions.height.toString()))
                 if (!Number.isNaN(v.dimensions.width)) v.dimensions.width = new Double(Number.parseFloat(v.dimensions.width.toString()))

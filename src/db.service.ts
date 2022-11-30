@@ -301,6 +301,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 style: { bsonType: "string" },
                 size: { bsonType: "string" },
                 colorId: { bsonType: "objectId" },
+                inventoryId: { bsonType: "objectId" },
                 dimensions: {
                   bsonType: "object",
                   required: ["height"],
@@ -766,7 +767,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
     validator: {
       $jsonSchema: {
         bsonType: "object",
-        additionalProperties: false,
+        additionalProperties: true,
         required: [
           "_id",
           "productId",
@@ -775,7 +776,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           "stock",
           "availableItems",
           "taxAmount",
-          "createdAt"
+          "createdAt",
         ],
         properties: {
           _id: { bsonType: "objectId" },
