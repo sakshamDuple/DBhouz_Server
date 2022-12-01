@@ -20,15 +20,7 @@ class UserServiceClass {
 
   async getAllContact(): Promise<IContact[]> {
     return await collections.contact.find().toArray() as IContact[];
-  }
-
-  async getUserBlockedOrAllow(user: IUser): Promise<Boolean> {
-    if (!user.AccessBlock) {
-      user.AccessBlock = false;
-      return user.AccessBlock
-    }
-    user.AccessBlock = !user.AccessBlock
-    return user.AccessBlock
+    // return result[];
   }
 
   async getSpecificUser(userId: string | ObjectId): Promise<IUser> {
@@ -146,7 +138,7 @@ class UserServiceClass {
     let result: UpdateResult = await collections.users.updateOne(query, {
       $set: ThisUser,
     });
-    return (result.modifiedCount > 0) ? { User: await collections.users.findOne(query) as IUser, message: message } : ThisUser;
+    return (result.modifiedCount > 0) ? {User: await collections.users.findOne(query) as IUser, message:message} : ThisUser;
   }
 
   async verifyUser(userId: ObjectId): Promise<boolean> {

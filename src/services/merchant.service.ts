@@ -12,7 +12,7 @@ class MerchantServiceClass {
 
     async getMultipleMerchant(merchants: Array<string>): Promise<IMerchant[]> {
         let merchantsObj: Array<ObjectId> = []
-        merchants.forEach((element, i) => {
+        merchants.forEach((element,i) => {
             merchantsObj[i] = new ObjectId(element)
         });
         console.log(merchantsObj)
@@ -52,13 +52,7 @@ class MerchantServiceClass {
             throw new Error(`Merchant with this email already exists`)
         }
         const query = { _id: new ObjectId(merchant._id) };
-        merchant.status = EMerchantStatus.InActive
         delete merchant._id;
-        let thisStatus = true;
-        merchant.identification.forEach(element => {
-            thisStatus = thisStatus && element.approvedByAdmin
-        });
-        if (thisStatus) merchant.status = EMerchantStatus.Active
         merchant = this.sanitize(merchant)
         let result: UpdateResult = await collections.merchants.updateOne(query, { $set: merchant });
         return (result.modifiedCount > 0)

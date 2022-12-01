@@ -35,7 +35,8 @@ class AppConfigClass {
     mainPage: string;
     banner: string;
     coupon: string;
-    inventory: string;
+    blogCategory:string;
+    blog:string;
   };
 }
 
@@ -71,7 +72,8 @@ let AppConfigObject: AppConfigClass = {
     mainPage: process.env.COLLECTION_MAINPAGE,
     banner: process.env.COLLECTION_BANNER,
     coupon: process.env.COLLECTION_COUPON,
-    inventory: process.env.COLLECTION_INVENTORY,
+    blogCategory:process.env.COLLECTION_BLOG_CATEGORY,
+    blog:process.env.COLLECTION_BLOG
   },
 };
 

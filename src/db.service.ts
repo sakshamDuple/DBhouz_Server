@@ -25,7 +25,8 @@ export const collections: {
   mainPage?: mongoDB.Collection;
   banner?: mongoDB.Collection;
   coupon?: mongoDB.Collection;
-  inventory?: mongoDB.Collection;
+  blogCategory?:mongoDB.Collection;
+  blog?:mongoDB.Collection;
 } = {};
 
 /**
@@ -75,7 +76,8 @@ export async function connectToDatabase() {
   collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);
   collections.banner = db.collection(AppConfig.mongoCollections.banner);
   collections.coupon = db.collection(AppConfig.mongoCollections.coupon);
-  collections.inventory = db.collection(AppConfig.mongoCollections.inventory)
+  collections.blogCategory= db.collection(AppConfig.mongoCollections.blogCategory);
+  collections.blog = db.collection(AppConfig.mongoCollections.blog)
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -167,12 +169,10 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
             items: {
               bsonType: "object",
               required: ["documentId", "approvedByAdmin", "priority"],
-              additionalProperties: true,
               properties: {
                 documentId: { bsonType: "objectId" },
                 approvedByAdmin: { bsonType: "bool" },
                 priority: { bsonType: "number" },
-                identifictaion_Name: { bsonType: 'string' }
               },
             },
           },
@@ -236,6 +236,74 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   });
+
+
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.blogCategory}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.blogCategory,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["name", "createdAt"],
+        additionalProperties: false,
+        properties: {
+          _id: {},
+          name: { bsonType: "string" },
+          description: { bsonType: "string" },
+          status: { enum: ["ACTIVE", "INACTIVE"] },
+          imageDocumentId: { bsonType: "objectId" },
+          seo: {
+            bsonType: "object",
+            properties: {
+              metaTagTitle: { bsonType: "string" },
+              metaTagDescription: { bsonType: "string" },
+              metaTagKeywords: { bsonType: "string" },
+            },
+          },
+          createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  });
+
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.blog}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.blog,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["title", "createdAt"],
+        additionalProperties: false,
+        properties: {
+          _id: {},
+          title: { bsonType: "string" },  
+          category:{bsonType: "string"},
+          description: { bsonType: "string" },
+          status: { enum: ["ACTIVE", "INACTIVE"] },
+          imageDocumentId: { bsonType: "objectId" },
+          seo: {
+            bsonType: "object",
+            properties: {
+              metaTagTitle: { bsonType: "string" },
+              metaTagDescription: { bsonType: "string" },
+              metaTagKeywords: { bsonType: "string" },
+            },
+          },
+          createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  });
+
+
+
+
+
+
+
+
+
+
   LOG.info(`Validating collection ${AppConfig.mongoCollections.products}`);
   await db.command({
     collMod: AppConfig.mongoCollections.products,
@@ -301,7 +369,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 style: { bsonType: "string" },
                 size: { bsonType: "string" },
                 colorId: { bsonType: "objectId" },
-                inventoryId: { bsonType: "objectId" },
                 dimensions: {
                   bsonType: "object",
                   required: ["height"],
@@ -757,36 +824,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               },
             }
           },
-        },
-      },
-    },
-  })
-  LOG.info(`Validating collection ${AppConfig.mongoCollections.inventory}`)
-  await db.command({
-    collMod: AppConfig.mongoCollections.inventory,
-    validator: {
-      $jsonSchema: {
-        bsonType: "object",
-        additionalProperties: true,
-        required: [
-          "_id",
-          "productId",
-          "sellingPrice",
-          "variant_Name",
-          "stock",
-          "availableItems",
-          "taxAmount",
-          "createdAt",
-        ],
-        properties: {
-          _id: { bsonType: "objectId" },
-          productId: { bsonType: "objectId" },
-          sellingPrice: { bsonType: "number" },
-          variant_Name: { bsonType: "string" },
-          stock: { bsonType: "number" },
-          availableItems: { bsonType: "number" },
-          taxAmount: { bsonType: "number" },
-          createdAt: { bsonType: "number" },
         },
       },
     },

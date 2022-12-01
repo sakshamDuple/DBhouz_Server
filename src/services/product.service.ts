@@ -1,7 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, Inventory, IProduct, IProductVariant, IReview, Order } from "../interfaces";
-import { InventoryService } from "./inventory.service";
+import { EProductStatus, IProduct, IProductVariant, IReview, Order } from "../interfaces";
 
 class ProductServiceClass {
 
@@ -51,27 +50,6 @@ class ProductServiceClass {
         return (await collections.products.find(query).sort({ createdAt: -1 }).toArray()) as IProduct[];
     }
 
-    async getAllByMerchantNameFilter(merchantId: string | ObjectId, activeOnly: boolean, searchByName: string): Promise<IProduct[]> {
-        let query: any = { merchantId: new ObjectId(merchantId) }
-        let agg = [
-            {
-                '$match': query
-            }, {
-                '$match': {
-                    '$or': [
-                        {
-                            'name': new RegExp(searchByName, 'i')
-                        }
-                    ]
-                }
-            }
-        ];
-        if (activeOnly) {
-            query.status = EProductStatus.Active
-        }
-        return (await collections.products.find(agg).sort({ createdAt: -1 }).toArray()) as IProduct[];
-    } //pending
-
     async getAllByCategory(categoryId: string | ObjectId, activeOnly: boolean): Promise<IProduct[]> {
         let query: any = { categoryId: new ObjectId(categoryId) }
         if (activeOnly) {
@@ -104,6 +82,7 @@ class ProductServiceClass {
             metaTagTitle: ""
         }
         delete newProduct._id
+        console.log(newProduct)
         const result: InsertOneResult<IProduct> = await collections.products.insertOne(newProduct);
         newProduct._id = result.insertedId
         return newProduct
@@ -114,32 +93,11 @@ class ProductServiceClass {
         product = this.sanitize(product)
         const query = { _id: new ObjectId(product._id) };
         product.review.forEach(element => {
-            element.orderId = new ObjectId(element.orderId)
-            element.reviewId = new ObjectId(element.reviewId)
-            element.userId = new ObjectId(element.userId)
+            element.orderId= new ObjectId(element.orderId)
+            element.reviewId= new ObjectId(element.reviewId)
+            element.userId= new ObjectId(element.userId)
         });
         delete product._id;
-        product.variants.forEach(async element => {
-            if (!element.inventoryId) {
-                let inventory: Inventory = {
-                    productId: query._id,
-                    sellingPrice: element.price,
-                    variant_Name: element.name,
-                    stock: element.availableQuantity,
-                    availableItems: element.availableQuantity,
-                    taxAmount: element.priceByAdmin,
-                }
-                console.log("hii", inventory)
-                element.inventoryId = await InventoryService.createInventoryInside(inventory)
-            } else {
-                let thisVariantInventory: Inventory = await collections.inventory.findOne(element.inventoryId) as Inventory
-                thisVariantInventory.availableItems = element.availableQuantity
-                thisVariantInventory.stock = element.availableQuantity
-                thisVariantInventory.taxAmount = element.priceByAdmin
-                thisVariantInventory.sellingPrice = element.price
-                console.log("variants update " + await InventoryService.updateInventoryInside(thisVariantInventory))
-            }
-        });
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
@@ -198,7 +156,7 @@ class ProductServiceClass {
     async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string[], boolean): Promise<Number> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
         if (boolean) {
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto} , status: "ACTIVE" }
         }
         if (colorId[0] != "") {
             let m = []
@@ -207,7 +165,7 @@ class ProductServiceClass {
             });
             query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
             if (boolean) {
-                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m }, status: "ACTIVE" }
+                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } , status: "ACTIVE" }
             }
         }
         return (await collections.products
@@ -322,11 +280,11 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    getVariant(product: IProduct, variant: string): IProductVariant {
-        let nvariant: IProductVariant
-        if (product.variants) {
+    getVariant(product: IProduct, variant: string): IProductVariant{
+        let nvariant:IProductVariant 
+        if(product.variants){
             product.variants.forEach(element => {
-                if (element.name == variant) {
+                if(element.name == variant){
                     console.log(true)
                     nvariant = element
                 }
@@ -341,37 +299,37 @@ class ProductServiceClass {
         product = { ...product }
         let k = await this.getVariant(product, variant)
         console.log(k)
-        if (k) return k
+        if(k) return k
         return "variant not found"
     }
 
-    func(Order: Order, product: IProduct, rating: number, allReview: Array<IReview>, len: number, review: IReview): boolean {
-        let update: boolean = false
+    func(Order:Order, product:IProduct, rating:number, allReview: Array<IReview>, len:number, review: IReview): boolean {
+        let update:boolean = false
         // console.log("hge \n \n \n \n",Order, product, rating, allReview, len, review)
         const query2 = { _id: new ObjectId(Order._id.toString()) };
-        if (Order.products)
-            Order.products.forEach(async item => {
-                console.log(item.reviewFlagOfThisProduct == false)
-                console.log(product._id.toString(), item.productId)
-                if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
-                    let newRating = (rating * len + review.rating) / (len + 1)
-                    product.rating = newRating;
-                    allReview.push(review)
-                    review.orderId = new ObjectId(review.orderId)
-                    review.reviewId = new ObjectId(review.reviewId)
-                    review.userId = new ObjectId(review.userId)
-                    product.review = allReview
-                    const query1 = { _id: new ObjectId(product._id.toString()) };
-                    console.log(product)
-                    await collections.products.updateOne(query1, { $set: product })
-                    console.log("HIi")
-                    item.reviewFlagOfThisProduct = true
-                    await collections.orders.updateOne(query2, { $set: Order })
-                    console.log("Hiii")
-                    update = true
-                    return update
-                }
-            })
+        if(Order.products)
+        Order.products.forEach(async item => {
+            console.log(item.reviewFlagOfThisProduct == false)
+            console.log(product._id.toString(),item.productId)
+            if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
+                let newRating = (rating * len + review.rating) / (len + 1)
+                product.rating = newRating;
+                allReview.push(review)
+                review.orderId = new ObjectId(review.orderId)
+                review.reviewId = new ObjectId(review.reviewId)
+                review.userId = new ObjectId(review.userId)
+                product.review = allReview
+                const query1 = { _id: new ObjectId(product._id.toString()) };
+                console.log(product)
+                await collections.products.updateOne(query1, { $set: product })
+                console.log("HIi")
+                item.reviewFlagOfThisProduct = true
+                await collections.orders.updateOne(query2, { $set: Order })
+                console.log("Hiii")
+                update = true
+                return update
+            }
+        })
         return update
     }
 
@@ -380,7 +338,7 @@ class ProductServiceClass {
         console.log(thisId)
         let product: IProduct = await collections.products.findOne(thisId) as IProduct
         let Order: Order = await collections.orders.findOne(review.orderId) as Order
-        console.log("product", product)
+        console.log("product",product)
         let rating: number = product.rating
         let len = product.review.length
         let allReview: Array<IReview> = product.review
@@ -413,7 +371,6 @@ class ProductServiceClass {
             if (!v.priority || v.priority < 0 || Number.isNaN(v.priority)) {
                 delete v.priority
             }
-            if (v.inventoryId) v.inventoryId = new ObjectId(v.inventoryId)
             if (v.images) v.images.forEach(i => {
                 i.documentId = new ObjectId(i.documentId)
             })
@@ -428,7 +385,7 @@ class ProductServiceClass {
             if (Number.isNaN(v.priceByAdmin)) delete v.priceByAdmin
             if (Number.isNaN(v.priceByMerchant)) delete v.priceByMerchant
             if (Number.isNaN(v.warranty_period)) delete v.warranty_period
-            if (!Number.isNaN(v.price)) v.price = Number.parseFloat(v.price.toString())
+            if (!Number.isNaN(v.price)) v.price = new Double(Number.parseFloat(v.price.toString()))
             if (v.dimensions) {
                 if (!Number.isNaN(v.dimensions.height)) v.dimensions.height = new Double(Number.parseFloat(v.dimensions.height.toString()))
                 if (!Number.isNaN(v.dimensions.width)) v.dimensions.width = new Double(Number.parseFloat(v.dimensions.width.toString()))

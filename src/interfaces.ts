@@ -37,25 +37,8 @@ export interface IMerchant {
   commisionType?: ECommisionType;
   commisionPercentage?: number | Double;
   commisionAmount?: number | Double;
-  phone?: number;
-  // IdProof?: {
-  //   gst: ObjectId,
-  //   panCard: ObjectId,
-  // },
-  business_info?: {
-    name: string,
-    address: string,
-    Reg_No: string
-  },
-  bankDetail?: {
-    name: string,
-    address: string,
-    IFSC_SWIFT_Code?: string,
-    Account_No?: string
-  }
   identification?: {
     documentId: ObjectId;
-    identifictaion_Name: string;
     approvedByAdmin: boolean;
     priority: number;
   }[];
@@ -80,7 +63,6 @@ export interface IUser {
   gender?: Gender;
   phone?: number;
   createdAt: number;
-  AccessBlock?: boolean;
   address?: {
     addressId: ObjectId,
     addressName: string,
@@ -131,6 +113,38 @@ export interface ISubCategory {
   };
   createdAt: number;
 }
+export interface IblogCategory {
+  _id: ObjectId;
+  name: string;
+  description?: string;
+  status?: ECategoryStatus;
+  imageDocumentId?: ObjectId;
+  seo?: {
+    metaTagTitle?: string;
+    metaTagDescription?: string;
+    metaTagKeywords?: string;
+  };
+  createdAt: number;
+}
+
+
+export interface Iblog {
+  _id: ObjectId;
+  title: string;
+  category?:string;
+  description?: string;
+  status?: ECategoryStatus;
+  imageDocumentId?: ObjectId;
+  seo?: {
+    metaTagTitle?: string;
+    metaTagDescription?: string;
+    metaTagKeywords?: string;
+  };
+  createdAt: number;
+}
+
+
+
 export interface IProduct {
   _id: ObjectId;
   name: string;
@@ -209,7 +223,6 @@ export interface IProductVariant {
   style: string;
   size: string;
   colorId: ObjectId;
-  inventoryId?: ObjectId;
   color?: string;
   dimensions?: {
     height: number | Double;
@@ -219,7 +232,7 @@ export interface IProductVariant {
   minPurchaseQuantity: number;
   availableQuantity: number;
   discountPercentage?: number;
-  price: number;
+  price: number | Double;
   priceByAdmin?: number;
   priceByMerchant?: number;
   warranty_period?: number;
@@ -231,18 +244,6 @@ export interface IProductVariant {
     priority: number;
   }[];
   createdAt?: number;
-}
-export interface Inventory {
-  _id?: ObjectId;
-  productId: ObjectId;
-  sellingPrice: number;
-  variant_Name: string;
-  stock?: number;
-  availableItems: number;
-  taxAmount: number;
-  createdAt?: number;
-  modifiedAt?: number;
-  updatation?: number;
 }
 export enum EProductStatus {
   Active = "ACTIVE",
@@ -263,6 +264,10 @@ export enum OrderStatus {
 //   Failed = "Failed"
 // }
 export enum ECategoryStatus {
+  Active = "ACTIVE",
+  InActive = "INACTIVE",
+}
+export enum EblogCategoryStatus {
   Active = "ACTIVE",
   InActive = "INACTIVE",
 }
@@ -342,7 +347,7 @@ export interface Order {
     sellerId: string,
     productId: string,
     saleId: ObjectId,
-    variantName: string,
+    variant_Name: string,
     count: number,
     totalPriceOfThisProducts: number
     reviewFlagOfThisProduct: boolean

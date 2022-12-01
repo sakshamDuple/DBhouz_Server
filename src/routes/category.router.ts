@@ -99,9 +99,13 @@ categoryRouter.post(
   }
 );
 
-categoryRouter.post("/createCategory", async (req: Request, res: Response) => {
+categoryRouter.post("/createCategory", async (req: Request, res: Response) => { 
   try {
+    console.log(req.body,"bbbb");
+    
     let category: ICategory = req.body.category;
+    console.log(category,"caaaaaaaaaaaaaaaa");
+    
     category = await CategoryService.createCategory(category);
     res.status(200).json({ category });
   } catch (error: any) {
@@ -109,7 +113,7 @@ categoryRouter.post("/createCategory", async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 });
-
+     
 categoryRouter.post("/createSubCategory", async (req: Request, res: Response) => {
   try {
     let subCategory: ISubCategory = req.body.subCategory;
