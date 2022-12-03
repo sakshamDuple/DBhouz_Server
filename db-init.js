@@ -42,7 +42,7 @@ async function connect() {
         let USERS = db.collection(process.env.USERS_COLLECTION_NAME)
         for (let user of USERS_LIST) {
             const saltRounds = 10;
-            let salt = await bcrypt.genSalt(saltRounds)
+            let salt = await bcrypt.genSalt(saltRounds) 
             let hash = await bcrypt.hash(user.password, salt)
             hash = hash.slice(HASHPREFIX.length, hash.length)
             USERS.insertOne({

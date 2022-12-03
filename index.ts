@@ -18,13 +18,15 @@ import fs from "fs-extra";
 import { miscRouter } from "./src/routes/misc.router";
 import { userRouter } from "./src/routes/user.router";
 import { orderRouter } from "./src/routes/order.router";
+import { blogCategoryRouter } from "./src/routes/blogCat.router"
+import {blogRouter} from "./src/routes/blog.router"
 
 dotenv.config();
 
 const app: express.Application = express();
 
 AuthUtils.passportMiddlewares();
-
+ 
 let initDirectories = async () => {
   return fs
     .ensureDir(AppConfig.directories.documents)
@@ -41,7 +43,7 @@ initDirectories()
     app.use(passport.initialize());
     app.use((req, res, next) => {
       var ip = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
-      ACCESSLOG.info(`Request [From:${ip}] ${req.path}`);
+      ACCESSLOG.info(`Request [From:${ip}] ${req.path}`)
       next();
     });
 
@@ -66,6 +68,9 @@ initDirectories()
     appRouter.use("/misc", passport.authenticate("jwt", { session: false }), miscRouter);
     appRouter.use("/user", userRouter);
     appRouter.use("/order", orderRouter);
+
+    appRouter.use("/blogCategory",blogCategoryRouter)
+    appRouter.use("/blog",blogRouter)
 
     app.use(`/rest`, appRouter);
 
