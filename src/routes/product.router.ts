@@ -197,23 +197,23 @@ productRouter.post(
   async (req: Request, res: Response) => {
     try {
       let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+      console.log("let",filesToUpload)
       if (!filesToUpload || filesToUpload.length < 0)
         throw new Error(`Files not available for upload`);
       const productId: string = req.body.productId;
       const product: IProduct = await ProductService.get(productId);
       if (!product) throw new Error(`Product ${productId} does not exist`);
       let variants = product.variants
+      let kemp = []
       variants.map(async element => {
-        // console.log("1",element.name == req.body.name)
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
           for (let image of element.images) {
-            // console.log("2 image.documentId", image.documentId)
             if (image.documentId) {
               DocumentService.delete(image.documentId);
             }
           }
-          element.images = [];
+          element.images = kemp;
           let priority: number = 1;
           for (const currentFile of filesToUpload) {
             let newDocument: IDocument = {
@@ -223,13 +223,13 @@ productRouter.post(
               sizeInBytes: currentFile.size,
             };
             newDocument = await DocumentService.create(newDocument);
-            // console.log("3 newDocument", newDocument)
-            element.images.push({ documentId: newDocument._id, priority: priority++ });
+            kemp.push({ documentId: newDocument._id, priority: priority++ });
+            element.images = kemp
             const newPath: string = path.resolve(
               AppConfig.directories.documents,
               newDocument._id.toString()
             );
-            // console.log("4 element.images", element.images)
+            console.log("newDocument",newDocument)
             await new Promise<void>((resolve, reject) => {
               rename(currentFile.path, newPath, (err) => {
                 if (err) reject(err);
@@ -237,10 +237,8 @@ productRouter.post(
               });
             });
           }
-          // console.log("5 variants", variants[0].images);
         }
       })
-      // console.log("6 product", product.variants[0].images)
       await ProductService.update(product);
       res.status(200).json({ product });
     } catch (error: any) {

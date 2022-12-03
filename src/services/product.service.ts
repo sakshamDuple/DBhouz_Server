@@ -129,7 +129,6 @@ class ProductServiceClass {
                     availableItems: element.availableQuantity,
                     taxAmount: element.priceByAdmin,
                 }
-                console.log("hii", inventory)
                 element.inventoryId = await InventoryService.createInventoryInside(inventory)
             } else {
                 let thisVariantInventory: Inventory = await collections.inventory.findOne(element.inventoryId) as Inventory
@@ -137,7 +136,6 @@ class ProductServiceClass {
                 thisVariantInventory.stock = element.availableQuantity
                 thisVariantInventory.taxAmount = element.priceByAdmin
                 thisVariantInventory.sellingPrice = element.price
-                console.log("variants update " + await InventoryService.updateInventoryInside(thisVariantInventory))
             }
         });
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
