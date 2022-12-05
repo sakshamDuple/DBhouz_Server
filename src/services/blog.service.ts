@@ -65,11 +65,24 @@ class blogServiceClass {
     }
 
 
-    async getblogById(blogId: ObjectId): Promise<Iblog> {
+    async getblogById(blogId: string | ObjectId): Promise<Iblog> {
+        console.log(blogId,"inside blog service");
+        
+        const query = { _id: new ObjectId(blogId) };
 
-        return (await collections.blog.findOne({ blogId })) as Iblog;
+        return (await collections.blog.findOne(query)) as Iblog;
     }
 
+    // async getblogByTitle(blogTitle: string | ObjectId): Promise<Iblog> {
+    //     console.log(blogTitle,"inside blog service");
+        
+    //     const query = {blogTitle}
+    //     let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
+    //     return (await collections.blog.findOne(query)) as Iblog;
+    // }
+    async getblogByTitle(blogTitle: string): Promise<Iblog> {
+        return (await collections.blog.findOne({ blogTitle })) as Iblog;
+    }
 
 
 }

@@ -8,6 +8,7 @@ import { DocumentService } from "../services/document.service";
 import { AppConfig } from "../config";
 import { rename } from "fs";
 import {blogService} from "../services/blog.service"
+import { ObjectId } from "mongodb";
 
 
 
@@ -91,18 +92,43 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
     }
   });
 
-//   blogRouter.get("/getBlogById/:id", async (req:Request, res:Response) => {
-//     let blogId = req.params?.id;
+  blogRouter.post("/getBlogDetail", async (req:Request, res:Response) => {
+    console.log("inside blog router");
+    
+    console.log(req.body.blogid,"bddd");
+    const blogId= req.body.blogid
+    try {
+
+      const result= await blogService.getblogById(blogId)  
+      console.log(result,"ressss");
+         
+      res.status(200).json({ blogdetail:result  });
+    } catch (error) {
+      LOG.error(error);
+      res
+        .status(500)
+        .json({ error: `Unable to find matching document with productId: ${blogId}` });
+    }
+  })
+  blogRouter.post("/getBlogByTitle", async (req:Request, res:Response) => {
+    console.log("inside blog router");
+    
+    console.log(req.body.title,"bddd");
+    const blogTitle= req.body.title
+    try {
+
+      const result= await blogService.getblogByTitle(blogTitle)  
+      console.log(result,"ressss");
+         
+      res.status(200).json({ filterblogdetail:result  });
+    } catch (error) {
+      LOG.error(error);
+      res
+        .status(500)
+        .json({ error: `Unable to find matching document with productId: ${blogTitle}` });
+    }
+  })
  
-//     if(blogId != "" || blogId == undefined) {
   
-//       const result = await blogService.getblogById(blogId)
-
-//         return res.status(200).json({ result:result });
-//     }
-//     return res.status(404).json({error: "OrderID Not Found,Please Provide Correct OrderID"})
-// })
-
-
 
 export { blogRouter };

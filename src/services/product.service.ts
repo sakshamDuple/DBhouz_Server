@@ -1,6 +1,7 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, IProduct, IProductVariant, IReview, Order } from "../interfaces";
+import { EProductStatus, IProduct, IProductVariant, IReview, Order,Inventory } from "../interfaces";
+import { InventoryService } from "./inventory.service";
 
 class ProductServiceClass {
 
@@ -98,6 +99,25 @@ class ProductServiceClass {
             element.userId= new ObjectId(element.userId)
         });
         delete product._id;
+        product.variants.forEach(async element => {
+            if (!element.inventoryId) {
+                let inventory: Inventory = {
+                    productId: query._id,
+                    sellingPrice: element.price,
+                    variant_Name: element.name,
+                    stock: element.availableQuantity,
+                    availableItems: element.availableQuantity,
+                    taxAmount: element.priceByAdmin,
+                }
+                element.inventoryId = await InventoryService.createInventoryInside(inventory)
+            } else {
+                let thisVariantInventory: Inventory = await collections.inventory.findOne(element.inventoryId) as Inventory
+                thisVariantInventory.availableItems = element.availableQuantity
+                thisVariantInventory.stock = element.availableQuantity
+                thisVariantInventory.taxAmount = element.priceByAdmin
+                thisVariantInventory.sellingPrice = element.price
+            }
+        });
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
@@ -338,7 +358,7 @@ class ProductServiceClass {
         console.log(thisId)
         let product: IProduct = await collections.products.findOne(thisId) as IProduct
         let Order: Order = await collections.orders.findOne(review.orderId) as Order
-        console.log("product",product)
+        console.log("product",product)   
         let rating: number = product.rating
         let len = product.review.length
         let allReview: Array<IReview> = product.review
@@ -371,6 +391,7 @@ class ProductServiceClass {
             if (!v.priority || v.priority < 0 || Number.isNaN(v.priority)) {
                 delete v.priority
             }
+            if (v.inventoryId) v.inventoryId = new ObjectId(v.inventoryId)
             if (v.images) v.images.forEach(i => {
                 i.documentId = new ObjectId(i.documentId)
             })
@@ -385,7 +406,7 @@ class ProductServiceClass {
             if (Number.isNaN(v.priceByAdmin)) delete v.priceByAdmin
             if (Number.isNaN(v.priceByMerchant)) delete v.priceByMerchant
             if (Number.isNaN(v.warranty_period)) delete v.warranty_period
-            if (!Number.isNaN(v.price)) v.price = new Double(Number.parseFloat(v.price.toString()))
+            if (!Number.isNaN(v.price)) v.price = Number.parseFloat(v.price.toString())
             if (v.dimensions) {
                 if (!Number.isNaN(v.dimensions.height)) v.dimensions.height = new Double(Number.parseFloat(v.dimensions.height.toString()))
                 if (!Number.isNaN(v.dimensions.width)) v.dimensions.width = new Double(Number.parseFloat(v.dimensions.width.toString()))
