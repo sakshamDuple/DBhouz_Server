@@ -8,9 +8,17 @@ import { AdminService } from "../services/admin.service";
 import { userService } from "../services/user.service";
 import nodemailer from "nodemailer"
 import { ObjectID } from "bson";
+import { SMTPClient } from 'emailjs';
 
 const authRouter: Router = express.Router();
 authRouter.use(express.json());
+
+// const client = new SMTPClient({
+// 	user: process.env.USER,
+// 	password: process.env.PASS,
+// 	host: process.env.HOST,
+// 	ssl: true,
+// });
 
 authRouter.get("/test", (req, res, next) => {
   res.json({ hello: "world" });
@@ -118,11 +126,14 @@ const sendEmail = async (email, subject, text) => {
     //   },
     // });
     const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.gmail.com',
+      host: process.env.HOST,
       port: '587',
       auth: { user: process.env.USER, pass: process.env.PASS }, // todo in process.env
-      secureConnection: false,
-      tls: { ciphers: 'SSLv3' }
+      // secureConnection: false,
+      secure: false,
+      // requireTLS: true,
+      // tls: { ciphers: 'SSLv3' },
+      logger: true
     });
     await transporter.sendMail({
       from: process.env.USER,

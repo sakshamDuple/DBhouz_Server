@@ -63,6 +63,7 @@ export interface IUser {
   gender?: Gender;
   phone?: number;
   createdAt: number;
+  AccessBlock?: boolean;
   address?: {
     addressId: ObjectId,
     addressName: string,
