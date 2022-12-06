@@ -12,7 +12,7 @@ class MerchantServiceClass {
 
     async getMultipleMerchant(merchants: Array<string>): Promise<IMerchant[]> {
         let merchantsObj: Array<ObjectId> = []
-        merchants.forEach((element,i) => {
+        merchants.forEach((element, i) => {
             merchantsObj[i] = new ObjectId(element)
         });
         console.log(merchantsObj)
@@ -56,6 +56,14 @@ class MerchantServiceClass {
         merchant = this.sanitize(merchant)
         let result: UpdateResult = await collections.merchants.updateOne(query, { $set: merchant });
         return (result.modifiedCount > 0)
+    }
+
+    async verifyMerchant(merchantId: ObjectId): Promise<boolean> {
+        const query = { _id: merchantId };
+        let result: UpdateResult = await collections.merchants.updateOne(query, {
+            $set: { isEmailVerified: true },
+        });
+        return result.modifiedCount > 0;
     }
 
     async doInactiveMerchantProduct(merchantId: ObjectId): Promise<boolean> {
