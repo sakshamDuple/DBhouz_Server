@@ -37,8 +37,26 @@ export interface IMerchant {
   commisionType?: ECommisionType;
   commisionPercentage?: number | Double;
   commisionAmount?: number | Double;
+  phone?: number;
+  // IdProof?: {
+  //   gst: ObjectId,
+  //   panCard: ObjectId,
+  // },
+  business_info?: {
+    name: string,
+    address: string,
+    Reg_No: string
+  },
+  bankDetail?: {
+    name: string,
+    address: string,
+    IFSC_SWIFT_Code?: string,
+    Account_No?: string
+  }
+  profilePic?:ObjectId;
   identification?: {
     documentId: ObjectId;
+    identifictaion_Name: string;
     approvedByAdmin: boolean;
     priority: number;
   }[];
