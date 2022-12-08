@@ -2570,7 +2570,7 @@ const EmailHTML = (subject, message) => {
 																																	 <p style="font-size: 14px; margin: 3px 0; color: #555;">Shipping address:</p>
 																																 </td>
 																																 <td class="mcnTextContent" style="padding: 3px 0;  font-family: 'Roboto', Arial,sans-serif, sans-serif;font-size: 14px;font-style: normal;letter-spacing: 0px;line-height: 1.17;text-align:right; border-bottom: 1px dashed #f3cdbc" width="50%" valign="top">
-																																	 <p style="font-size: 14px; margin: 3px 0;text-align: right; color: #555;">${message.address.main_address_text,message.address.city,message.address.state,message.address.country} (${message.address.postal_code})</p>
+																																	 <p style="font-size: 14px; margin: 3px 0;text-align: right; color: #555;">${message.address.main_address_text} ${message.address.city} ${message.address.state} ${message.address.country} (${message.address.postal_code})</p>
 																																 </td>
 																															 </tr>
 																														 </tbody>

@@ -392,6 +392,7 @@ export interface Order {
     productId: string,
     saleId: ObjectId,
     variant_Name: string,
+    variantName?: string,
     count: number,
     totalPriceOfThisProducts: number
     reviewFlagOfThisProduct: boolean

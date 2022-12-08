@@ -14,6 +14,7 @@ import { mainPageService } from "../services/mainPage.service";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
 import { couponService } from "../services/coupon.service";
+import { InventoryService } from "../services/inventory.service";
 
 const userRouter: Router = express.Router();
 userRouter.use(express.json());
@@ -81,6 +82,17 @@ userRouter.get("/getOne/:userId", async (req: Request, res: Response) => {
     res.status(500).json({ error: `Unable to find matching document with userId: ${userId}` });
   }
 });
+
+userRouter.get("/getProductInventoryByProductIdAndVariant/:ProductId/:VariantName", async (req: Request, res: Response) => {
+  const ProductId: string = req?.params?.ProductId;
+  const VariantName: string = req?.params?.VariantName;
+  try {
+    res.status(200).json({ inventory: await InventoryService.getByProdIdVarName(ProductId, VariantName) });
+  } catch (error) {
+    LOG.error(error);
+    res.status(500).json({ error: `Unable to find Inventory` });
+  }
+})
 
 userRouter.get("/dashboard/:userId", async (req: Request, res: Response) => {
   try {
