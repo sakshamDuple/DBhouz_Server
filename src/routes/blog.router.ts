@@ -82,7 +82,7 @@ blogRouter.post("/createBlog", async (req: Request, res: Response) => {
 blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
     try {
         console.log("inside blog category tryy");
-        const blog= await blogService.getAllBlog()
+        const blog= await blogService.getAllBlog()   
         console.log(blog,"bbbbbbllooggggg");
         
       res.status(200).json({ blogs:blog});

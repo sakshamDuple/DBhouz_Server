@@ -50,7 +50,7 @@ class CAuthUtils {
         }
       )
     );
-    passport.use(
+    passport.use(   
       "merchantlogin",
       new LocalStrategy(
         { usernameField: "email", passwordField: "password" },

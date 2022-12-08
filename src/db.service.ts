@@ -27,7 +27,7 @@ export const collections: {
   coupon?: mongoDB.Collection;
   blogCategory?:mongoDB.Collection;
   blog?:mongoDB.Collection;
-  inventory?:mongoDB.Collection;
+  
 } = {};
 
 /**
@@ -79,7 +79,7 @@ export async function connectToDatabase() {
   collections.coupon = db.collection(AppConfig.mongoCollections.coupon);
   collections.blogCategory= db.collection(AppConfig.mongoCollections.blogCategory);
   collections.blog = db.collection(AppConfig.mongoCollections.blog)
-  collections.inventory = db.collection(AppConfig.mongoCollections.inventory)
+
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -113,6 +113,27 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           _id: {},
           email: { bsonType: "string" },
           name: { bsonType: "string" },
+          address:{bsonType:"string"},
+          website_name:{bsonType:"string"},
+          website_email:{bsonType:"string"},
+          logoDocumentId: { bsonType: "objectId" },
+          favIconDocumentId:{bsonType:"objectId"},
+          socialLinks:{
+            bsonType:"object",
+            properties:{
+              facebookLink:{ bsonType:"string"},
+              googleLink:{bsonType:"string"},
+              twitterLink:{bsonType:"string"}
+            }
+          },
+          seo: {
+            bsonType: "object",
+            properties: {
+              metaTagTitle: { bsonType: "string" },
+              metaTagDescription: { bsonType: "string" },
+              metaTagKeywords: { bsonType: "string" },
+            },
+          },
           secret: { bsonType: "string" },
           createdAt: { bsonType: "number" },
         },
@@ -830,38 +851,4 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   })
-  LOG.info(`Validating collection ${AppConfig.mongoCollections.inventory}`)
-  await db.command({
-    collMod: AppConfig.mongoCollections.inventory,
-    validator: {
-      $jsonSchema: {
-        bsonType: "object",
-        additionalProperties: true,
-        required: [
-          "_id",
-          "productId",
-          "sellingPrice",
-          "variant_Name",
-          "stock",
-          "availableItems",
-          "taxAmount",
-          "createdAt",
-        ],
-        properties: {
-          _id: { bsonType: "objectId" },
-          productId: { bsonType: "objectId" },
-          sellingPrice: { bsonType: "number" },
-          variant_Name: { bsonType: "string" },
-          stock: { bsonType: "number" },
-          availableItems: { bsonType: "number" },
-          taxAmount: { bsonType: "number" },
-          createdAt: { bsonType: "number" },
-        },
-      },
-    },
-  })
-
-
-
-
 };
