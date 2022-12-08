@@ -31,10 +31,10 @@ class BrandServiceClass {
 
     async update(brand: IBrand): Promise<boolean> {
         brand = { ...brand }
-        let existingbrand: IBrand = await this.getByName(brand.name)
-        if (existingbrand && existingbrand._id.toString() !== brand._id.toString()) {
-            throw new Error(`Brand with name ${brand.name} already exists`)
-        }
+        // let existingbrand: IBrand = await this.getByName(brand.name)
+        // if (existingbrand && existingbrand._id.toString() !== brand._id.toString()) {
+        //     throw new Error(`Brand with name ${brand.name} already exists`)
+        // }
         const query = { _id: new ObjectId(brand._id) };
         delete brand._id;
         let result: UpdateResult = await collections.brands.updateOne(query, { $set: brand });
