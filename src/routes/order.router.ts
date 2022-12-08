@@ -5,7 +5,6 @@ import { Order, OrderStatus } from "../interfaces";
 import { LOG } from "../logger";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
-import { sendEmail } from "./auth.router";
 
 const orderRouter: Router = express.Router();
 orderRouter.use(express.json());
@@ -53,7 +52,6 @@ orderRouter.post("/make", async (req: Request, res: Response) => {
         }
         orderData = await OrderService.create(orderData);
         res.status(200).json({ orderData })
-        let emailSent = await sendEmail(orderData.customerDetail.email, "User Order Placed", orderData);
     } catch (e: any) {
         LOG.error(e);
         res.status(500).json({ error: e.message });

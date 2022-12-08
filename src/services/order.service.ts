@@ -3,7 +3,7 @@ import { collections } from "../db.service";
 import { OrderStatus, Order, transactionMethod } from "../interfaces";
 
 class OrderServiceClass {
-    async create(newOrder: Order): Promise<Order> {
+    async create(newOrder: Order): Promise<any> {
         newOrder = { ...newOrder }
         newOrder.createdAt = Date.now()
         newOrder.transactionDetail.transactionDate = Date.now()

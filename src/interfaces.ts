@@ -53,10 +53,6 @@ export interface IMerchant {
   commisionPercentage?: number | Double;
   commisionAmount?: number | Double;
   phone?: number;
-  // IdProof?: {
-  //   gst: ObjectId,
-  //   panCard: ObjectId,
-  // },
   business_info?: {
     name: string,
     address: string,
@@ -257,6 +253,7 @@ export interface IProductVariant {
   style: string;
   size: string;
   colorId: ObjectId;
+  inventoryId?: ObjectId;
   color?: string;
   dimensions?: {
     height: number | Double;
@@ -266,7 +263,7 @@ export interface IProductVariant {
   minPurchaseQuantity: number;
   availableQuantity: number;
   discountPercentage?: number;
-  price: number | Double;
+  price: number;
   priceByAdmin?: number;
   priceByMerchant?: number;
   warranty_period?: number;
@@ -279,6 +276,19 @@ export interface IProductVariant {
   }[];
   createdAt?: number;
 }
+export interface Inventory {
+  _id?: ObjectId;
+  productId: ObjectId;
+  sellingPrice: number;
+  variant_Name: string;
+  stock?: number;
+  availableItems: number;
+  taxAmount: number;
+  createdAt?: number;
+  modifiedAt?: number;
+  updatation?: number;
+}
+
 export enum EProductStatus {
   Active = "ACTIVE",
   InActive = "INACTIVE",

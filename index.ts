@@ -20,6 +20,7 @@ import { userRouter } from "./src/routes/user.router";
 import { orderRouter } from "./src/routes/order.router";
 import { blogCategoryRouter } from "./src/routes/blogCat.router"
 import {blogRouter} from "./src/routes/blog.router"
+import {adminRouter} from "./src/routes/admin.router"
 
 dotenv.config();
 
@@ -71,6 +72,7 @@ initDirectories()
 
     appRouter.use("/blogCategory",blogCategoryRouter)
     appRouter.use("/blog",blogRouter)
+    appRouter.use("/admin",adminRouter)
 
     app.use(`/rest`, appRouter);
 
@@ -90,7 +92,7 @@ process
     console.error(reason, "Unhandled Rejection at Promise", p);
   })
   .on("uncaughtException", (err) => {
-    LOG.error(err);
+    LOG.error(err);                         
     console.error(err, "Uncaught Exception thrown");
     process.exit(1);
   });
