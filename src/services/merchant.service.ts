@@ -12,7 +12,7 @@ class MerchantServiceClass {
 
     async getMultipleMerchant(merchants: Array<string>): Promise<IMerchant[]> {
         let merchantsObj: Array<ObjectId> = []
-        merchants.forEach((element,i) => {
+        merchants.forEach((element, i) => {
             merchantsObj[i] = new ObjectId(element)
         });
         console.log(merchantsObj)
@@ -35,10 +35,12 @@ class MerchantServiceClass {
         newMerchant = { ...newMerchant }
         const existingMerchant: IMerchant = await this.getByEmail(newMerchant.email)
         if (existingMerchant) {
+            console.log("hey")
             throw new Error(`Merchant with this email already exists`)
         }
         newMerchant.createdAt = Date.now()
         delete newMerchant._id
+        console.log("Hii")
         newMerchant = this.sanitize(newMerchant)
         const result: InsertOneResult<IMerchant> = await collections.merchants.insertOne(newMerchant);
         newMerchant._id = result.insertedId
@@ -48,14 +50,26 @@ class MerchantServiceClass {
     async update(merchant: IMerchant): Promise<boolean> {
         merchant = { ...merchant }
         const existingMerchant: IMerchant = await this.getByEmail(merchant.email)
-        if (existingMerchant && existingMerchant._id.toString() !== merchant._id.toString()) {
-            throw new Error(`Merchant with this email already exists`)
-        }
         const query = { _id: new ObjectId(merchant._id) };
+        merchant.status = EMerchantStatus.InActive
         delete merchant._id;
+        let thisStatus = true;
+        if (merchant?.identification)
+            merchant?.identification.forEach(element => {
+                thisStatus = thisStatus && element.approvedByAdmin
+            });
+        if (thisStatus) merchant.status = EMerchantStatus.Active
         merchant = this.sanitize(merchant)
         let result: UpdateResult = await collections.merchants.updateOne(query, { $set: merchant });
         return (result.modifiedCount > 0)
+    }
+
+    async verifyMerchant(merchantId: ObjectId): Promise<boolean> {
+        const query = { _id: merchantId };
+        let result: UpdateResult = await collections.merchants.updateOne(query, {
+            $set: { isEmailVerified: true },
+        });
+        return result.modifiedCount > 0;
     }
 
     async doInactiveMerchantProduct(merchantId: ObjectId): Promise<boolean> {
