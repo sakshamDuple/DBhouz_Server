@@ -359,17 +359,23 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
     console.log(product)
     let brand: string = req.body?.brand
     if (brand) {
-      let newBrand: IBrand = {
-        _id: undefined,
-        name: brand,
-        priority: 1,
-        createdAt: Date.now(),
-      };
-      let thisBrand = await BrandService.create(newBrand)
-      if (thisBrand == "Brand with this name already exists") {
-        return res.status(400).json({ thisBrand });
+      let theExistingBrand = await BrandService.getByName(brand)
+      if(!theExistingBrand){
+        let newBrand: IBrand = {
+          _id: undefined,
+          name: brand,
+          priority: 1,
+          createdAt: Date.now(),
+        };
+        let thisBrand = await BrandService.create(newBrand)
+        if (thisBrand == "Brand with this name already exists") {
+          return res.status(400).json({ thisBrand });
+          let theExistingBrand = await BrandService.getByName(newBrand.name)
+        }
+        product.brandId = new ObjectID(thisBrand._id)
+      } else {
+        product.brandId = new ObjectID(theExistingBrand._id)
       }
-      product.brandId = thisBrand._id
     }
     let newProduct: IProduct = product
     console.log(newProduct)

@@ -391,6 +391,7 @@ class ProductServiceClass {
             if (!v.priority || v.priority < 0 || Number.isNaN(v.priority)) {
                 delete v.priority
             }
+            if (v.inventoryId) v.inventoryId = new ObjectId(v.inventoryId)
             if (v.images) v.images.forEach(i => {
                 i.documentId = new ObjectId(i.documentId)
             })

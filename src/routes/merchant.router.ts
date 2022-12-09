@@ -137,7 +137,7 @@ merchantRouter.get('/getOne/:merchantId', async (req: Request, res: Response) =>
 merchantRouter.get("/dashboard/:merchantId", async (req: Request, res: Response) => {
     try {
         let merchantId = req.params.merchantId
-        res.status(200).json({ orderTotal: await OrderService.getMerchantTotalOrderForDashboard(merchantId), totalProducts: (await ProductService.getAllByMerchant(merchantId, false)).length, totalPayments: await OrderService.getMerchantTotalPaymentForDashboard(merchantId), total_Customers: await OrderService.getAllCustomersByMerchant(merchantId)});
+        res.status(200).json({ orderTotal: await OrderService.getMerchantTotalOrderForDashboard(merchantId), totalProducts: (await ProductService.getAllByMerchant(merchantId, false)).length, totalPayments: await OrderService.getMerchantTotalPaymentForDashboard(merchantId), total_Customers: await OrderService.getAllCustomersByMerchant(merchantId) });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

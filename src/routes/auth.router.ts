@@ -8,9 +8,36 @@ import { AdminService } from "../services/admin.service";
 import { userService } from "../services/user.service";
 import nodemailer from "nodemailer"
 import { ObjectID } from "bson";
+import { EmailHTML } from "./emailHtml";
 
 const authRouter: Router = express.Router();
 authRouter.use(express.json());
+
+const sendEmail = async (email, subject, text) => {
+  try {
+    console.log("email",email,"subject",subject)
+    let HTML = EmailHTML(subject, text)
+    const transporter = nodemailer.createTransport({
+      host: process.env.HOST,
+      port: '587',
+      auth: { user: "shubhi@dupleit.com", pass: "apftilkqlqogpgzy" }, // todo in process.env
+      secure: false,
+      logger: true
+    });
+    await transporter.sendMail({
+      from: process.env.USER,
+      to: email,
+      subject: subject,
+      html: HTML,
+    });
+    console.log("email sent sucessfully");
+    return true
+  } catch (error) {
+    console.log("email not sent");
+    console.log(error);
+    return false
+  }
+};
 
 authRouter.get("/test", (req, res, next) => {
   res.json({ hello: "world" });
@@ -21,11 +48,13 @@ authRouter.post(
   passport.authenticate("merchantsignup", { session: false }),
   async (req: Request, res: Response, next) => {
     let user: IMerchant = (req as any).user;
-    let userexist = await userService.getByEmailM(user.email);
-    const body = { _id: user._id, email: user.email, type: "merchant" };
+    // let merchantexist = await userService.getByEmailM(user.email);
+    // if (merchantexist) return res.status(403).json({ message: "Merchant With This Email Already Exist" });
+    const body = { _id: user._id, email: user.email, type: "merchant" }; //firstName: user.firstName, lastName: user.lastName
     const token = jwt.sign({ user: body }, AppConfig.jwtSalt);
     const message = `http://${process.env.BASE_URL}:${process.env.SERVER_PORT}/rest/auth/verify/${user._id}/${token}`;
-    let emailSent = await sendEmail(user.email, "Verify Email", message);
+    // const merchant = await MerchantService.get(user._id)
+    let emailSent = await sendEmail(user.email, "Verify Email Merchant", message);
     if (emailSent)
       return res.json({ user, token, message: "An Email sent to your account please verify" });
     return res.json({ message: "Email NOt Sent" })
@@ -105,40 +134,18 @@ authRouter.post(
   }
 );
 
-const sendEmail = async (email, subject, text) => {
-  try {
-    const transporter = nodemailer.createTransport({
-      host: 'smtp-relay.gmail.com',
-      port: '587',
-      auth: { user: process.env.USER, pass: process.env.PASS }, // todo in process.env
-      secureConnection: false,
-      tls: { ciphers: 'SSLv3' }
-    });
-    await transporter.sendMail({
-      from: process.env.USER,
-      to: email,
-      subject: subject,
-      text: text,
-    });
-    console.log("email sent sucessfully");
-    return true
-  } catch (error) {
-    console.log("email not sent");
-    console.log(error);
-    return false
-  }
-};
-
 authRouter.post(
   "/usersignup",
   passport.authenticate("usersignup", { session: false }),
   async (req: Request, res: Response, next) => {
     let user: IUser = (req as any).user;
-    let userexist = await userService.getByEmail(user.email);
+    // let userexist = await userService.getByEmail(user.email);
+    // if (userexist) return res.status(403).send({ message: "User with given email already exist!" });
     const body = { _id: user._id, email: user.email, type: "user" };
     const token = jwt.sign({ user: body }, AppConfig.jwtSalt);
     const message = `http://${process.env.BASE_URL}:${process.env.SERVER_PORT}/rest/auth/verify/${user._id}/${token}`;
-    let emailSent = await sendEmail(user.email, "Verify Email", message);
+    // const usera = await userService.getSpecificUser(new ObjectID(user._id));
+    let emailSent = await sendEmail(user.email, "Verify Email User", message);
     if (emailSent)
       return res.json({ user, token, message: "An Email sent to your account please verify" });
     return res.json({ message: "Email NOt Sent" })
@@ -148,17 +155,31 @@ authRouter.post(
 authRouter.get("/verify/:id/:token", async (req, res) => {
   try {
     let userId: ObjectID = new ObjectID(req.params.id)
-    console.log(userId)
     const user = await userService.getSpecificUser(userId);
-    console.log(user)
-    if (!user) return res.status(400).send("Invalid link");
+    const merchant = await MerchantService.get(req.params.id)
     const token: string = req.params.token
-    let decode: any = jwt.decode(token)
-    let decodedId = new ObjectID(decode.user._id)
-    console.log(decodedId, user._id)
-    console.log(decodedId == user._id)
-    await userService.verifyUser(userId);
-    res.send("email verified sucessfully");
+    let decoded: any = jwt.decode(token);
+    let emailSent
+    let verify = false
+    if (user) {
+      if (decoded.user._id == req.params.id)
+        verify = await userService.verifyUser(userId);
+      if (verify) {
+        emailSent = await sendEmail(user.email, "user email verified", "");
+        res.send("user email verified sucessfully");
+      }
+    }
+    if (merchant) {
+      if (decoded.user._id == req.params.id)
+        verify = await MerchantService.verifyMerchant(userId);
+      if (verify) {
+        console.log("\n\n\nCame To This Page\n\n\n")
+        emailSent = await sendEmail(merchant.email, "merchant email verified", merchant?.firstName ? merchant.firstName : "Anonymous")
+      }
+      res.send("merchant email verified sucessfully");
+    }
+    if (!user) return res.status(400).send("Invalid link");
+    res.send("Something Went Wrong");
   } catch (error) {
     res.status(400).send("An error occured");
   }
@@ -244,4 +265,4 @@ authRouter.put('/contactUsUpdate', async (req, res) => {
   }
 })
 
-export { authRouter };
+export { authRouter, sendEmail };
