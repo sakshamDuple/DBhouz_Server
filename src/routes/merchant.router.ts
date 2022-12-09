@@ -11,6 +11,7 @@ import { rename } from 'fs';
 import { ProductService } from '../services/product.service';
 import { couponService } from '../services/coupon.service';
 import { OrderService } from '../services/order.service';
+import { sendEmail } from './auth.router';
 
 const merchantRouter: Router = express.Router()
 merchantRouter.use(express.json())
@@ -148,6 +149,29 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
     try {
         const merchant: IMerchant = req.body.merchant;
         let ToDoInactiveProducts = req.body?.ToDoInactiveProducts
+        const existingMerchant: IMerchant = await MerchantService.getByEmail(merchant.email)
+        let send_mail = false
+        let field = ""
+        let message:string
+        if(existingMerchant.identification){
+            if(existingMerchant.identification[0].approvedByAdmin != (merchant.identification[0].approvedByAdmin == true)){
+                send_mail = true;
+                field = "merchant account documents approved";
+                message = existingMerchant.identification[0].identifictaion_Name
+            } else if (existingMerchant.identification[0].approvedByAdmin != merchant.identification[0].approvedByAdmin == false){
+                send_mail = true;
+                field = "merchant account documents reject"
+                message = existingMerchant.identification[0].identifictaion_Name
+            } else if (existingMerchant.identification[1].approvedByAdmin == merchant.identification[1].approvedByAdmin == true){
+                send_mail = true;
+                field = "merchant account documents approved";
+                message = existingMerchant.identification[1].identifictaion_Name
+            } else if (existingMerchant.identification[1].approvedByAdmin != merchant.identification[1].approvedByAdmin == false){
+                send_mail = true;
+                field = "merchant account documents reject"
+                message = existingMerchant.identification[1].identifictaion_Name
+            }
+        }
         let merchantUpdate = await MerchantService.update(merchant)
         let k = true;
         console.log("ToDoInactiveProducts", ToDoInactiveProducts)
@@ -155,6 +179,10 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
             k = await MerchantService.doInactiveMerchantProduct(new ObjectId(merchant._id))
         }
         res.status(200).json({ update: merchantUpdate && k })
+        if(send_mail){
+            console.log("\n\n\n\n\n Hii \n\n\n\n\n")
+            await sendEmail(merchant.email, field, {message,merchantName:merchant.firstName})
+        }
     } catch (error) {
         console.error(error)
         LOG.error(error)

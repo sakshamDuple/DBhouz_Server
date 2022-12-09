@@ -13,9 +13,9 @@ import { EmailHTML } from "./emailHtml";
 const authRouter: Router = express.Router();
 authRouter.use(express.json());
 
-const sendEmail = async (email, subject, text) => {
+const sendEmail = async (email: string, subject: string, text: any) => {
   try {
-    console.log("email",email,"subject",subject)
+    console.log("email", email, "subject", subject, text)
     let HTML = EmailHTML(subject, text)
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,

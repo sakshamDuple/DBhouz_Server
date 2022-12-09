@@ -49,7 +49,6 @@ class MerchantServiceClass {
 
     async update(merchant: IMerchant): Promise<boolean> {
         merchant = { ...merchant }
-        const existingMerchant: IMerchant = await this.getByEmail(merchant.email)
         const query = { _id: new ObjectId(merchant._id) };
         merchant.status = EMerchantStatus.InActive
         delete merchant._id;
