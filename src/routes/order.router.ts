@@ -54,6 +54,7 @@ orderRouter.post("/make", async (req: Request, res: Response) => {
         orderData = await OrderService.create(orderData);
         res.status(200).json({ orderData })
         let emailSent = await sendEmail(orderData.customerDetail.email, "User Order Placed", orderData);
+        // await sendEmail(orderData.customerDetail.email, "Merchant Order Placed", orderData);
     } catch (e: any) {
         LOG.error(e);
         res.status(500).json({ error: e.message });

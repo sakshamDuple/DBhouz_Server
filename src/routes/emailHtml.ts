@@ -1612,7 +1612,7 @@ const EmailHTML = (subject:string, message:any) => {
 																						<h2 style="font-size: 24px; color: #f2672a;">Hey Merchant, ${message}</h2>
 																						<h4 style="font-size: 20px; color: #232f3e; font-family:Georgia;font-style:italic; margin: 0;"> Congratulations! Your email has been successfully verified </h4>
 																						<p style="text-align: center; font-size: 16px;">
-																							kindly login to the merchant portal of DB Houz with your registered email ID and get started soonest possible. 
+																							kindly login to DB Houz with your registered email ID and get started soonest possible. 
 																						</p>
 																						<!-- <button style=" background-color: transparent;outline: 0;border: 0;background: #f2672a;padding: 5px 10px;color: #fff;border-radius: 3px; cursor: pointer;">Verify Email </button> -->
 																					</td>
