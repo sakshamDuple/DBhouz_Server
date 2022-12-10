@@ -6158,7 +6158,7 @@ const EmailHTML = (subject:string, message:any) => {
 			</center>
 			</div>`
 		case "Merchant got review":
-			`<div>
+			return `<div>
 			<link href="https://fonts.googleapis.com/css?family=Roboto:400,400i,700,700i" rel="stylesheet" />
 			<style type="text/css">p{
 			 margin:8px 0;
