@@ -1,10 +1,12 @@
 import e from "express";
 import express, { Request, Response, Router } from "express";
 import { ObjectId } from "mongodb";
-import { Order, OrderStatus } from "../interfaces";
+import { IUser, Order, OrderStatus } from "../interfaces";
 import { LOG } from "../logger";
+import { MerchantService } from "../services/merchant.service";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
+import { userService } from "../services/user.service";
 import { sendEmail } from "./auth.router";
 
 const orderRouter: Router = express.Router();
@@ -54,7 +56,30 @@ orderRouter.post("/make", async (req: Request, res: Response) => {
         orderData = await OrderService.create(orderData);
         res.status(200).json({ orderData })
         let emailSent = await sendEmail(orderData.customerDetail.email, "User Order Placed", orderData);
-        // await sendEmail(orderData.customerDetail.email, "Merchant Order Placed", orderData);
+        let findUser: IUser = await userService.get(orderData.customerDetail.userId)
+        let push = true
+        if(findUser.address)
+        findUser.address.forEach(element => {
+            if(element.main_address_text != orderData.address.main_address_text){
+                push = push && true
+            } else {
+                push = false
+            }
+        });
+        if(push){
+            if(!findUser.address) findUser.address = []
+            let count = findUser.address.length
+            let addressName = `Address_${count}`
+            let NewAddress = {...orderData.address, addressName}
+            console.log(NewAddress)
+            findUser.address.push(NewAddress)
+            await userService.update(findUser)
+        }
+        orderData.products.forEach(async element => {
+            let theMerchant = await MerchantService.get(element.sellerId)
+            orderData.transactionDetail.transactionMethod
+            await sendEmail(theMerchant.email, "Merchant Order Placed", {orderData,merchantName:theMerchant.firstName});
+        });
     } catch (e: any) {
         LOG.error(e);
         res.status(500).json({ error: e.message });
