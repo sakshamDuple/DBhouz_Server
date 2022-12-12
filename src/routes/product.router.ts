@@ -13,6 +13,8 @@ import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { BrandService } from "../services/brand.service";
 import { ColorService } from "../services/color.service";
+import { userService } from "../services/user.service";
+
 let future = require('future')
 
 const productRouter: Router = express.Router();
@@ -423,5 +425,58 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
     res.status(500).json({ error: error.message });
   }
 });
+
+productRouter.post("/incRecommendations", async (req: Request, res: Response) => {
+  try {
+    
+    
+    const productId = req.body.productId;
+    const userId = req.body.userId
+    console.log(productId,"pp");
+    const product: IProduct = await ProductService.get(productId);
+    let result1 = await ProductService.incRecomendations(product);
+    let result = await userService.addProductRecommended(userId,productId)
+    res.status(200).json({ result });
+  } catch (error) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
+  try {
+    
+    
+    const productId = req.body.productId;
+    const userId = req.body.userId
+    console.log(productId,"pp");
+    const product: IProduct = await ProductService.get(productId);
+    let result = await ProductService.dontRecomend(product);
+    let result2 = await userService.addUnrecomendedProduct(userId,productId)
+    res.status(200).json({ result });
+  } catch (error) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message }); 
+  }
+});
+
+
+
+productRouter.post("/productUsed", async (req: Request, res: Response) => {
+  try {
+    
+    
+    const productId = req.body.productId;
+    const userId = req.body.userId
+    console.log(productId,"pp");
+    const product: IProduct = await ProductService.get(productId);
+
+    let result = await userService.productUsed(userId,productId)
+    res.status(200).json({ result });
+  } catch (error) {
+    LOG.error(error); 
+    res.status(500).json({ error: error.message }); 
+  }
+});  
 
 export { productRouter };

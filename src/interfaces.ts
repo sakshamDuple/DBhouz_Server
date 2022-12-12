@@ -89,7 +89,10 @@ export interface IUser {
     approvedByAdmin: boolean;
     priority: number;
   }[];
-  gender?: Gender;
+  recommendedProductByThisUser?:ObjectId[];
+  notrecommendedProductByThisUser?:ObjectId[];
+  productsUsed?:ObjectId[];
+  gender?: Gender;    
   phone?: number;
   createdAt: number;
   AccessBlock?: boolean;
@@ -196,6 +199,8 @@ export interface IProduct {
     dimensionThicknessEnabled: boolean;
     dimensionUnitId?: ObjectId;
   };
+  recomendations?:number;
+  unrecomendations?:number;
   variants: IProductVariant[];
   images?: {
     documentId: ObjectId;

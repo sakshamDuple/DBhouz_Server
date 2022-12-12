@@ -231,6 +231,158 @@ class UserServiceClass {
     if (!o.email) delete o.email;
     return o;
   }
+
+ 
+  async addProductRecommended(userId: string, productId: ObjectId): Promise<any> {
+    console.log(productId,"pppprroducc");
+   let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+   let recomended
+   if(!foundUser.recommendedProductByThisUser){
+    recomended=[]
+   }
+   else{
+
+     recomended =foundUser.recommendedProductByThisUser
+   }
+   if(recomended.length==0){
+    recomended.push(productId)
+    console.log(recomended);
+    
+   }
+   else{
+    let flag=0
+
+    foundUser.recommendedProductByThisUser?.forEach(element => {
+      console.log(element,"el");
+      console.log(element==productId,"222222");
+      
+        if (element!=productId) {
+          recomended.push(element)
+          console.log("true")
+          flag=1
+        }else{
+          console.log("product already exist ")
+          flag=0
+        }
+      });
+      if(flag==1){
+        recomended.push(productId)
+      }
+
+
+   }
+  
+   
+    foundUser.recommendedProductByThisUser=recomended
+    console.log( foundUser.recommendedProductByThisUser,"fffffffffffffffooouuuunnnd");
+     let resultedUser = await collections.users.findOneAndUpdate({ _id: foundUser._id }, { "$set": foundUser })
+    if (resultedUser.ok == 1) {
+      return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    }
+    return resultedUser
+  }    
+
+  async addUnrecomendedProduct(userId: string, productId: ObjectId): Promise<any> {
+    console.log(productId,"pppprroducc");
+   let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+   let notrecomended
+   if(!foundUser.notrecommendedProductByThisUser){
+    notrecomended=[]
+   }
+   else{
+
+    notrecomended =foundUser.notrecommendedProductByThisUser
+   }
+   console.log(notrecomended,"nn");
+   
+   if(notrecomended.length==0){
+    notrecomended.push(productId)
+    console.log(notrecomended);
+    
+   }
+   else{
+    let flag=0
+    foundUser.notrecommendedProductByThisUser?.forEach(element => {
+      console.log(element,"el");
+      console.log(element==productId,"222222");
+      
+        if (element!=productId) {
+          notrecomended.push(element)
+          flag=1
+          console.log("true")
+        }else{
+          flag=0
+          console.log("product already exist ")
+        }
+
+      });
+      if(flag==1){
+        notrecomended.push(productId)
+      }
+
+
+   }
+    foundUser.notrecommendedProductByThisUser=notrecomended
+    console.log( foundUser.notrecommendedProductByThisUser,"fffffffffffffffooouuuunnnd");
+     let resultedUser = await collections.users.findOneAndUpdate({ _id: foundUser._id }, { "$set": foundUser })
+    if (resultedUser.ok == 1) {
+      return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    }
+    return resultedUser
+  }  
+
+ 
+  async  productUsed(userId: string, productId: ObjectId): Promise<any> {
+    console.log(productId,"pppprroducc");
+   let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+   let usedProducts
+   if(!foundUser.productsUsed){
+    usedProducts=[]
+   }
+   else{
+
+    usedProducts =foundUser.productsUsed
+   }
+   console.log(usedProducts,"nn");
+   
+   if(usedProducts.length==0){
+    usedProducts.push(productId)
+    console.log(usedProducts);
+    
+   }
+   else{
+    let flag=0
+    foundUser.productsUsed?.forEach(element => {
+      console.log(element,"el");
+      console.log(element==productId,"222222");
+      
+        if (element!=productId) {
+          usedProducts.push(element)
+          flag=1
+          console.log("true")
+        }else{
+          flag=0
+          console.log("product already exist ")
+        }
+
+      });
+      if(flag==1){
+        usedProducts.push(productId)
+      }
+
+
+   }
+    foundUser.productsUsed=usedProducts
+    console.log( foundUser.productsUsed,"fffffffffffffffooouuuunnnd");
+     let resultedUser = await collections.users.findOneAndUpdate({ _id: foundUser._id }, { "$set": foundUser })
+    if (resultedUser.ok == 1) {
+      return await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+    }
+    return resultedUser
+  }  
+
+
+
 }
 
 export let userService: UserServiceClass = new UserServiceClass();
