@@ -415,6 +415,42 @@ class ProductServiceClass {
         })
         return o
     }
+
+
+    sanitize2(o: IProduct): IProduct {
+         if (!o.recomendations) o.recomendations = 0;
+         return o
+    }
+
+    async incRecomendations(product: IProduct): Promise<boolean> {
+        product = { ...product }
+        product = this.sanitize2(product)
+        product.recomendations+=1
+        const query = { _id: new ObjectId(product._id) };
+        
+        
+        let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
+        return (result.modifiedCount > 0)
+    }
+    sanitize3(o: IProduct): IProduct {
+        if (!o.unrecomendations) o.unrecomendations = 0;
+        return o
+   }
+    async dontRecomend(product: IProduct): Promise<boolean> {
+        product = { ...product }
+        product = this.sanitize3(product)
+        product.unrecomendations+=1
+        const query = { _id: new ObjectId(product._id) };
+        
+        
+        let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
+        return (result.modifiedCount > 0)
+    }
+
+ 
+
+ 
+
 }
 
 export let ProductService: ProductServiceClass = new ProductServiceClass()

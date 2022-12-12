@@ -71,7 +71,7 @@ export async function connectToDatabase() {
   collections.documents = db.collection(AppConfig.mongoCollections.documents);
   collections.colors = db.collection(AppConfig.mongoCollections.colors);
   collections.units = db.collection(AppConfig.mongoCollections.units);
-  collections.users = db.collection(AppConfig.mongoCollections.user);
+  collections.users = db.collection(AppConfig.mongoCollections.user);   
   collections.orders = db.collection(AppConfig.mongoCollections.orders);
   collections.contact = db.collection(AppConfig.mongoCollections.contact);
   collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);

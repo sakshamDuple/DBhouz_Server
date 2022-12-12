@@ -29,7 +29,7 @@ const sendEmail = async (email: string, subject: string, text: any) => {
       to: email,
       subject: subject,
       html: HTML,
-    });
+    });     
     console.log("email sent sucessfully");
     return true
   } catch (error) {
