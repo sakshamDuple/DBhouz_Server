@@ -88,7 +88,6 @@ class MerchantServiceClass {
         return m;
     }
 
-
     async delete(merchantId: string | ObjectId): Promise<boolean> {
         const query = { _id: new ObjectId(merchantId) };
         const result = await collections.merchants.deleteOne(query);

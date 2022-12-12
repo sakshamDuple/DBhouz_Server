@@ -152,21 +152,21 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
         const existingMerchant: IMerchant = await MerchantService.getByEmail(merchant.email)
         let send_mail = false
         let field = ""
-        let message:string
-        if(existingMerchant.identification){
-            if(existingMerchant.identification[0].approvedByAdmin != (merchant.identification[0].approvedByAdmin == true)){
+        let message: string
+        if (existingMerchant.identification) {
+            if (existingMerchant.identification[0].approvedByAdmin != (merchant.identification[0].approvedByAdmin == true)) {
                 send_mail = true;
                 field = "merchant account documents approved";
                 message = existingMerchant.identification[0].identifictaion_Name
-            } else if (existingMerchant.identification[0].approvedByAdmin != merchant.identification[0].approvedByAdmin == false){
+            } else if (existingMerchant.identification[0].approvedByAdmin != merchant.identification[0].approvedByAdmin == false) {
                 send_mail = true;
                 field = "merchant account documents reject"
                 message = existingMerchant.identification[0].identifictaion_Name
-            } else if (existingMerchant.identification[1].approvedByAdmin == merchant.identification[1].approvedByAdmin == true){
+            } else if (existingMerchant.identification[1].approvedByAdmin == merchant.identification[1].approvedByAdmin == true) {
                 send_mail = true;
                 field = "merchant account documents approved";
                 message = existingMerchant.identification[1].identifictaion_Name
-            } else if (existingMerchant.identification[1].approvedByAdmin != merchant.identification[1].approvedByAdmin == false){
+            } else if (existingMerchant.identification[1].approvedByAdmin != merchant.identification[1].approvedByAdmin == false) {
                 send_mail = true;
                 field = "merchant account documents reject"
                 message = existingMerchant.identification[1].identifictaion_Name
@@ -179,9 +179,13 @@ merchantRouter.post("/updateOne", async (req: Request, res: Response) => {
             k = await MerchantService.doInactiveMerchantProduct(new ObjectId(merchant._id))
         }
         res.status(200).json({ update: merchantUpdate && k })
-        if(send_mail){
-            console.log("\n\n\n\n\n Hii \n\n\n\n\n")
-            await sendEmail(merchant.email, field, {message,merchantName:merchant.firstName})
+        if (send_mail) {
+            await sendEmail(merchant.email, field, { message, merchantName: merchant.firstName })
+        }
+        if (merchantUpdate && k && merchant.identification[0].approvedByAdmin == true && merchant.identification[1].approvedByAdmin == true) {
+            await sendEmail(merchant.email, "merchant activated", merchant.firstName)
+        } else if ((merchantUpdate && k && merchant.identification[0].approvedByAdmin == false) || (merchantUpdate && k && merchant.identification[1].approvedByAdmin == false)) {
+            await sendEmail(merchant.email, "merchant deactivated", merchant.firstName)
         }
     } catch (error) {
         console.error(error)

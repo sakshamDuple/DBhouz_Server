@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import { rename } from "fs";
 import path from "path";
-import { IBrand, IDocument, IMerchant, IProductVariant, IReview } from "../interfaces";
+import { EProductStatus, IBrand, IDocument, IMerchant, IProductVariant, IReview } from "../interfaces";
 import { LOG } from "../logger";
 import { uploadImages } from "../multer";
 import { DocumentService } from "../services/document.service";
@@ -13,8 +13,8 @@ import jwt from "jsonwebtoken";
 import { ObjectID } from "bson";
 import { BrandService } from "../services/brand.service";
 import { ColorService } from "../services/color.service";
+import { sendEmail } from "./auth.router";
 import { userService } from "../services/user.service";
-
 let future = require('future')
 
 const productRouter: Router = express.Router();
@@ -184,6 +184,17 @@ productRouter.post("/doReview", async (req: Request, res: Response) => {
       }
       let result = await ProductService.doReview(newReview, productId)
       res.status(200).json({ result })
+      let theProduct = await ProductService.get(productId)
+      let theUser = await userService.get(userId)
+      let theMerchant = await MerchantService.get(theProduct.merchantId)
+      await sendEmail(theMerchant.email, "Merchant got review", {
+        merchantName: theMerchant.firstName,
+        productName: theProduct.name,
+        userName: theUser.firstName + " " + theUser.lastName,
+        reviewDescription: newReview.description,
+        rating: newReview.rating,
+        reviewId: newReview.reviewId
+      });
     } else {
       res.status(401).json({ error: "Only User Can Do Reviews Of This Of Products" })
     }
@@ -362,7 +373,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
     let brand: string = req.body?.brand
     if (brand) {
       let theExistingBrand = await BrandService.getByName(brand)
-      if(!theExistingBrand){
+      if (!theExistingBrand) {
         let newBrand: IBrand = {
           _id: undefined,
           name: brand,
@@ -406,8 +417,15 @@ productRouter.get("/getOne/:productId", async (req: Request, res: Response) => {
 productRouter.post("/updateOne", async (req: Request, res: Response) => {
   try {
     const product: IProduct = req.body.product;
+    let prevProduct: IProduct = await ProductService.get(product._id)
+    let merchantOfProfuct: IMerchant = await MerchantService.get(product.merchantId)
     let result = await ProductService.update(product);
     res.status(200).json({ result });
+    if (product.status == EProductStatus.Active && product.status != prevProduct.status) {
+      await sendEmail(merchantOfProfuct.email, "Merchant Product Activated", { product, merchantName: merchantOfProfuct.firstName });
+    } else if (product.status == EProductStatus.InActive && product.status != prevProduct.status) {
+      await sendEmail(merchantOfProfuct.email, "Merchant Product Deactivated", { product, merchantName: merchantOfProfuct.firstName });
+    }
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
