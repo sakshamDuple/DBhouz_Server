@@ -262,6 +262,99 @@ productRouter.post(
     }
   }
 );
+productRouter.post(
+  "/variantSelectedImageReplace",
+  uploadImages.array("image"),
+  async (req: Request, res: Response) => {
+    try {
+      let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+      if (!filesToUpload || filesToUpload.length < 0)
+        throw new Error(`Files not available for upload`);
+      if (filesToUpload.length == 1) {
+        const productId: string = req.body.productId;
+        const position: number = req.body.position;
+        const product: IProduct = await ProductService.get(productId);
+        if (!product) throw new Error(`Product ${productId} does not exist`);
+        let variants = product.variants
+        let priority: number
+        variants.map(async element => {
+          if (element.name == req.body.name) {
+            if (!element.images) element.images = []
+            element.images.map((image, i) => {
+              if (position == i) {
+                if (image.documentId) {
+                  priority = image.priority;
+                  DocumentService.delete(image.documentId);
+                }
+              }
+            })
+            for (const currentFile of filesToUpload) {
+              let newDocument: IDocument = {
+                _id: null,
+                fileName: currentFile.originalname,
+                createdAt: Date.now(),
+                sizeInBytes: currentFile.size,
+              };
+              newDocument = await DocumentService.create(newDocument);
+              // console.log("3 newDocument", newDocument)
+              element.images.splice(position, 0, { documentId: newDocument._id, priority: priority });
+              const newPath: string = path.resolve(
+                AppConfig.directories.documents,
+                newDocument._id.toString()
+              );
+              // console.log("4 element.images", element.images)
+              await new Promise<void>((resolve, reject) => {
+                rename(currentFile.path, newPath, (err) => {
+                  if (err) reject(err);
+                  else resolve();
+                });
+              });
+            }
+          }
+        })
+        await ProductService.update(product);
+        res.status(200).json({ product });
+      } else {
+        throw new Error(`You Can't Upload Or Replace A Image By Multiple Images`);
+      }
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
+productRouter.post(
+  "/variantSelectedImageDelete",
+  async (req: Request, res: Response) => {
+    try {
+      const productId: string = req.body.productId;
+      const position: number = req.body.position;
+      const product: IProduct = await ProductService.get(productId);
+      if (!product) throw new Error(`Product ${productId} does not exist`);
+      let variants = product.variants
+      let priority: number
+      variants.map(async element => {
+        if (element.name == req.body.name) {
+          if (!element.images) element.images = []
+          element.images.map((image, i) => {
+            if (position == i) {
+              if (image.documentId) {
+                priority = image.priority;
+                DocumentService.delete(image.documentId);
+              }
+            }
+            element.images.splice(position, 1);
+          })
+        }
+      })
+      await ProductService.update(product);
+      res.status(200).json({ product });
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
 // productRouter.post(
 //   "/newVariantImagesUp",
 //   uploadImages.array("image"),
@@ -446,14 +539,14 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
 
 productRouter.post("/incRecommendations", async (req: Request, res: Response) => {
   try {
-    
-    
+
+
     const productId = req.body.productId;
     const userId = req.body.userId
-    console.log(productId,"pp");
+    console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
     let result1 = await ProductService.incRecomendations(product);
-    let result = await userService.addProductRecommended(userId,productId)
+    let result = await userService.addProductRecommended(userId, productId)
     res.status(200).json({ result });
   } catch (error) {
     LOG.error(error);
@@ -463,18 +556,18 @@ productRouter.post("/incRecommendations", async (req: Request, res: Response) =>
 
 productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
   try {
-    
-    
+
+
     const productId = req.body.productId;
     const userId = req.body.userId
-    console.log(productId,"pp");
+    console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
     let result = await ProductService.dontRecomend(product);
-    let result2 = await userService.addUnrecomendedProduct(userId,productId)
+    let result2 = await userService.addUnrecomendedProduct(userId, productId)
     res.status(200).json({ result });
   } catch (error) {
     LOG.error(error);
-    res.status(500).json({ error: error.message }); 
+    res.status(500).json({ error: error.message });
   }
 });
 
@@ -482,19 +575,19 @@ productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
 
 productRouter.post("/productUsed", async (req: Request, res: Response) => {
   try {
-    
-    
+
+
     const productId = req.body.productId;
     const userId = req.body.userId
-    console.log(productId,"pp");
+    console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
 
-    let result = await userService.productUsed(userId,productId)
+    let result = await userService.productUsed(userId, productId)
     res.status(200).json({ result });
   } catch (error) {
-    LOG.error(error); 
-    res.status(500).json({ error: error.message }); 
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
   }
-});  
+});
 
 export { productRouter };
