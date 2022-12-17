@@ -94,6 +94,55 @@ class MerchantServiceClass {
         return (result && result.deletedCount > 0)
     }
 
+    async editProfile(profile: any): Promise<IMerchant> {   
+        console.log(profile,"pro")
+       
+      const merchantId= profile.merchantId
+        
+      const query = { _id: new ObjectId(merchantId) };
+        let ThisProf:IMerchant =  await collections.merchants.findOne(query) as IMerchant;
+     
+        console.log(ThisProf,"ttt");
+        if(ThisProf!=undefined){
+           
+            if(profile.personalAddress!==undefined){
+
+                ThisProf.personalAddress=profile.personalAddress
+            }
+
+            if(profile.firstName!==undefined){
+                ThisProf.firstName=profile.firstName
+            }
+            if(profile.lastName!==undefined){
+                ThisProf.lastName=profile.lastName
+            }
+           if(profile.bussiness_name!==undefined){
+            ThisProf.bussiness_name=profile.bussiness_name
+           }
+           if(profile.about!==undefined){
+            ThisProf.about=profile.about
+           }
+          if(profile.phone!==undefined){
+            ThisProf.phone=profile.phone
+          }
+          if(profile.profilePic!==undefined){
+            ThisProf.profilePic=profile.profilePic
+          }
+               
+           
+           
+        }
+        
+        console.log(ThisProf,"ttt");       
+        let result: UpdateResult = await collections.merchants.updateOne( query,{
+          $set: ThisProf,
+        });
+      
+        console.log(result,"rrrrr");
+        
+        return (result.modifiedCount > 0) ? await collections.merchants.findOne(query) as IMerchant : ThisProf;
+      }
+
     sanitize(o: IMerchant): IMerchant {
         if (!o.firstName) delete o.firstName
         if (!o.lastName) delete o.lastName

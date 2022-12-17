@@ -5,6 +5,19 @@ export interface IAdmin {
   name?: string;
   email: string;
   address?:string;
+  firstName?: string;
+  lastName?: string;
+  about?:string;
+  phone?: number;
+  designation?:string;
+  personalAddress?: {
+    country?: string,
+    state?: string,
+    city?: string,
+    postal_code?: string,
+    main_address_text?: string
+  };
+  profilePic?:ObjectId;
   website_name?:string;
   website_email?:string;
   socialLinks?: {
@@ -48,11 +61,20 @@ export interface IMerchant {
   isEmailVerified: boolean;
   secret: string;
   status: EMerchantStatus;
+  about?:string;
   onboardingAmount?: number | Double;
   commisionType?: ECommisionType;
   commisionPercentage?: number | Double;
   commisionAmount?: number | Double;
   phone?: number;
+  bussiness_name?:string;
+  personalAddress?: {
+    country: string,
+    state: string,
+    city: string,
+    postal_code: string,
+    main_address_text: string
+  };
   business_info?: {
     name: string,
     address: string,
@@ -63,7 +85,7 @@ export interface IMerchant {
     address: string,
     IFSC_SWIFT_Code?: string,
     Account_No?: string
-  }
+  } 
   profilePic?:ObjectId;
   identification?: {
     documentId: ObjectId;
