@@ -248,4 +248,55 @@ merchantRouter.delete("/deleteOne/:merchantId", async (req: Request, res: Respon
     }
 });
 
+merchantRouter.post("/editProfile", async (req: Request, res: Response) => {
+    try {
+        console.log("inside edit route");
+        console.log(req.body,"bodyyyy");
+        const profile = req.body.data;
+        console.log(profile,"pp");   
+      
+      res.status(200).json({ updatedUser: await MerchantService.editProfile(profile) });
+    } catch (error) {      
+      console.error(error);   
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  })
+
+merchantRouter.post(
+    "/editProfilePic",
+    uploadImages.single("image"),
+    async (req: Request, res: Response) => {
+
+      try {
+        console.log("inside add blogImage try");
+        console.log(req.body,"boddy");
+        const fileToUpload: Express.Multer.File = req.file;
+        if (!fileToUpload) throw new Error(`No file to upload`);
+     
+        let newDocument: IDocument = {
+          _id: null,
+          fileName: fileToUpload.originalname,
+          createdAt: Date.now(),
+          sizeInBytes: fileToUpload.size,
+        };
+        newDocument = await DocumentService.create(newDocument);
+        const newPath: string = path.resolve(
+          AppConfig.directories.documents,
+          newDocument._id.toString()
+        );
+        rename(fileToUpload.path, newPath, (err) => {
+          if (err) throw err;
+          const id = newDocument._id;
+          console.log(id,"log id created succesfully")
+              res.status(200).json({ id });          
+          
+        });
+      } catch (error: any) {
+        LOG.error(error);
+        res.status(500).json({ error: error.message });
+      }
+    }
+  );
+
 export { merchantRouter }
