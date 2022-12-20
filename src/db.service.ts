@@ -727,7 +727,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
               bsonType: "object",
               additionalProperties: true,
               required: [
-                "categoryId",
+                "productId",
                 "nameOfProduct"
               ],
               properties: {
