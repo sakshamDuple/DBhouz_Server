@@ -96,6 +96,10 @@ class couponServiceClass {
         return await collections.coupon.find().toArray() as ICoupon[]
     }
 
+    async getMultiCouponByNames(theCouponArr: string[]): Promise<ICoupon[]> {
+        return await collections.coupon.find({ 'name': { "$in": theCouponArr }}).toArray() as ICoupon[]
+    }
+
     async getAllCouponsForThisMerchant(merchantId: string): Promise<ICoupon[]> {
         let theMerchant: IMerchant = await collections.merchants.findOne({ _id: new ObjectId(merchantId) }) as IMerchant
         let arrOfCoupons: Array<string> = theMerchant.accessToCoupon

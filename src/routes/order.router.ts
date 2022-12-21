@@ -149,6 +149,9 @@ orderRouter.get("/getAllTransaction/action", async (req: Request, res: Response)
     if (Status[0] == 'undefined') {
         Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
     }
+    if (TransactionMethod[0] == 'undefined') {
+        TransactionMethod = ["DEBIT_CARD","CREDIT_CARD","UPI","PAYTM","GPAY","CASH_ON_DELIVERY","NETBANKING"]
+    }
     try {
         let transactions: any[] = await TransactionService.getAllTransactionFilter(OrderType, Start, PageLimit, TransactionMethod, SortByDate, Status);
         res.status(200).json({ status: "success", data: transactions, totalTransaction: await TransactionService.getTotalTransactionFilter(OrderType, TransactionMethod, "admin", "", Status) });
@@ -187,6 +190,9 @@ orderRouter.get("/getTransactionMerchant/action", async (req: Request, res: Resp
     if (Status[0] == 'undefined') {
         Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
     }
+    if (TransactionMethod[0] == 'undefined') {
+        TransactionMethod = ["DEBIT_CARD","CREDIT_CARD","UPI","PAYTM","GPAY","CASH_ON_DELIVERY","NETBANKING"]
+    }
     try {
         let transactions: any[] = await TransactionService.getMerchantTransactionFilter(OrderType, Start, PageLimit, TransactionMethod, Id, SortByDate, Status);
         res.status(200).json({ status: "success", data: transactions, totalTransaction: await TransactionService.getTotalTransactionFilter(OrderType, TransactionMethod, "merchant", Id, Status) });
@@ -211,7 +217,6 @@ orderRouter.get("/getTransactionUser/action", async (req: Request, res: Response
     if (OrderType[0] == 'undefined') {
         OrderType = ["Recieved", "Payment_Accepted", "Inprogress", "Delivered", "Cancelled", "Refund_Inprogress", "Refund_Done", "Payment_Pending"]
     }
-    console.log(Status)
     if (Status[0] == 'undefined') {
         Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
     }

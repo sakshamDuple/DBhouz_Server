@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from "express";
-import { IDocument, IUser, IProduct, ICart } from "../interfaces";
+import { IDocument, IUser, IProduct, ICart, ICoupon } from "../interfaces";
 import { ObjectId } from "mongodb";
 import { LOG } from "../logger";
 import { userService } from "../services/user.service";
@@ -173,6 +173,18 @@ userRouter.post("/getCouponByName", async (req: Request, res: Response) => {
   try {
     const couponName: string = req.body.couponName;
     res.status(200).json({ coupon: await couponService.getCouponByName(couponName) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.post("/getMultipleCouponByName", async (req: Request, res: Response) => {
+  try {
+    const couponName: string = req.body.couponNames;
+    let theCouponArr = couponName.split(",")
+    res.status(200).json({ coupons: await couponService.getMultiCouponByNames(theCouponArr) });
   } catch (error) {
     console.error(error);
     LOG.error(error);
