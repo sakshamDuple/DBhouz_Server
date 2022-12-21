@@ -14,10 +14,9 @@ export interface IAdmin {
     country?: string,
     state?: string,
     city?: string,
-    postal_code?: string,
     main_address_text?: string
   };
-  profilePic?:ObjectId;
+  profilePic?:ObjectId; 
   website_name?:string;
   website_email?:string;
   socialLinks?: {
@@ -469,4 +468,11 @@ export interface ICart {
   product: IProduct;
   quantity: number;
   variant: IProductVariant;
+}
+export interface IFAQ {
+  _id?: ObjectId;
+  question?: string;
+  answer?: string;
+  createdAt: number;
+
 }

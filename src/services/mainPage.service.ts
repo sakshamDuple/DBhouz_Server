@@ -182,13 +182,23 @@ class mainPageServiceClass {
         mainPage.MainBanner = await this.getAllMainBannerIds();
         mainPage.SmallBanner1 = await this.getSmallBanner1Id();
         mainPage.SmallBanner2 = await this.getSmallBanner2Id();
-        let k: any = await collections.mainPage.find().toArray();
-        const query = { _id: k[0]?._id };
-        if (k) {
-            console.log(k)
-            await collections.mainPage.deleteOne(query)
-        }
+        console.log (mainPage.SmallBanner1,"ssssss1");
+        console.log(mainPage.SmallBanner2,"sssssssss2");
+        
+        // let k: any = await collections.mainPage.find().toArray();
+        // console.log(k,"000000");
+        
+        // const query = { _id: k[0]?._id };
+        // if (k) {
+        //     console.log(k,"kokokokokok")
+        //     // await collections.mainPage.deleteOne(query)
+        // }
+        // else{
+        //     console.log("inside else")
+        // }
         const result: InsertOneResult<MainPage> = await collections.mainPage.insertOne(mainPage);
+        console.log(result,"rrr");
+        
         mainPage._id = result.insertedId
         return mainPage
     }

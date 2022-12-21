@@ -160,7 +160,11 @@ miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
         main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
         main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
         main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
+        console.log(main,"mmmm");
+        
+
         let MainPage = await mainPageService.mainPageCreation(main);
+        
         res.status(200).json({ MainPage });
     } catch (e: any) {
         LOG.error(e)
