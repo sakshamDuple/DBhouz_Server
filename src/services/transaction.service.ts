@@ -4,7 +4,6 @@ import { OrderStatus, Order, transactionMethod } from "../interfaces";
 
 class TransactionServiceClass {
     async getAllTransactionFilter(OrderType: Array<string>, Start: number, PageLimit: number, TransactionMethod: Array<string>, SortByDate: string, Status: Array<string>): Promise<any[]> {
-        console.log(Start, PageLimit)
         const agg = [
             {
                 '$match': {
@@ -119,7 +118,7 @@ class TransactionServiceClass {
     }
 
     async getUserTransactionFilter(OrderType: Array<string>, Start: number, PageLimit: number, TransactionMethod: Array<string>, Id: string, SortByDate: string, Status: Array<string>): Promise<any[]> {
-        console.log(Start, PageLimit, OrderType, Status)
+        console.log(Start, PageLimit, OrderType, Status, TransactionMethod, Id)
         const agg = [
             {
                 '$match': {
@@ -147,7 +146,7 @@ class TransactionServiceClass {
                 '$limit': PageLimit
             }
         ];
-        let Alltransactions
+        let Alltransactions:any
         if (SortByDate == "Desc") {
             Alltransactions = await collections.orders.aggregate(agg).limit(PageLimit)
                 .sort({ createdAt: 1 })

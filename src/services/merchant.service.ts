@@ -95,21 +95,14 @@ class MerchantServiceClass {
     }
 
     async editProfile(profile: any): Promise<IMerchant> {   
-        console.log(profile,"pro")
-       
       const merchantId= profile.merchantId
-        
       const query = { _id: new ObjectId(merchantId) };
         let ThisProf:IMerchant =  await collections.merchants.findOne(query) as IMerchant;
-     
-        console.log(ThisProf,"ttt");
         if(ThisProf!=undefined){
-           
             if(profile.personalAddress!==undefined){
 
                 ThisProf.personalAddress=profile.personalAddress
             }
-
             if(profile.firstName!==undefined){
                 ThisProf.firstName=profile.firstName
             }
@@ -128,18 +121,10 @@ class MerchantServiceClass {
           if(profile.profilePic!==undefined){
             ThisProf.profilePic=profile.profilePic
           }
-               
-           
-           
-        }
-        
-        console.log(ThisProf,"ttt");       
+        }     
         let result: UpdateResult = await collections.merchants.updateOne( query,{
           $set: ThisProf,
         });
-      
-        console.log(result,"rrrrr");
-        
         return (result.modifiedCount > 0) ? await collections.merchants.findOne(query) as IMerchant : ThisProf;
       }
 
