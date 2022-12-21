@@ -115,8 +115,8 @@ class MerchantServiceClass {
            if(profile.about!==undefined){
             ThisProf.about=profile.about
            }
-          if(profile.phone!==undefined){
-            ThisProf.phone=profile.phone
+          if(profile.phoneNumber!==undefined){
+            ThisProf.phone=profile.phoneNumber
           }
           if(profile.profilePic!==undefined){
             ThisProf.profilePic=profile.profilePic

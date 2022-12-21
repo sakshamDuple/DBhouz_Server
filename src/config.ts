@@ -38,6 +38,7 @@ class AppConfigClass {
     blogCategory:string;
     blog:string;
     inventory:string;
+    faq:string
   };
 }
 
@@ -75,7 +76,8 @@ let AppConfigObject: AppConfigClass = {
     coupon: process.env.COLLECTION_COUPON,
     blogCategory:process.env.COLLECTION_BLOG_CATEGORY,
     blog:process.env.COLLECTION_BLOG,
-    inventory:process.env.COLLECTION_INVENTORY
+    inventory:process.env.COLLECTION_INVENTORY,
+    faq:process.env.COLLECTION_FAQ
   },
 };
 

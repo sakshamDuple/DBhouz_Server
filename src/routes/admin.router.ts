@@ -1,5 +1,5 @@
 import express, { Request, Response, Router } from "express";
-import { IAdmin, IContact, IMerchant, IUser,IDocument } from "../interfaces";
+import { IAdmin, IContact, IMerchant, IUser,IDocument,IFAQ } from "../interfaces";
 import { AdminService } from "../services/admin.service";
 import { LOG } from "../logger";
 import { uploadImages } from "../multer";
@@ -10,7 +10,7 @@ import { rename } from "fs";
 
 const adminRouter: Router = express.Router();
 adminRouter.use(express.json());
-
+          
 adminRouter.post("/editProfile", async (req: Request, res: Response) => {
     try {
         console.log("inside edit route");
@@ -23,12 +23,12 @@ adminRouter.post("/editProfile", async (req: Request, res: Response) => {
       console.error(error);   
       LOG.error(error);
       res.status(500).json({ error: error.message });
-    }
+    } 
   })
   
   adminRouter.post("/editPersonalInfo", async (req: Request, res: Response) => {
     try {
-        console.log("inside edit route");
+        console.log("inside edit route"); 
         console.log(req.body,"bodyyyy");
         const profile = req.body.data;
         console.log(profile,"pp");   
@@ -198,8 +198,46 @@ adminRouter.post("/editProfile", async (req: Request, res: Response) => {
       }
     }
   );
+  adminRouter.post('/createFaq', 
+  
+  async (req, res) => {
+    console.log(req.body,"inside post faq route")
+    const FAQ = req.body
+    console.log(FAQ,"ff");
+
+    let faqCreated = await AdminService.createFaq(FAQ)
+    res.status(200).json(faqCreated); 
+  }
+)
 
 
 
+adminRouter.get("/getAllFaqs", async (req: Request, res: Response) => {
+  try {
+      console.log("inside blog category tryy");
+      const FAQs= await AdminService.getAllFaqs()
+      console.log(FAQs,"faqsss");
+      
+    res.status(200).json({ FAQs:FAQs});
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+adminRouter.delete("/deleteFaq/:Id", async (req: Request, res: Response) => {
+  const faqId: string = req?.params?.Id;
+  if (!faqId) throw new Error(`Missing faq ID`);
+  let FAQ: IFAQ = await AdminService.getFAQbyId(faqId); 
+  console.log(FAQ,"SINGLE");
+  if (FAQ==undefined) {
+    throw new Error(`Missing faq ID`);
+  }
+  else{
+    const result = await AdminService.deleteSingleFAQ(FAQ)
+    console.log(result,"dddd");
+    res.status(200).json({ result:result});
+  }
+})
 
-export { adminRouter };
+
+export { adminRouter }; 

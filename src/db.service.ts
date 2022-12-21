@@ -28,6 +28,7 @@ export const collections: {
   blogCategory?:mongoDB.Collection;
   blog?:mongoDB.Collection;
   inventory?:mongoDB.Collection;
+  faq?:mongoDB.Collection;
 } = {};
 
 /**
@@ -80,6 +81,7 @@ export async function connectToDatabase() {
   collections.blogCategory= db.collection(AppConfig.mongoCollections.blogCategory);
   collections.blog = db.collection(AppConfig.mongoCollections.blog)
   collections.inventory = db.collection(AppConfig.mongoCollections.inventory)
+  collections.faq = db.collection(AppConfig.mongoCollections.faq)
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -108,7 +110,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       $jsonSchema: {
         bsonType: "object",
         required: ["email", "secret", "createdAt"],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
           _id: {},
           email: { bsonType: "string" },
@@ -881,4 +883,24 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   })
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.faq}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.faq,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["question", "answer"], 
+        additionalProperties: true,
+        properties: {
+          _id: { bsonType: "objectId" },
+          question: { bsonType: "string" },
+          answer: { bsonType: "string" },
+          createdAt: { bsonType: "number" },
+        },
+      },
+    },
+  })
+
+
+
 };

@@ -1,6 +1,6 @@
 import { InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { IAdmin } from "../interfaces";
+import { IAdmin,IFAQ } from "../interfaces";
 
 class AdminServiceClass {
 
@@ -90,7 +90,9 @@ class AdminServiceClass {
             if(profile.socialLinks!=undefined){
                 ThisProf.socialLinks= profile.socialLinks
             }
+
         }
+      
         let result: UpdateResult = await collections.admins.updateOne( {},{
           $set: ThisProf,
         });  
@@ -119,8 +121,8 @@ class AdminServiceClass {
            if(profile.about!==undefined){
             ThisProf.about=profile.about
            }
-          if(profile.phone!==undefined){
-            ThisProf.phone=profile.phone
+          if(profile.phoneNumber!==undefined){
+            ThisProf.phone=profile.phoneNumber
           }
           if(profile.profilePic!==undefined){
             ThisProf.profilePic=profile.profilePic
@@ -138,6 +140,49 @@ class AdminServiceClass {
         }
     
       }
+
+      sanitizeFAQ(o: IFAQ): IFAQ {
+        if (!o.question) delete o.question;
+        if (!o.answer) delete o.answer;
+        return o;
+      }
+      async createFaq(newFaq: IFAQ): Promise<IFAQ> {
+        console.log(newFaq,"inside faq service");
+        
+        newFaq = { ...newFaq }
+
+        newFaq = this.sanitizeFAQ(newFaq);
+        newFaq.createdAt=Date.now()
+       
+        console.log(newFaq,"nn");
+        
+        const result: InsertOneResult<IFAQ> = await collections.faq.insertOne(newFaq);
+        newFaq._id = result.insertedId;
+        console.log(newFaq)
+        return newFaq;
+      }
+
+      async getAllFaqs(): Promise<IFAQ[]> {
+        console.log("inside get all faqs service");   
+        
+        return (await collections.faq.find({}).sort({ createdAt: -1 }).toArray()) as IFAQ[];
+      }
+  
+      async getFAQbyId(faqId: string | ObjectId): Promise<IFAQ> {
+        const query = { _id: new ObjectId(faqId) };
+        return (await collections.faq.findOne(query)) as IFAQ;
+    }
+    async deleteSingleFAQ(FAQ: IFAQ): Promise<boolean> {
+
+        let faqId =FAQ._id
+        console.log(faqId,"fffffff");
+        
+        const query = { _id: new ObjectId(faqId) };
+        const result = await collections.faq.deleteOne(query);
+        return (result && result.deletedCount > 0)
+    }
+
+
 
     }
 
