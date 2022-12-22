@@ -102,8 +102,8 @@ adminRouter.post("/editProfile", async (req: Request, res: Response) => {
           if (err) throw err;
           const icon_id = newDocument._id;
           console.log(icon_id,"log id created succesfully")
-              res.status(200).json({ icon_id });          
-          
+              res.status(200).json({ icon_id:newDocument._id });          
+           
         });
       } catch (error: any) {
         LOG.error(error);

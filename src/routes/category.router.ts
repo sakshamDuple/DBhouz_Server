@@ -40,7 +40,13 @@ categoryRouter.post(
       );
       rename(fileToUpload.path, newPath, (err) => {
         if (err) throw err;
+        console.log(newDocument._id,"vvv");
+        
         category.imageDocumentId = newDocument._id;
+        console.log(category.imageDocumentId,"cc");
+        
+        console.log(typeof(category.imageDocumentId),"ccccccaaaaooooo");
+        
         CategoryService.updateCategory(category)
           .then(() => {
             res.status(200).json({ category });
