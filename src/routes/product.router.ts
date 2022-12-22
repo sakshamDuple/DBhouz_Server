@@ -443,7 +443,29 @@ productRouter.post("/category/search", async (req: Request, res: Response) => {
   try {
     let categoryId = req.body.categoryId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal) });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal,"cat") });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.post("/merchantProduct/search", async (req: Request, res: Response) => {
+  try {
+    let merchantId = req.body.merchantId
+    let searchVal = req.body.searchVal
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal,"prd") });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.post("/adminProduct/search", async (req: Request, res: Response) => {
+  try {
+    let merchantId = req.body.merchantId
+    let searchVal = req.body.searchVal
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal,"admprd") });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });

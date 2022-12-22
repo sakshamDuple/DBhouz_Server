@@ -49,6 +49,100 @@ class OrderServiceClass {
         return transactions
     }
 
+    async getOrderByIdSearch(searchVal: string, field: string, merchantId: string): Promise<any[]> {
+        let agg = []
+        if (field == "admin") {
+            agg = [
+                {
+                //     '$project': {
+                //         '_id': {
+                //             '$toString': "$_id"
+                //         }
+                //     }
+                // },
+                // {
+                //     '$match': {
+                //         '$or': [
+                //             {
+                //                 '_id': new RegExp(searchVal, 'i')
+                //             }
+                //         ]
+                //     }
+                // }, {
+                    '$project': {
+                        '_id': 1
+                    }
+                }
+            ];
+        }
+        if (field == "merchant") {
+            let query: any = { "products.sellerId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                // },
+                // {
+                //     '$project': {
+                //         '_id': {
+                //             '$toString': "$_id"
+                //         }
+                //     }
+                // },
+                // {
+                //     '$match': {
+                //         '$or': [
+                //             {
+                //                 '_id': new RegExp(searchVal, 'i')
+                //             }
+                //         ]
+                //     }
+                }, {
+                    '$project': {
+                        '_id': 1
+                    }
+                }
+            ];
+        }
+        if (field == "user") {
+            let query: any = { "customerDetail.userId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                // },
+                // {
+                //     '$project': {
+                //         '_id': {
+                //             '$toString': "$_id"
+                //         }
+                //     }
+                // },
+                // {
+                //     '$match': {
+                //         '$or': [
+                //             {
+                //                 '_id': new RegExp(searchVal, 'i')
+                //             }
+                //         ]
+                //     }
+                }, {
+                    '$project': {
+                        '_id': 1
+                    }
+                }
+            ];
+        }
+        let orders = await collections.orders.aggregate(agg).sort({ createdAt: -1 }).toArray()
+        console.log(orders)
+        let newarr = []
+        for (let item of orders) {
+            let thisString = new RegExp(searchVal, 'i')
+            let FoundIt = thisString.test(item._id);
+            if (FoundIt) newarr.push(item._id);
+        }
+        return newarr
+        // orders.filter((x)=>{x._id=new RegExp(searchVal, 'i')})
+    }
+
     async getProductByOrderId(OrderId: string, type: number, PageLimit: number): Promise<any[]> {
         let agg = [
             {
@@ -240,7 +334,7 @@ class OrderServiceClass {
     // }
     async getBySellerFilter(Id: string, Start: number, End: number, SortByDate: string, PageLimit: number, OrderType: Array<string>): Promise<Order[]> {
         let start = Start - 1;
-        console.log("start",start,"PageLimit",PageLimit)
+        console.log("start", start, "PageLimit", PageLimit)
         let agg = [
             {
                 '$match': {

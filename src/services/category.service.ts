@@ -140,6 +140,140 @@ class CategoryServiceClass {
         return m;
     }
 
+    async getCategoryByIdSearch(searchVal: string, field: string, merchantId: string): Promise<any[]> {
+        let agg = []
+        if (field == "admin") {
+            agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        if (field == "merchant") {
+            let query: any = { "products.sellerId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                },
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        if (field == "user") {
+            let query: any = { "customerDetail.userId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                },
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        return await collections.categories.aggregate(agg).sort({ createdAt: -1 }).toArray()
+    }
+
+    async getSubCategoryByIdSearch(searchVal: string, field: string, merchantId: string): Promise<any[]> {
+        let agg = []
+        if (field == "admin") {
+            agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        if (field == "merchant") {
+            let query: any = { "products.sellerId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                },
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        if (field == "user") {
+            let query: any = { "customerDetail.userId": merchantId }
+            agg = [
+                {
+                    '$match': query
+                },
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1
+                    }
+                }
+            ];
+        }
+        return await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
+    }
+
     async doInactiveSubCategoryProduct(subCategoryId: ObjectId): Promise<boolean> {
         let products: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, true)
         let m = false
