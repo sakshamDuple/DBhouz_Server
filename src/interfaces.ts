@@ -117,6 +117,7 @@ export interface IUser {
   phone?: number;
   createdAt: number;
   AccessBlock?: boolean;
+  profilePic?: ObjectId;
   address?: {
     addressId: ObjectId,
     addressName: string,
