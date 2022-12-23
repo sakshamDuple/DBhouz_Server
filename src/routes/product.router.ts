@@ -68,7 +68,7 @@ productRouter.post("/getProductsBySubCategory/filter", async (req: Request, res:
 productRouter.post("/getProductsBySubCategory", async (req: Request, res: Response) => {
   try {
     let subCategoryId: string = req.body.subCategoryId;
-    let activeProducts: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, false);
+    let activeProducts: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, true);
     res.status(200).json({ status: "success", data: activeProducts });
   } catch (error) {
     LOG.error(error);
@@ -444,6 +444,16 @@ productRouter.post("/category/search", async (req: Request, res: Response) => {
     let categoryId = req.body.categoryId
     let searchVal = req.body.searchVal
     res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal,"cat") });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.get("/searchAll", async (req: Request, res: Response) => {
+  try {
+    let searchVal = String(req.query.searchVal)
+    res.status(200).json({ fetches: await ProductService.searchAll(searchVal) });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
