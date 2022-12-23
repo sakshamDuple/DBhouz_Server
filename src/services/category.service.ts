@@ -55,9 +55,15 @@ class CategoryServiceClass {
         if (existingCategory && existingCategory._id.toString() !== category._id.toString()) {
             throw new Error(`Category with name ${category.name} already exists`)
         }
+        console.log(category._id);
+        
         const query = { _id: new ObjectId(category._id) };
         delete category._id;
+        console.log(category,"cattttttttttt");
+        
         category = this.sanitizeCat(category)
+        console.log(category,"catttttt111111");
+        
         let result: UpdateResult = await collections.categories.updateOne(query, { $set: category });
         return (result.modifiedCount > 0)
     }

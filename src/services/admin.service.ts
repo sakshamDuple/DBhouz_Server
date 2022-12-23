@@ -59,14 +59,7 @@ class AdminServiceClass {
     async editProfile(profile: any): Promise<IAdmin> {   
         let ThisProf:IAdmin = await collections.admins.findOne({}) as IAdmin
         if(ThisProf!=undefined){
-           if(ThisProf===undefined){
-                ThisProf.seo={}
-           }
-           if(ThisProf.socialLinks===undefined){
-
-               ThisProf.socialLinks={}
-           }
-
+     
             if(profile.name!=""){
 
                 ThisProf.website_name = profile.name
@@ -78,13 +71,19 @@ class AdminServiceClass {
             if(profile.Address!= ""){
                 ThisProf.address= profile.Address
             }
-            if(profile.favIconDocumentId!=""){
-                ThisProf.favIconDocumentId= profile.favIconDocumentId
+            if(profile.favIconDocumentId!==undefined){
+                const favIconId= new ObjectId(profile.favIconDocumentId)
+        
+                
+                ThisProf.favIconDocumentId= favIconId
             }
-            if(profile.logoDocumentId!=""){
-                ThisProf.logoDocumentId= profile.logoDocumentId
+            if(profile.logoDocumentId!==undefined){
+                const logoIconId= new ObjectId(profile.logoDocumentId)
+          
+                
+                ThisProf.logoDocumentId= logoIconId
             }
-            if(profile.seo!=undefined){
+            if(profile.seo!==undefined){
                 ThisProf.seo=profile.seo
             }
             if(profile.socialLinks!=undefined){
@@ -92,11 +91,19 @@ class AdminServiceClass {
             }
 
         }
+        console.log(typeof(profile.logoDocumentId),"lllllooo");
+        
+        console.log(ThisProf,"ththth");
+        
       
         let result: UpdateResult = await collections.admins.updateOne( {},{
           $set: ThisProf,
         });  
-        return (result.modifiedCount > 0) ? await collections.users.findOne() as IAdmin : ThisProf;
+        console.log(result);
+        if(result.modifiedCount > 0){
+            return ( await collections.admins.findOne() as IAdmin )
+        }
+        
       }
       async getAdminDetails(): Promise<IAdmin> {
         return (await collections.admins.findOne()) as IAdmin;
