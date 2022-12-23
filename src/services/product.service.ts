@@ -88,15 +88,73 @@ class ProductServiceClass {
         }
     }
 
-    async getAllReviewOfThisUser(userId: string | ObjectId): Promise<any[]> {
-            let query: any = { 'review.userId': new ObjectId(userId) }
-            let agg = [
-                {
-                    '$match': query
+    async searchAll(searchVal: string): Promise<any[]> {
+        let agg = [
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'name': new RegExp(searchVal, 'i')
+                        }
+                    ]
                 }
-            ]
-            let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
-            return products
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'name': 1,
+                    'categoryId':1,
+                    'subCategoryId':1
+                }
+            }
+        ];
+        let agg2 = [
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'name': new RegExp(searchVal, 'i')
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'name': 1,
+                    'categoryId':1
+                }
+            }
+        ];
+        let agg3 = [
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'name': new RegExp(searchVal, 'i')
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'name': 1
+                }
+            }
+        ];
+        let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+        let subCategories = await collections.subCategories.aggregate(agg2).sort({ createdAt: -1 }).toArray()
+        let categories = await collections.categories.aggregate(agg3).sort({ createdAt: -1 }).toArray()
+        return [{ products: products }, { subCategories: subCategories }, { category: categories }]
+    }
+
+    async getAllReviewOfThisUser(userId: string | ObjectId): Promise<any[]> {
+        let query: any = { 'review.userId': new ObjectId(userId) }
+        let agg = [
+            {
+                '$match': query
+            }
+        ]
+        let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+        return products
     }
 
     async getAllByMerchant(merchantId: string | ObjectId, activeOnly: boolean): Promise<IProduct[]> {

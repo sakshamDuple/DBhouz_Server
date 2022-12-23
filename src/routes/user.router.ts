@@ -158,6 +158,31 @@ userRouter.post("/updateOne", async (req: Request, res: Response) => {
   }
 });
 
+userRouter.put("/updateUserAddress", async (req:Request, res:Response) => {
+  try {
+    let userId: string = String(req.query.userId)
+    let addressId: string = String(req.query.addressId)
+    let address = req.body.address
+    res.status(200).json({update:await userService.updateAddressesForUserById(userId,addressId,address)});
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.delete("/deleteSelectUserAddress", async (req:Request, res:Response) => {
+  try {
+    let userId: string = String(req.query.userId)
+    let addressId: string = String(req.query.addressId)
+    res.status(200).json(await userService.deleteSelectUserAddress(userId,addressId));
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 userRouter.post("/editProfile", async (req: Request, res: Response) => {
   try {
     const profile: { userId, firstName, lastName, email, phone, gender, curpassword, newpassword } = req.body;
