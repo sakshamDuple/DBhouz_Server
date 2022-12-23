@@ -118,7 +118,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           address:{bsonType:"string"},
           website_name:{bsonType:"string"},
           website_email:{bsonType:"string"},
-          logoDocumentId: { bsonType: "objectId" },
+          logoDocumentId:{bsonType: "objectId" },
           favIconDocumentId:{bsonType:"objectId"},
           socialLinks:{
             bsonType:"object",
