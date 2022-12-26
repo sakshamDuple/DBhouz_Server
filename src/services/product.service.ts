@@ -92,6 +92,10 @@ class ProductServiceClass {
         let agg = [
             {
                 '$match': {
+                    'status':EProductStatus.Active
+                }
+            }, {
+                '$match': {
                     '$or': [
                         {
                             'name': new RegExp(searchVal, 'i')
