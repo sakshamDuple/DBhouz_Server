@@ -18,12 +18,114 @@ class ProductServiceClass {
         return (await collections.products.find(query).sort({ createdAt: -1 }).toArray()) as IProduct[];
     }
 
-    async searchSpecific(categoryId: string | ObjectId, searchVal: string): Promise<any[]> {
-        let query: any = { categoryId: new ObjectId(categoryId) }
+    async searchSpecific(categoryId: string | ObjectId, searchVal: string, field: string): Promise<any[]> {
+        if (field == "cat") {
+            let query: any = { categoryId: new ObjectId(categoryId) }
+            let agg = [
+                {
+                    '$match': query
+                }, {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name': 1
+                    }
+                }
+            ];
+            let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            let subCategories = await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            return [{ products: products }, { subCategories: subCategories }]
+        } else if (field == "prd") {
+            let query: any = { merchantId: new ObjectId(categoryId) }
+            let agg = [
+                {
+                    '$match': query
+                }, {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name': 1
+                    }
+                }
+            ];
+            let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            let subCategories = await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            return [{ products: products }, { subCategories: subCategories }]
+        } else if (field == "admprd") {
+            let agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name': 1
+                    }
+                }
+            ];
+            let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            let subCategories = await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
+            return [{ products: products }, { subCategories: subCategories }]
+        }
+    }
+
+    async searchAll(searchVal: string): Promise<any[]> {
         let agg = [
             {
-                '$match': query
+                '$match': {
+                    '$or': [
+                        {
+                            'name': new RegExp(searchVal, 'i')
+                        }
+                    ]
+                }
             }, {
+                '$project': {
+                    '_id': 1,
+                    'name': 1,
+                    'categoryId':1,
+                    'subCategoryId':1
+                }
+            }
+        ];
+        let agg2 = [
+            {
+                '$match': {
+                    '$or': [
+                        {
+                            'name': new RegExp(searchVal, 'i')
+                        }
+                    ]
+                }
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'name': 1,
+                    'categoryId':1
+                }
+            }
+        ];
+        let agg3 = [
+            {
                 '$match': {
                     '$or': [
                         {
@@ -39,8 +141,20 @@ class ProductServiceClass {
             }
         ];
         let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
-        let subCategories = await collections.subCategories.aggregate(agg).sort({ createdAt: -1 }).toArray()
-        return [{ products: products }, { subCategories: subCategories }]
+        let subCategories = await collections.subCategories.aggregate(agg2).sort({ createdAt: -1 }).toArray()
+        let categories = await collections.categories.aggregate(agg3).sort({ createdAt: -1 }).toArray()
+        return [{ products: products }, { subCategories: subCategories }, { category: categories }]
+    }
+
+    async getAllReviewOfThisUser(userId: string | ObjectId): Promise<any[]> {
+        let query: any = { 'review.userId': new ObjectId(userId) }
+        let agg = [
+            {
+                '$match': query
+            }
+        ]
+        let products = await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray()
+        return products
     }
 
     async getAllByMerchant(merchantId: string | ObjectId, activeOnly: boolean): Promise<IProduct[]> {
@@ -94,9 +208,9 @@ class ProductServiceClass {
         product = this.sanitize(product)
         const query = { _id: new ObjectId(product._id) };
         product.review.forEach(element => {
-            element.orderId= new ObjectId(element.orderId)
-            element.reviewId= new ObjectId(element.reviewId)
-            element.userId= new ObjectId(element.userId)
+            element.orderId = new ObjectId(element.orderId)
+            element.reviewId = new ObjectId(element.reviewId)
+            element.userId = new ObjectId(element.userId)
         });
         delete product._id;
         product.variants.forEach(async element => {
@@ -176,7 +290,7 @@ class ProductServiceClass {
     async getAllByCategoryFilterNewVal(categoryId: string, pfrom: number, pto: number, colorId: string[], boolean): Promise<Number> {
         let query: any = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto } }
         if (boolean) {
-            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto} , status: "ACTIVE" }
+            query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
         }
         if (colorId[0] != "") {
             let m = []
@@ -185,7 +299,7 @@ class ProductServiceClass {
             });
             query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } }
             if (boolean) {
-                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m } , status: "ACTIVE" }
+                query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, "variants.colorId": { "$in": m }, status: "ACTIVE" }
             }
         }
         return (await collections.products
@@ -300,11 +414,11 @@ class ProductServiceClass {
             .toArray()) as IProduct[];
     }
 
-    getVariant(product: IProduct, variant: string): IProductVariant{
-        let nvariant:IProductVariant 
-        if(product.variants){
+    getVariant(product: IProduct, variant: string): IProductVariant {
+        let nvariant: IProductVariant
+        if (product.variants) {
             product.variants.forEach(element => {
-                if(element.name == variant){
+                if (element.name == variant) {
                     console.log(true)
                     nvariant = element
                 }
@@ -319,37 +433,37 @@ class ProductServiceClass {
         product = { ...product }
         let k = await this.getVariant(product, variant)
         console.log(k)
-        if(k) return k
+        if (k) return k
         return "variant not found"
     }
 
-    func(Order:Order, product:IProduct, rating:number, allReview: Array<IReview>, len:number, review: IReview): boolean {
-        let update:boolean = false
+    func(Order: Order, product: IProduct, rating: number, allReview: Array<IReview>, len: number, review: IReview): boolean {
+        let update: boolean = false
         // console.log("hge \n \n \n \n",Order, product, rating, allReview, len, review)
         const query2 = { _id: new ObjectId(Order._id.toString()) };
-        if(Order.products)
-        Order.products.forEach(async item => {
-            console.log(item.reviewFlagOfThisProduct == false)
-            console.log(product._id.toString(),item.productId)
-            if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
-                let newRating = (rating * len + review.rating) / (len + 1)
-                product.rating = newRating;
-                allReview.push(review)
-                review.orderId = new ObjectId(review.orderId)
-                review.reviewId = new ObjectId(review.reviewId)
-                review.userId = new ObjectId(review.userId)
-                product.review = allReview
-                const query1 = { _id: new ObjectId(product._id.toString()) };
-                console.log(product)
-                await collections.products.updateOne(query1, { $set: product })
-                console.log("HIi")
-                item.reviewFlagOfThisProduct = true
-                await collections.orders.updateOne(query2, { $set: Order })
-                console.log("Hiii")
-                update = true
-                return update
-            }
-        })
+        if (Order.products)
+            Order.products.forEach(async item => {
+                console.log(item.reviewFlagOfThisProduct == false)
+                console.log(product._id.toString(), item.productId)
+                if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
+                    let newRating = (rating * len + review.rating) / (len + 1)
+                    product.rating = newRating;
+                    allReview.push(review)
+                    review.orderId = new ObjectId(review.orderId)
+                    review.reviewId = new ObjectId(review.reviewId)
+                    review.userId = new ObjectId(review.userId)
+                    product.review = allReview
+                    const query1 = { _id: new ObjectId(product._id.toString()) };
+                    console.log(product)
+                    await collections.products.updateOne(query1, { $set: product })
+                    console.log("HIi")
+                    item.reviewFlagOfThisProduct = true
+                    await collections.orders.updateOne(query2, { $set: Order })
+                    console.log("Hiii")
+                    update = true
+                    return update
+                }
+            })
         return update
     }
 
@@ -358,7 +472,7 @@ class ProductServiceClass {
         console.log(thisId)
         let product: IProduct = await collections.products.findOne(thisId) as IProduct
         let Order: Order = await collections.orders.findOne(review.orderId) as Order
-        console.log("product",product)
+        console.log("product", product)
         let rating: number = product.rating
         let len = product.review.length
         let allReview: Array<IReview> = product.review
@@ -418,38 +532,38 @@ class ProductServiceClass {
 
 
     sanitize2(o: IProduct): IProduct {
-         if (!o.recomendations) o.recomendations = 0;
-         return o
+        if (!o.recomendations) o.recomendations = 0;
+        return o
     }
 
     async incRecomendations(product: IProduct): Promise<boolean> {
         product = { ...product }
         product = this.sanitize2(product)
-        product.recomendations+=1
+        product.recomendations += 1
         const query = { _id: new ObjectId(product._id) };
-        
-        
+
+
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
     sanitize3(o: IProduct): IProduct {
         if (!o.unrecomendations) o.unrecomendations = 0;
         return o
-   }
+    }
     async dontRecomend(product: IProduct): Promise<boolean> {
         product = { ...product }
         product = this.sanitize3(product)
-        product.unrecomendations+=1
+        product.unrecomendations += 1
         const query = { _id: new ObjectId(product._id) };
-        
-        
+
+
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
 
- 
 
- 
+
+
 
 }
 

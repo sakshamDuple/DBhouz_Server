@@ -158,6 +158,31 @@ userRouter.post("/updateOne", async (req: Request, res: Response) => {
   }
 });
 
+userRouter.put("/updateUserAddress", async (req:Request, res:Response) => {
+  try {
+    let userId: string = String(req.query.userId)
+    let addressId: string = String(req.query.addressId)
+    let address = req.body.address
+    res.status(200).json({update:await userService.updateAddressesForUserById(userId,addressId,address)});
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.delete("/deleteSelectUserAddress", async (req:Request, res:Response) => {
+  try {
+    let userId: string = String(req.query.userId)
+    let addressId: string = String(req.query.addressId)
+    res.status(200).json(await userService.deleteSelectUserAddress(userId,addressId));
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 userRouter.post("/editProfile", async (req: Request, res: Response) => {
   try {
     const profile: { userId, firstName, lastName, email, phone, gender, curpassword, newpassword } = req.body;
@@ -192,10 +217,58 @@ userRouter.post("/getMultipleCouponByName", async (req: Request, res: Response) 
   }
 })
 
+userRouter.post("/getAllReviewsForThisUser",async (req:Request, res:Response) => {
+  try{
+    const userId: string = req.body.userId;
+    res.status(200).json({products:await ProductService.getAllReviewOfThisUser(userId)});
+  }catch(error){
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 userRouter.post("/getCouponById/:couponId", async (req: Request, res: Response) => {
   try {
     const couponId: ObjectId = new ObjectId(req.params.couponId);
     res.status(200).json({ coupon: await couponService.getCouponById(couponId) });
+  } catch (error) {
+    console.error(error);
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+userRouter.post("/userProfileUpload", uploadImages.array("images"), async (req: Request, res: Response) => {
+  try {
+    if (req.files) {
+      const userId: string = req.body.userId;
+      const user: IUser = await userService.get(userId);
+      if (!user) throw new Error(`user ${userId} does not exist`);
+      let newDocumentIds: ObjectId[] = [];
+      for (let file of Object.values(req.files)) {
+        let newDoc: IDocument = await DocumentService.create({
+          _id: null,
+          fileName: file.originalname,
+          createdAt: Date.now(),
+          sizeInBytes: file.size,
+        });
+        newDocumentIds.push(newDoc._id);
+        const newPath: string = path.resolve(
+          AppConfig.directories.documents,
+          newDoc._id.toString()
+        );
+        await new Promise<void>((resolve, reject) => {
+          rename(file.path, newPath, (err) => {
+            if (err) reject(err);
+            resolve();
+          });
+        });
+      }
+      user.profilePic = newDocumentIds[0]
+      await userService.update(user);
+      res.status(200).json({ user });
+    } else throw new Error(`No files received to upload`);
   } catch (error) {
     console.error(error);
     LOG.error(error);
