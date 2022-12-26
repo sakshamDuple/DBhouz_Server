@@ -50,6 +50,8 @@ class CategoryServiceClass {
     }
 
     async updateCategory(category: ICategory): Promise<boolean> {
+        console.log("aaaaaaaaaaaaaaaa");
+        
         category = { ...category }
         const existingCategory: ICategory = await this.getCategoryByName(category.name)
         if (existingCategory && existingCategory._id.toString() !== category._id.toString()) {

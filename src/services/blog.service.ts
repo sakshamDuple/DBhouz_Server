@@ -52,6 +52,8 @@ class blogServiceClass {
         const query = { _id: new ObjectId(blog._id) };
         delete blog._id;
         blog = this.sanitizeblog(blog)
+        console.log(blog,"bloo");
+        
         let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
         return (result.modifiedCount > 0)
     }
@@ -82,6 +84,13 @@ class blogServiceClass {
     // }
     async getblogByTitle(blogTitle: string): Promise<Iblog> {
         return (await collections.blog.findOne({ blogTitle })) as Iblog;
+    }
+
+
+    async deleteBlog(blogId: string | ObjectId): Promise<boolean> {
+        const query = { _id: new ObjectId(blogId) };
+        const result = await collections.blog.deleteOne(query);
+        return (result && result.deletedCount > 0)
     }
 
 

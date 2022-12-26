@@ -42,6 +42,8 @@ blogRouter.post("/createBlog", async (req: Request, res: Response) => {
     try {
       console.log("inside add blogImage try");
       console.log(req.body,"boddy");
+      console.log(req.file,"fffile");
+      
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
       const blogId: string = req.body.blogId;
@@ -128,7 +130,43 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
         .json({ error: `Unable to find matching document with productId: ${blogTitle}` });
     }
   })
- 
+  blogRouter.post("/updateblog", async (req: Request, res: Response) => {
+    try {
+      let blog: Iblog = req.body.blog;
+      await blogService.updateBlog(blog);
+      res.status(200).json({});
+    } catch (error) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+
+  blogRouter.delete("/deleteBlog/:blogId", async (req: Request, res: Response) => {
+    try {
+      const blogId: string = req?.params?.blogId;
+      if (!blogId) throw new Error(`Missing Category ID`);
+   
+      const result=await blogService.deleteBlog(blogId);
+      res.status(200).json({result});
+    } catch (error) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  });
   
+  
+  blogRouter.post("/updateBlogStatus", async (req: Request, res: Response) => {
+
+    try {
+      let blog: Iblog = req.body.blog;
+      await blogService.updateBlog(blog);
+      res.status(200).json({});
+    } catch (error) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  })
+
 
 export { blogRouter };
