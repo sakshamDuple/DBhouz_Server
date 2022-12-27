@@ -201,6 +201,17 @@ orderRouter.get("/getTransactionMerchant/action", async (req: Request, res: Resp
         res.status(500).json({ error: error.message });
     }
 })
+orderRouter.get("/getOrderById/search", async(req: Request, res: Response) => {
+    let searchVal: string = String(req.query.searchVal)
+    let id: string = String(req.query.id)
+    let type: string = String(req.query.type)
+    try{
+        res.status(200).json({fetches: await OrderService.getOrderByIdSearch(searchVal,type,id) });
+    }catch(error){
+        LOG.error(error);
+        res.status(500).json({ error: error.message });
+    }
+})
 
 orderRouter.get("/getTransactionUser/action", async (req: Request, res: Response) => {
     let Page: number = req.query?.page ? parseInt(String(req.query.page)) : 1;

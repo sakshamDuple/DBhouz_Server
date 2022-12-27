@@ -105,13 +105,13 @@ categoryRouter.post(
   }
 );
 
-categoryRouter.post("/createCategory", async (req: Request, res: Response) => { 
+categoryRouter.post("/createCategory", async (req: Request, res: Response) => {
   try {
-    console.log(req.body,"bbbb");
-    
+    console.log(req.body, "bbbb");
+
     let category: ICategory = req.body.category;
-    console.log(category,"caaaaaaaaaaaaaaaa");
-    
+    console.log(category, "caaaaaaaaaaaaaaaa");
+
     category = await CategoryService.createCategory(category);
     res.status(200).json({ category });
   } catch (error: any) {
@@ -119,7 +119,7 @@ categoryRouter.post("/createCategory", async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 });
-     
+
 categoryRouter.post("/createSubCategory", async (req: Request, res: Response) => {
   try {
     let subCategory: ISubCategory = req.body.subCategory;
@@ -134,6 +134,30 @@ categoryRouter.post("/createSubCategory", async (req: Request, res: Response) =>
 categoryRouter.get("/getAllData", async (req: Request, res: Response) => {
   try {
     res.status(200).json({ data: await CategoryService.getAll() });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+categoryRouter.get("/getSearchResponseCategory/search", async (req: Request, res: Response) => {
+  let searchVal: string = String(req.query.searchVal)
+  let id: string = String(req.query.id)
+  let type: string = String(req.query.type)
+  try {
+    res.status(200).json({ data: await CategoryService.getCategoryByIdSearch(searchVal,type,id) });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+categoryRouter.get("/getSearchResponseSubCategory/search", async (req: Request, res: Response) => {
+  let searchVal: string = String(req.query.searchVal)
+  let id: string = String(req.query.id)
+  let type: string = String(req.query.type)
+  try {
+    res.status(200).json({ data: await CategoryService.getSubCategoryByIdSearch(searchVal,type,id) });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });

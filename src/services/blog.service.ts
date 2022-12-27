@@ -1,6 +1,6 @@
 import { InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import {Iblog} from "../interfaces"
+import { Iblog } from "../interfaces"
 
 class blogServiceClass {
 
@@ -10,37 +10,37 @@ class blogServiceClass {
     }
 
     sanitizeblog(o: Iblog): Iblog {
-        if(!o.category) delete o.category
+        if (!o.category) delete o.category
         if (!o.description) delete o.description
         if (!o.imageDocumentId) delete o.imageDocumentId
         else o.imageDocumentId = new ObjectId(o.imageDocumentId)
-        return o  
+        return o
     }
     async getBlog(blogId: string | ObjectId): Promise<Iblog> {
         const query = { _id: new ObjectId(blogId) };
-        return (await collections.blog.findOne(query)) as Iblog;      
+        return (await collections.blog.findOne(query)) as Iblog;
     }
 
     async createBlog(newblog: Iblog): Promise<Iblog> {
-        console.log(newblog,"newww");
-        
+        console.log(newblog, "newww");
+
         newblog = { ...newblog }
         newblog.title = newblog.title.toLowerCase()
-        console.log(newblog.title,"ttitle");
-        
+        console.log(newblog.title, "ttitle");
+
         const existingBlog: Iblog = await this.getblogByName(newblog.title)
-        console.log(existingBlog,"exxxxxxx");
-        
+        console.log(existingBlog, "exxxxxxx");
+
         if (existingBlog) {
             throw new Error(`Category with name ${newblog.title} already exists`)
         }
         newblog.createdAt = Date.now()
         newblog = this.sanitizeblog(newblog)
-        console.log(newblog,"nnnnnnnnn"); 
+        console.log(newblog, "nnnnnnnnn");
         const result: InsertOneResult<Iblog> = await collections.blog.insertOne(newblog);
-        
+
         newblog._id = result.insertedId
-    
+
         return newblog
     }
     async updateBlog(blog: Iblog): Promise<boolean> {
@@ -62,14 +62,19 @@ class blogServiceClass {
 
     async getAllBlog(): Promise<Iblog[]> {
         console.log("inside blog category service");
-        
+
         return (await collections.blog.find({}).sort({ createdAt: -1 }).toArray()) as Iblog[];
     }
 
+    async deleteBlog(blogId: string | ObjectId): Promise<boolean> {
+        const query = { _id: new ObjectId(blogId) };
+        const result = await collections.blog.deleteOne(query);
+        return (result && result.deletedCount > 0)
+    }
 
     async getblogById(blogId: string | ObjectId): Promise<Iblog> {
-        console.log(blogId,"inside blog service");
-        
+        console.log(blogId, "inside blog service");
+
         const query = { _id: new ObjectId(blogId) };
 
         return (await collections.blog.findOne(query)) as Iblog;
@@ -77,7 +82,7 @@ class blogServiceClass {
 
     // async getblogByTitle(blogTitle: string | ObjectId): Promise<Iblog> {
     //     console.log(blogTitle,"inside blog service");
-        
+
     //     const query = {blogTitle}
     //     let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
     //     return (await collections.blog.findOne(query)) as Iblog;

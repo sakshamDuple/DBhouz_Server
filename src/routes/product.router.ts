@@ -68,7 +68,7 @@ productRouter.post("/getProductsBySubCategory/filter", async (req: Request, res:
 productRouter.post("/getProductsBySubCategory", async (req: Request, res: Response) => {
   try {
     let subCategoryId: string = req.body.subCategoryId;
-    let activeProducts: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, false);
+    let activeProducts: IProduct[] = await ProductService.getAllBySubCategory(subCategoryId, true);
     res.status(200).json({ status: "success", data: activeProducts });
   } catch (error) {
     LOG.error(error);
@@ -443,7 +443,39 @@ productRouter.post("/category/search", async (req: Request, res: Response) => {
   try {
     let categoryId = req.body.categoryId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal) });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal, "cat") });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.get("/searchAll", async (req: Request, res: Response) => {
+  try {
+    let searchVal = String(req.query.searchVal)
+    res.status(200).json({ fetches: await ProductService.searchAll(searchVal) });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.post("/merchantProduct/search", async (req: Request, res: Response) => {
+  try {
+    let merchantId = req.body.merchantId
+    let searchVal = req.body.searchVal
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal, "prd") });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
+productRouter.post("/adminProduct/search", async (req: Request, res: Response) => {
+  try {
+    let merchantId = req.body.merchantId
+    let searchVal = req.body.searchVal
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal, "admprd") });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -510,10 +542,40 @@ productRouter.get("/getOne/:productId", async (req: Request, res: Response) => {
 productRouter.post("/updateOne", async (req: Request, res: Response) => {
   try {
     const product: IProduct = req.body.product;
+    let newProduct = {...product}
     let prevProduct: IProduct = await ProductService.get(product._id)
+    console.log("product.status",product.status)
+    let activeInactive = true
+    let message = ""
+    if(product.variants.length == 0) {
+      activeInactive = false
+      message == "product can't be activated if product has less than one variant"
+    }
+    product.variants.map((variant, i) => {
+      console.log(variant)
+      if (variant.price == 0) {
+        console.log("\n\n\n\n product price less \n\n\n\n")
+        activeInactive = activeInactive && false
+        message = "product can't be activated until every variants of product has their price atleast more that 1 unit"
+      } else {
+        activeInactive = activeInactive && true
+      }
+    })
+    console.log(activeInactive)
+    if (activeInactive == true) {
+      product.status == EProductStatus.Active
+      newProduct.status = EProductStatus.Active
+      console.log("product activated")
+    } else {
+      product.status == EProductStatus.InActive
+      newProduct.status = EProductStatus.InActive
+      console.log("product inactivated")
+    }
     let merchantOfProfuct: IMerchant = await MerchantService.get(product.merchantId)
-    let result = await ProductService.update(product);
-    res.status(200).json({ result });
+  	console.log("product to update",product)
+    let result = await ProductService.update(newProduct);
+    console.log("\n\n\n\n product updated \n\n\n\n")
+    res.status(200).json({ result,message });
     if (product.status == EProductStatus.Active && product.status != prevProduct.status) {
       await sendEmail(merchantOfProfuct.email, "Merchant Product Activated", { product, merchantName: merchantOfProfuct.firstName });
     } else if (product.status == EProductStatus.InActive && product.status != prevProduct.status) {
@@ -539,8 +601,6 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
 
 productRouter.post("/incRecommendations", async (req: Request, res: Response) => {
   try {
-
-
     const productId = req.body.productId;
     const userId = req.body.userId
     console.log(productId, "pp");
@@ -575,13 +635,10 @@ productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
 
 productRouter.post("/productUsed", async (req: Request, res: Response) => {
   try {
-
-
     const productId = req.body.productId;
     const userId = req.body.userId
     console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
-
     let result = await userService.productUsed(userId, productId)
     res.status(200).json({ result });
   } catch (error) {
