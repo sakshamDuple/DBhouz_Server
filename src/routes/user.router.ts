@@ -112,6 +112,8 @@ userRouter.get("/admin/getAll", async (req: Request, res: Response) => {
 
 userRouter.get("/getOne/:userId", async (req: Request, res: Response) => {
   const userId: string = req?.params?.userId;
+  console.log(userId,"uu");
+  
   try {
     res.status(200).json({ user: await userService.get(userId) });
   } catch (error) {
