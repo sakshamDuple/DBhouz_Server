@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import { IUser, Order, OrderStatus } from "../interfaces";
 import { LOG } from "../logger";
 import { MerchantService } from "../services/merchant.service";
+import { NotifictionService } from "../services/notification.service";
 import { OrderService } from "../services/order.service";
 import { TransactionService } from "../services/transaction.service";
 import { userService } from "../services/user.service";
@@ -56,21 +57,22 @@ orderRouter.post("/make", async (req: Request, res: Response) => {
         orderData = await OrderService.create(orderData);
         res.status(200).json({ orderData })
         let emailSent = await sendEmail(orderData.customerDetail.email, "User Order Placed", orderData);
+        await NotifictionService.create("User Order Placed", "Admin", null, `User With Id: ${orderData.customerDetail.userId} & emailId: ${orderData.customerDetail.email} Has Ordered some New Products On OrderId: ${orderData._id}`)
         let findUser: IUser = await userService.get(orderData.customerDetail.userId)
         let push = true
-        if(findUser.address)
-        findUser.address.forEach(element => {
-            if(element.main_address_text != orderData.address.main_address_text){
-                push = push && true
-            } else {
-                push = false
-            }
-        });
-        if(push){
-            if(!findUser.address) findUser.address = []
+        if (findUser.address)
+            findUser.address.forEach(element => {
+                if (element.main_address_text != orderData.address.main_address_text) {
+                    push = push && true
+                } else {
+                    push = false
+                }
+            });
+        if (push) {
+            if (!findUser.address) findUser.address = []
             let count = findUser.address.length
             let addressName = `Address_${count}`
-            let NewAddress = {...orderData.address, addressName}
+            let NewAddress = { ...orderData.address, addressName }
             console.log(NewAddress)
             findUser.address.push(NewAddress)
             await userService.update(findUser)
@@ -78,7 +80,8 @@ orderRouter.post("/make", async (req: Request, res: Response) => {
         orderData.products.forEach(async element => {
             let theMerchant = await MerchantService.get(element.sellerId)
             orderData.transactionDetail.transactionMethod
-            await sendEmail(theMerchant.email, "Merchant Order Placed", {orderData,merchantName:theMerchant.firstName});
+            await sendEmail(theMerchant.email, "Merchant Order Placed", { orderData, merchantName: theMerchant.firstName });
+            await NotifictionService.create("User Order Placed", "Merchant", new ObjectId(element.sellerId), `Merchant With Id: ${orderData.customerDetail.userId} & emailId: ${orderData.customerDetail.email} Has Ordered some New Products On OrderId: ${orderData._id}`)
         });
     } catch (e: any) {
         LOG.error(e);
@@ -102,7 +105,7 @@ orderRouter.get("/getOrderForUser/:userId/:page/:limit/:SortByDate/:OrderType", 
     let UserId: string = req?.params?.userId;
     let Page: number = req.params?.page ? parseInt(req.params.page) : 1;
     let newOrderType: string = req.params.OrderType
-    let OrderType:Array<string> = newOrderType.split(',')
+    let OrderType: Array<string> = newOrderType.split(',')
     let PageLimit: number = req?.params?.limit ? parseInt(req.params.limit) : 10;
     let Start: number = PageLimit * (Page - 1) + 1
     let SortByDate: string = req.params.SortByDate
@@ -110,7 +113,7 @@ orderRouter.get("/getOrderForUser/:userId/:page/:limit/:SortByDate/:OrderType", 
     if (OrderType[0] == ':OrderType') {
         OrderType = ["Recieved", "Payment_Accepted", "Inprogress", "Delivered", "Cancelled", "Refund_Inprogress", "Refund_Done", "Payment_Pending"]
     }
-    console.log( (await OrderService.getByUserFilter(UserId, Start, End, SortByDate, PageLimit, OrderType)).length )
+    console.log((await OrderService.getByUserFilter(UserId, Start, End, SortByDate, PageLimit, OrderType)).length)
     try {
         res.status(200).json({ order: await OrderService.getByUserFilter(UserId, Start, End, SortByDate, PageLimit, OrderType), totalOrders: await OrderService.getTotalByUserFilter(UserId, OrderType) });
     } catch (e: any) {
@@ -120,16 +123,16 @@ orderRouter.get("/getOrderForUser/:userId/:page/:limit/:SortByDate/:OrderType", 
     }
 })
 
-orderRouter.get("/getProductByOrderId/:id/:page/:limit", async (req:Request, res:Response) => {
+orderRouter.get("/getProductByOrderId/:id/:page/:limit", async (req: Request, res: Response) => {
     let OrderId = req.params?.id;
     let Page: number = req.params?.page ? parseInt(req.params.page) : 1;
     let PageLimit: number = req?.params?.limit ? parseInt(req.params.limit) : 10;
     let Start: number = PageLimit * (Page - 1) + 1
-    if(OrderId != "" || OrderId == undefined) {
+    if (OrderId != "" || OrderId == undefined) {
         console.log(PageLimit, Start, OrderId)
-        return res.status(200).json({ result: await OrderService.getProductByOrderId(OrderId, Start, PageLimit)});
+        return res.status(200).json({ result: await OrderService.getProductByOrderId(OrderId, Start, PageLimit) });
     }
-    return res.status(404).json({error: "OrderID Not Found,Please Provide Correct OrderID"})
+    return res.status(404).json({ error: "OrderID Not Found,Please Provide Correct OrderID" })
 })
 
 orderRouter.get("/getAllTransaction/action", async (req: Request, res: Response) => {
@@ -150,7 +153,7 @@ orderRouter.get("/getAllTransaction/action", async (req: Request, res: Response)
         Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
     }
     if (TransactionMethod[0] == 'undefined') {
-        TransactionMethod = ["DEBIT_CARD","CREDIT_CARD","UPI","PAYTM","GPAY","CASH_ON_DELIVERY","NETBANKING"]
+        TransactionMethod = ["DEBIT_CARD", "CREDIT_CARD", "UPI", "PAYTM", "GPAY", "CASH_ON_DELIVERY", "NETBANKING"]
     }
     try {
         let transactions: any[] = await TransactionService.getAllTransactionFilter(OrderType, Start, PageLimit, TransactionMethod, SortByDate, Status);
@@ -191,7 +194,7 @@ orderRouter.get("/getTransactionMerchant/action", async (req: Request, res: Resp
         Status = ["successful", "unsuccessful", "pending", "Refund_Done", "Refund_Inprogress"]
     }
     if (TransactionMethod[0] == 'undefined') {
-        TransactionMethod = ["DEBIT_CARD","CREDIT_CARD","UPI","PAYTM","GPAY","CASH_ON_DELIVERY","NETBANKING"]
+        TransactionMethod = ["DEBIT_CARD", "CREDIT_CARD", "UPI", "PAYTM", "GPAY", "CASH_ON_DELIVERY", "NETBANKING"]
     }
     try {
         let transactions: any[] = await TransactionService.getMerchantTransactionFilter(OrderType, Start, PageLimit, TransactionMethod, Id, SortByDate, Status);
@@ -201,13 +204,13 @@ orderRouter.get("/getTransactionMerchant/action", async (req: Request, res: Resp
         res.status(500).json({ error: error.message });
     }
 })
-orderRouter.get("/getOrderById/search", async(req: Request, res: Response) => {
+orderRouter.get("/getOrderById/search", async (req: Request, res: Response) => {
     let searchVal: string = String(req.query.searchVal)
     let id: string = String(req.query.id)
     let type: string = String(req.query.type)
-    try{
-        res.status(200).json({fetches: await OrderService.getOrderByIdSearch(searchVal,type,id) });
-    }catch(error){
+    try {
+        res.status(200).json({ fetches: await OrderService.getOrderByIdSearch(searchVal, type, id) });
+    } catch (error) {
         LOG.error(error);
         res.status(500).json({ error: error.message });
     }
@@ -265,11 +268,11 @@ orderRouter.get("/getOrderForSeller/:sellerId/:page/:limit/:SortByDate/:OrderTyp
     }
 })
 
-orderRouter.put("/updateMyOrder", async (req:Request, res:Response) => {
-    let order:Order = req.body?.Order
-    try{
-        res.send(200).json({result: await OrderService.updateOrder(order)})
-    } catch (e:any) {
+orderRouter.put("/updateMyOrder", async (req: Request, res: Response) => {
+    let order: Order = req.body?.Order
+    try {
+        res.send(200).json({ result: await OrderService.updateOrder(order) })
+    } catch (e: any) {
         LOG.error(e);
         res.status(500).json({ error: e.message });
         console.log(e);

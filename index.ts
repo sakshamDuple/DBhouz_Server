@@ -22,6 +22,7 @@ import { blogCategoryRouter } from "./src/routes/blogCat.router"
 import {blogRouter} from "./src/routes/blog.router"
 import {adminRouter} from "./src/routes/admin.router"
 import { faqRouter } from "./src/routes/faq.router";
+import { notificationRouter } from "./src/routes/notification.router";
 
 dotenv.config();
 
@@ -75,6 +76,7 @@ initDirectories()
     appRouter.use("/blog",blogRouter)
     appRouter.use("/admin",adminRouter)
     appRouter.use("/faq",faqRouter)
+    appRouter.use("/notification",notificationRouter)
     app.use(`/rest`, appRouter);
 
     app.listen(AppConfig.serverPort, AppConfig.serverHost, () => {

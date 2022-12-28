@@ -9,6 +9,7 @@ import { userService } from "../services/user.service";
 import nodemailer from "nodemailer"
 import { ObjectID } from "bson";
 import { EmailHTML } from "./emailHtml";
+import { NotifictionService } from "../services/notification.service";
 
 const authRouter: Router = express.Router();
 authRouter.use(express.json());
@@ -20,7 +21,7 @@ const sendEmail = async (email: string, subject: string, text: any) => {
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,
       port: '587',
-      auth: { user: "shubhi@dupleit.com", pass: "apftilkqlqogpgzy" }, // todo in process.env
+      auth: { user: "sdbhous@gmail.com", pass: "apftilkqlqogpgzy" }, // todo in process.env
       secure: false,
       logger: true
     });
@@ -55,8 +56,10 @@ authRouter.post(
     const message = `http://${process.env.BASE_URL}:${process.env.SERVER_PORT}/rest/auth/verify/${user._id}/${token}`;
     // const merchant = await MerchantService.get(user._id)
     let emailSent = await sendEmail(user.email, "Verify Email Merchant", message);
-    if (emailSent)
+    await NotifictionService.create("New Merchant Created", "Admin", null, `Merchant With Id: ${user._id} & emailId: ${user.email} is created`)
+    if (emailSent){
       return res.json({ user, token, message: "An Email sent to your account please verify" });
+    }
     return res.json({ message: "Email NOt Sent" })
   }
 );
@@ -146,6 +149,7 @@ authRouter.post(
     const message = `http://${process.env.BASE_URL}:${process.env.SERVER_PORT}/rest/auth/verify/${user._id}/${token}`;
     // const usera = await userService.getSpecificUser(new ObjectID(user._id));
     let emailSent = await sendEmail(user.email, "Verify Email User", message);
+    await NotifictionService.create("New User Created", "Admin", null, `User With Id: ${user._id} & emailId: ${user.email} is created`)
     if (emailSent)
       return res.json({ user, token, message: "An Email sent to your account please verify" });
     return res.json({ message: "Email NOt Sent" })
@@ -166,6 +170,7 @@ authRouter.get("/verify/:id/:token", async (req, res) => {
         verify = await userService.verifyUser(userId);
       if (verify) {
         emailSent = await sendEmail(user.email, "user email verified", "");
+        await NotifictionService.create("New Merhcant Verified", "Admin", null, `Merchant With Id: ${user._id} & emailId: ${user.email} is now verified`)
         res.send("user email verified sucessfully");
       }
     }
@@ -173,10 +178,10 @@ authRouter.get("/verify/:id/:token", async (req, res) => {
       if (decoded.user._id == req.params.id)
         verify = await MerchantService.verifyMerchant(userId);
       if (verify) {
-        console.log("\n\n\nCame To This Page\n\n\n")
         emailSent = await sendEmail(merchant.email, "merchant email verified", merchant?.firstName ? merchant.firstName : "Anonymous")
+        await NotifictionService.create("New Merchant Verified", "Admin", null, `Merchant With Id: ${user._id} & emailId: ${user.email} is now verified`)
+        res.send("merchant email verified sucessfully");
       }
-      res.send("merchant email verified sucessfully");
     }
     if (!user) return res.status(400).send("Invalid link");
     res.send("Something Went Wrong");

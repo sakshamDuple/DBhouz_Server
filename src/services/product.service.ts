@@ -92,7 +92,7 @@ class ProductServiceClass {
         let agg = [
             {
                 '$match': {
-                    'status':EProductStatus.Active
+                    'status': EProductStatus.Active
                 }
             }, {
                 '$match': {
@@ -106,8 +106,8 @@ class ProductServiceClass {
                 '$project': {
                     '_id': 1,
                     'name': 1,
-                    'categoryId':1,
-                    'subCategoryId':1
+                    'categoryId': 1,
+                    'subCategoryId': 1
                 }
             }
         ];
@@ -124,7 +124,7 @@ class ProductServiceClass {
                 '$project': {
                     '_id': 1,
                     'name': 1,
-                    'categoryId':1
+                    'categoryId': 1
                 }
             }
         ];
@@ -148,6 +148,47 @@ class ProductServiceClass {
         let subCategories = await collections.subCategories.aggregate(agg2).sort({ createdAt: -1 }).toArray()
         let categories = await collections.categories.aggregate(agg3).sort({ createdAt: -1 }).toArray()
         return [{ products: products }, { subCategories: subCategories }, { category: categories }]
+    }
+
+    async getTopProducts(): Promise<IProduct[]> {
+        let agg = [
+            {
+                '$project': {
+                    '_id': 1,
+                    'name': 1,
+                    'merchantId': 1,
+                    'status': 1,
+                    'categoryId': 1,
+                    'description': 1,
+                    'subCategoryId': 1,
+                    'images': 1,
+                    'variants': 1,
+                    'createdAt': 1,
+                    'rating': 1,
+                    'review': 1,
+                    'variantParameters': 1,
+                    'seo': 1,
+                    'applicableCoupons': 1,
+                    'totalReview': {
+                        '$cond': {
+                            'if': {
+                                '$isArray': '$review'
+                            },
+                            'then': {
+                                '$size': '$review'
+                            },
+                            'else': 'NA'
+                        }
+                    }
+                }
+            },
+            { '$sort': {
+                'totalReview': -1
+              }
+            },
+            { '$limit': 5 }
+        ]
+        return await collections.products.aggregate(agg).sort({ createdAt: -1 }).toArray() as IProduct[]
     }
 
     async getAllReviewOfThisUser(userId: string | ObjectId): Promise<any[]> {
@@ -275,13 +316,13 @@ class ProductServiceClass {
         if (sortByName == "Asc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: -1 }).skip(Start - 1)
+                .sort({ "variants.price": 1 }).skip(Start - 1)
                 .limit(PageLimit)
                 .toArray()) as IProduct[];
         } else if (sortByName == "Desc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: 1 }).skip(Start - 1)
+                .sort({ "variants.price": -1 }).skip(Start - 1)
                 .limit(PageLimit)
                 .toArray()) as IProduct[];
         }
@@ -333,13 +374,13 @@ class ProductServiceClass {
         if (sortByName == "Asc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: -1 }).skip(Start - 1)
+                .sort({ "variants.price": 1 }).skip(Start - 1)
                 .limit(PageLimit)
                 .toArray()) as IProduct[];
         } else if (sortByName == "Desc") {
             return (await collections.products
                 .find(query)
-                .sort({ name: 1 }).skip(Start - 1)
+                .sort({ "variants.price": -1 }).skip(Start - 1)
                 .limit(PageLimit)
                 .toArray()) as IProduct[];
         }

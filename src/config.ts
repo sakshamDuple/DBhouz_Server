@@ -38,7 +38,8 @@ class AppConfigClass {
     blogCategory:string;
     blog:string;
     inventory:string;
-    faq:string
+    faq:string;
+    notifications:string;
   };
 }
 
@@ -77,7 +78,8 @@ let AppConfigObject: AppConfigClass = {
     blogCategory:process.env.COLLECTION_BLOG_CATEGORY,
     blog:process.env.COLLECTION_BLOG,
     inventory:process.env.COLLECTION_INVENTORY,
-    faq:process.env.COLLECTION_FAQ
+    faq:process.env.COLLECTION_FAQ,
+    notifications: process.env.COLLECTION_NOTIFICATION
   },
 };
 

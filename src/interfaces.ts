@@ -33,6 +33,7 @@ export interface IAdmin {
   favIconDocumentId?:ObjectId;
   secret: string;
   createdAt: number;
+  // notification?:INotification[];
 }
 export interface IContact {
   _id: ObjectId;
@@ -94,6 +95,7 @@ export interface IMerchant {
   }[];
   accessToCoupon?: string[];
   createdAt: number;
+  // notification?:INotification[];
 }
 
 export interface IUser {
@@ -127,7 +129,24 @@ export interface IUser {
     postal_code: string,
     main_address_text: string
   }[];
+  // notification?:INotification[];
 }
+export interface INotification {
+  _id?:ObjectId;
+  OwnerType:IOwnerType;
+  typeId:ObjectId;
+  topic:string;
+  description:string;
+  read?:boolean;
+  createdAt?:number;
+}
+export enum IOwnerType {
+  Merchant = "Merchant",
+  Admin = "Admin",
+  User = "User",
+  Null = ""
+}
+
 export enum Gender {
   Male = "MALE",
   Female = "FEMALE",
@@ -245,6 +264,7 @@ export interface IReview {
   orderId: ObjectId;
   description: string;
   rating: number;
+  createdAt? : number
 }
 export interface ICoupon {
   _id: ObjectId;
