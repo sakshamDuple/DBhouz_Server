@@ -25,10 +25,11 @@ export const collections: {
   mainPage?: mongoDB.Collection;
   banner?: mongoDB.Collection;
   coupon?: mongoDB.Collection;
-  blogCategory?:mongoDB.Collection;
-  blog?:mongoDB.Collection;
-  inventory?:mongoDB.Collection;
-  faq?:mongoDB.Collection;
+  blogCategory?: mongoDB.Collection;
+  blog?: mongoDB.Collection;
+  inventory?: mongoDB.Collection;
+  faq?: mongoDB.Collection;
+  notifications?: mongoDB.Collection;
 } = {};
 
 /**
@@ -72,16 +73,17 @@ export async function connectToDatabase() {
   collections.documents = db.collection(AppConfig.mongoCollections.documents);
   collections.colors = db.collection(AppConfig.mongoCollections.colors);
   collections.units = db.collection(AppConfig.mongoCollections.units);
-  collections.users = db.collection(AppConfig.mongoCollections.user);   
+  collections.users = db.collection(AppConfig.mongoCollections.user);
   collections.orders = db.collection(AppConfig.mongoCollections.orders);
   collections.contact = db.collection(AppConfig.mongoCollections.contact);
   collections.mainPage = db.collection(AppConfig.mongoCollections.mainPage);
   collections.banner = db.collection(AppConfig.mongoCollections.banner);
   collections.coupon = db.collection(AppConfig.mongoCollections.coupon);
-  collections.blogCategory= db.collection(AppConfig.mongoCollections.blogCategory);
+  collections.blogCategory = db.collection(AppConfig.mongoCollections.blogCategory);
   collections.blog = db.collection(AppConfig.mongoCollections.blog)
   collections.inventory = db.collection(AppConfig.mongoCollections.inventory)
   collections.faq = db.collection(AppConfig.mongoCollections.faq)
+  collections.notifications = db.collection(AppConfig.mongoCollections.notifications)
   LOG.info(`Successfully connected to database`);
   try {
     await applyMongoValidations(db);
@@ -115,17 +117,17 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           _id: {},
           email: { bsonType: "string" },
           name: { bsonType: "string" },
-          address:{bsonType:"string"},
-          website_name:{bsonType:"string"},
-          website_email:{bsonType:"string"},
-          logoDocumentId:{bsonType: "objectId" },
-          favIconDocumentId:{bsonType:"objectId"},
-          socialLinks:{
-            bsonType:"object",
-            properties:{
-              facebookLink:{ bsonType:"string"},
-              googleLink:{bsonType:"string"},
-              twitterLink:{bsonType:"string"}
+          address: { bsonType: "string" },
+          website_name: { bsonType: "string" },
+          website_email: { bsonType: "string" },
+          logoDocumentId: { bsonType: "objectId" },
+          favIconDocumentId: { bsonType: "objectId" },
+          socialLinks: {
+            bsonType: "object",
+            properties: {
+              facebookLink: { bsonType: "string" },
+              googleLink: { bsonType: "string" },
+              twitterLink: { bsonType: "string" }
             }
           },
           seo: {
@@ -298,11 +300,11 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       $jsonSchema: {
         bsonType: "object",
         required: ["title", "createdAt"],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
           _id: {},
-          title: { bsonType: "string" },  
-          category:{bsonType: "string"},
+          title: { bsonType: "string" },
+          category: { bsonType: "string" },
           description: { bsonType: "string" },
           status: { enum: ["ACTIVE", "INACTIVE"] },
           imageDocumentId: { bsonType: "objectId" },
@@ -319,15 +321,6 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       },
     },
   });
-
-
-
-
-
-
-
-
-
 
   LOG.info(`Validating collection ${AppConfig.mongoCollections.products}`);
   await db.command({
@@ -449,13 +442,14 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
             items: {
               bsonType: "object",
               required: ["userId", "orderId", "description", "rating", "reviewId"],
-              additionalProperties: false,
+              additionalProperties: true,
               properties: {
                 reviewId: { bsonType: "objectId" },
                 userId: { bsonType: "objectId" },
                 orderId: { bsonType: "objectId" },
                 description: { bsonType: "string" },
                 rating: { bsonType: "number" },
+                createdAt: { bsonType: "number" }
               },
             },
           },
@@ -889,7 +883,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
     validator: {
       $jsonSchema: {
         bsonType: "object",
-        required: ["question", "answer"], 
+        required: ["question", "answer"],
         additionalProperties: true,
         properties: {
           _id: { bsonType: "objectId" },
@@ -901,6 +895,24 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
     },
   })
 
-
-
+  LOG.info(`Validating collection ${AppConfig.mongoCollections.notifications}`);
+  await db.command({
+    collMod: AppConfig.mongoCollections.notifications,
+    validator: {
+      $jsonSchema: {
+        bsonType: "object",
+        required: ["OwnerType", "topic", "description"],
+        additionalProperties: true,
+        properties: {
+          _id: { bsonType: "objectId" },
+          OwnerType: { bsonType: "string" },
+          typeId: { bsonType: "objectId" },
+          topic: { bsonType: "string" },
+          description: { bsonType: "string" },
+          read: { bsonType: "bool" },
+          createdAt: { bsonType: "number" }
+        },
+      },
+    },
+  })
 };

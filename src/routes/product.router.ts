@@ -15,6 +15,7 @@ import { BrandService } from "../services/brand.service";
 import { ColorService } from "../services/color.service";
 import { sendEmail } from "./auth.router";
 import { userService } from "../services/user.service";
+import { NotifictionService } from "../services/notification.service";
 let future = require('future')
 
 const productRouter: Router = express.Router();
@@ -83,7 +84,7 @@ productRouter.get('/getEveryProductBySpecificaion/filter', async (req: Request, 
     let thisSubCat = subCategoryId.split(',')
     let priceRangefrom: number = req?.query?.pricefrom ? parseInt(String(req?.query?.pricefrom)) : 1;
     let priceRangeto: number = req?.query?.priceto ? parseInt(String(req?.query?.priceto)) : 100000;
-    let sortByName: string = req?.query?.sortByDate ? String(req?.query?.sortByDate) : "";
+    let sortByName: string = req?.query?.sortByName ? req?.query?.sortByName.toString() : "";
     let PageLimit: number = req?.query?.PageLimit ? parseInt(String(req?.query?.PageLimit)) : 10;
     let colorId: string = req?.query?.colorId ? String(req?.query?.colorId) : "";
     let thisColors = colorId.split(',')
@@ -180,7 +181,7 @@ productRouter.post("/doReview", async (req: Request, res: Response) => {
       let userId = new ObjectID((decoded.user._id))
       let reviewId = new ObjectID
       let newReview: IReview = {
-        reviewId, userId, orderId, description, rating
+        reviewId, userId, orderId, description, rating, createdAt: Date.now()
       }
       let result = await ProductService.doReview(newReview, productId)
       res.status(200).json({ result })
@@ -333,6 +334,8 @@ productRouter.post(
       if (!product) throw new Error(`Product ${productId} does not exist`);
       let variants = product.variants
       let priority: number
+
+      
       variants.map(async element => {
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
@@ -443,7 +446,7 @@ productRouter.post("/category/search", async (req: Request, res: Response) => {
   try {
     let categoryId = req.body.categoryId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal,"cat") });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(categoryId, searchVal, "cat") });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -460,11 +463,21 @@ productRouter.get("/searchAll", async (req: Request, res: Response) => {
   }
 })
 
+productRouter.get("/getTopProduct", async (req: Request, res: Response) => {
+  try {
+    let Products: IProduct[] = await ProductService.getTopProducts()
+    res.status(200).json({ products: Products.length < 5 ? "no products yet to fedch" : Products });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
+
 productRouter.post("/merchantProduct/search", async (req: Request, res: Response) => {
   try {
     let merchantId = req.body.merchantId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal,"prd") });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal, "prd") });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -475,7 +488,7 @@ productRouter.post("/adminProduct/search", async (req: Request, res: Response) =
   try {
     let merchantId = req.body.merchantId
     let searchVal = req.body.searchVal
-    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal,"admprd") });
+    res.status(200).json({ fetches: await ProductService.searchSpecific(merchantId, searchVal, "admprd") });
   } catch (error: any) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -542,13 +555,55 @@ productRouter.get("/getOne/:productId", async (req: Request, res: Response) => {
 productRouter.post("/updateOne", async (req: Request, res: Response) => {
   try {
     const product: IProduct = req.body.product;
+    const admin: string = req.query?.admin ? req.query?.admin.toString() : null;
+    const activate: string = req.query?.activate ? req.query?.activate.toString() : null;
+    let newProduct = { ...product }
     let prevProduct: IProduct = await ProductService.get(product._id)
+    let activeInactive = true
+    let message = ""
+    if (product.variants.length == 0) {
+      activeInactive = false
+      message == "product can't be activated if product has less than one variant"
+    }
+    product.variants.map((variant, i) => {
+      console.log(variant)
+      if (variant.price == 0) {
+        activeInactive = activeInactive && false
+        message = "product can't be activated until every variants of product has their price atleast more that 1 unit"
+      } else {
+        activeInactive = activeInactive && true
+      }
+    })
+    console.log(activeInactive)
+    if (activeInactive == true) {
+      product.status == EProductStatus.Active
+      newProduct.status = EProductStatus.Active
+      console.log("product activated")
+    } else {
+      product.status == EProductStatus.InActive
+      newProduct.status = EProductStatus.InActive
+      console.log("product inactivated")
+    }
     let merchantOfProfuct: IMerchant = await MerchantService.get(product.merchantId)
-    let result = await ProductService.update(product);
-    res.status(200).json({ result });
+    console.log("product to update", product)
+    if (admin == "Admin" && message == "") {
+      if (activate == "Active") {
+        newProduct.status = EProductStatus.Active;
+        product.status == EProductStatus.Active;
+      } else {
+        newProduct.status = EProductStatus.InActive;
+        product.status = EProductStatus.InActive;
+      }
+    }
+    let result = await ProductService.update(newProduct);
+    res.status(200).json({ result, message });
     if (product.status == EProductStatus.Active && product.status != prevProduct.status) {
+      await NotifictionService.create("Merchant Product Activated", "Admin", null, `Product with Id: ${product._id} and Name: ${product.name} is now Activated`)
+      await NotifictionService.create("Merchant Product Activated", "Merchant", product.merchantId, `Your Product with Id: ${product._id} and Name: ${product.name} is now Activated`)
       await sendEmail(merchantOfProfuct.email, "Merchant Product Activated", { product, merchantName: merchantOfProfuct.firstName });
     } else if (product.status == EProductStatus.InActive && product.status != prevProduct.status) {
+      await NotifictionService.create("Merchant Product Deactivated", "Admin", null, `Product with Id: ${product._id} and Name: ${product.name} is now Deactivated`)
+      await NotifictionService.create("Merchant Product Deactivated", "Merchant", product.merchantId, `Your Product with Id: ${product._id} and Name: ${product.name} is now Deactivated`)
       await sendEmail(merchantOfProfuct.email, "Merchant Product Deactivated", { product, merchantName: merchantOfProfuct.firstName });
     }
   } catch (error) {
@@ -562,6 +617,7 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
   try {
     if (await ProductService.delete(productId))
       return res.status(200).json({ message: "product deleted" });
+    await NotifictionService.create("Merchant Product Deleted", "Admin", null, `Product with Id: ${productId} is now Deleted`)
     res.status(404).json({ message: "product not deleted" });
   } catch (error) {
     LOG.error(error);
@@ -571,8 +627,6 @@ productRouter.delete("/deleteOne/:productId", async (req: Request, res: Response
 
 productRouter.post("/incRecommendations", async (req: Request, res: Response) => {
   try {
-
-
     const productId = req.body.productId;
     const userId = req.body.userId
     console.log(productId, "pp");
@@ -607,13 +661,10 @@ productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
 
 productRouter.post("/productUsed", async (req: Request, res: Response) => {
   try {
-
-
     const productId = req.body.productId;
     const userId = req.body.userId
     console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
-
     let result = await userService.productUsed(userId, productId)
     res.status(200).json({ result });
   } catch (error) {
