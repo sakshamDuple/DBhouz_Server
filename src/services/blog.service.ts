@@ -14,6 +14,7 @@ class blogServiceClass {
         if (!o.description) delete o.description
         if (!o.imageDocumentId) delete o.imageDocumentId
         else o.imageDocumentId = new ObjectId(o.imageDocumentId)
+        if(!o.blogImages) delete o.blogImages
         return o
     }
     async getBlog(blogId: string | ObjectId): Promise<Iblog> {
@@ -44,18 +45,24 @@ class blogServiceClass {
         return newblog
     }
     async updateBlog(blog: Iblog): Promise<boolean> {
+        console.log(blog,"blo");
+        
         blog = { ...blog }
         const existingBlog: Iblog = await this.getblogByName(blog.title)
         if (existingBlog && existingBlog._id.toString() !== blog._id.toString()) {
             throw new Error(`Category with name ${blog.title} already exists`)
         }
         const query = { _id: new ObjectId(blog._id) };
+        console.log(query,"queery");
+        
         delete blog._id;
         blog = this.sanitizeblog(blog)
         console.log(blog,"bloo");
         
         let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
-        return (result.modifiedCount > 0)
+        console.log(result,"rrrr");
+        
+        return (result&&result.modifiedCount > 0)
     }
 
 
@@ -92,11 +99,7 @@ class blogServiceClass {
     }
 
 
-    async deleteBlog(blogId: string | ObjectId): Promise<boolean> {
-        const query = { _id: new ObjectId(blogId) };
-        const result = await collections.blog.deleteOne(query);
-        return (result && result.deletedCount > 0)
-    }
+
 
 
 }

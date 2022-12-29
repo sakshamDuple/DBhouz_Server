@@ -298,7 +298,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
       $jsonSchema: {
         bsonType: "object",
         required: ["title", "createdAt"],
-        additionalProperties: false,
+        additionalProperties: true,
         properties: {
           _id: {},
           title: { bsonType: "string" },  

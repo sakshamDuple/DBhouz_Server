@@ -167,6 +167,66 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       res.status(500).json({ error: error.message });
     }
   })
+  
+  blogRouter.post(
+    "/newBlogImages",
+    uploadImages.array("image"),
+    async (req: Request, res: Response) => {
+      try {
+        let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
+        if (!filesToUpload || filesToUpload.length < 0)
+          throw new Error(`Files not available for upload`);
+        const blogId: string = req.body.blogId;
+        console.log(blogId,"bb");
+        
+        const blog: Iblog = await blogService.getBlog(blogId);
+      if (!blog) throw new Error(`blog ${blogId} not found`);
+        if (!blog.blogImages) blog.blogImages = [];
+        for (let image of blog.blogImages) {
+          if (image.documentId) {
+            await DocumentService.delete(image.documentId);
+          }
+        }
+        blog.blogImages = [];
+        let priority: number = 1;
+        for (const currentFile of filesToUpload) {
+          let newDocument: IDocument = {
+            _id: null,
+            fileName: currentFile.originalname,
+            createdAt: Date.now(),
+            sizeInBytes: currentFile.size,
+          };
+          newDocument = await DocumentService.create(newDocument);
+          blog.blogImages.push({ documentId: newDocument._id, priority: priority++ });
+          const newPath: string = path.resolve(
+            AppConfig.directories.documents,
+            newDocument._id.toString()
+          );
+          await new Promise<void>((resolve, reject) => {
+            rename(currentFile.path, newPath, (err) => {
+              if (err) reject(err);
+              else resolve();
+            });
+          });
+        }
+        blogService.updateBlog(blog)
+          .then(() => {
+            res.status(200).json({ blog });
+          })
+          .catch((e) => {
+            throw e;
+          });
+      } catch (error: any) {
+        LOG.error(error);
+        res.status(500).json({ error: error.message });
+      }
+    }
+  );
+
+
+
+
+  
 
 
 export { blogRouter };
