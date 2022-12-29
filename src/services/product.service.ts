@@ -266,7 +266,7 @@ class ProductServiceClass {
                     variant_Name: element.name,
                     stock: element.availableQuantity,
                     availableItems: element.availableQuantity,
-                    taxAmount: element.priceByAdmin,
+                    taxAmount: element.priceByAdmin, 
                 }
                 element.inventoryId = await InventoryService.createInventoryInside(inventory)
             } else {

@@ -214,6 +214,10 @@ export interface Iblog {
     metaTagDescription?: string;
     metaTagKeywords?: string;
   };
+  blogImages?: {
+    documentId: ObjectId;
+    priority: number;
+  }[];
   createdAt: number;
 }
 

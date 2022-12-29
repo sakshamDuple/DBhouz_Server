@@ -334,6 +334,8 @@ productRouter.post(
       if (!product) throw new Error(`Product ${productId} does not exist`);
       let variants = product.variants
       let priority: number
+
+      
       variants.map(async element => {
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
