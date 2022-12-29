@@ -21,16 +21,16 @@ const sendEmail = async (email: string, subject: string, text: any) => {
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,
       port: '587',
-      auth: { user: "sdbhous@gmail.com", pass: "apftilkqlqogpgzy" }, // todo in process.env
+      auth: { user: "sdbhous@gmail.com", pass: "flfcxkpnpymbcaju" }, // todo in process.env
       secure: false,
       logger: true
     });
     await transporter.sendMail({
-      from: process.env.USER,
+      from: "sdbhous@gmail.com",
       to: email,
       subject: subject,
       html: HTML,
-    });     
+    });
     console.log("email sent sucessfully");
     return true
   } catch (error) {
@@ -170,7 +170,7 @@ authRouter.get("/verify/:id/:token", async (req, res) => {
         verify = await userService.verifyUser(userId);
       if (verify) {
         emailSent = await sendEmail(user.email, "user email verified", "");
-        await NotifictionService.create("New Merhcant Verified", "Admin", null, `Merchant With Id: ${user._id} & emailId: ${user.email} is now verified`)
+        await NotifictionService.create("New User Verified", "Admin", null, `User With Id: ${user._id} & emailId: ${user.email} is now verified`)
         res.send("user email verified sucessfully");
       }
     }

@@ -50,23 +50,19 @@ class CAuthUtils {
         }
       )
     );
-    passport.use(   
+    passport.use(
       "merchantlogin",
       new LocalStrategy(
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString(
-              "utf-8"
-            );
             const user: IMerchant = (await collections.merchants.findOne({
               email,
             })) as IMerchant;
             if (!user) {
               return done(null, null, { message: "Invalid Email" });
             }
-            if (!this.compareHash(plainTextPassword, user.secret)) {
+            if (!await this.compareHash(password, user.secret)) {
               return done(null, null, { message: "Invalid Password" });
             }
             return done(null, user, { message: "Logged in Successfully" });
@@ -107,17 +103,13 @@ class CAuthUtils {
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString(
-              "utf-8"
-            );
             const user: IUser = (await collections.users.findOne({
               email,
             })) as IUser;
             if (!user) {
               return done(null, null, { message: "Invalid Email" });
             }
-            if (!this.compareHash(plainTextPassword, user.secret)) {
+            if (!await this.compareHash(password, user.secret)) {
               return done(null, null, { message: "Invalid Password" });
             }
             return done(null, user, { message: "Logged in Successfully" });
@@ -158,15 +150,12 @@ class CAuthUtils {
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString(
-              "utf-8"
-            );
             const admin: IAdmin = (await collections.admins.findOne({ email })) as IMerchant;
             if (!admin) {
               return done(null, null, { message: "Invalid Email" });
             }
-            if (!this.compareHash(plainTextPassword, admin.secret)) {
+            console.log("\n\n\nhiugef\n\n\n", email, password,await this.compareHash(password, admin.secret))
+            if (!await this.compareHash(password, admin.secret)) {
               return done(null, null, { message: "Invalid Password" });
             }
             return done(null, admin, { message: "Logged in Successfully" });

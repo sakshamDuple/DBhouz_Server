@@ -1,4 +1,5 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
+import { MongoClient } from 'mongodb';
 import { collections } from "../db.service";
 import { OrderStatus, Order, transactionMethod } from "../interfaces";
 
@@ -20,6 +21,64 @@ class OrderServiceClass {
         newOrder._id = result.insertedId
         return newOrder
     }
+    async getOrderChartAdmin(year: number): Promise<any[]> {
+        let agg = [
+            {
+                '$project': {
+                    'total_price': 1,
+                    'month': {
+                        '$month': {
+                            $toDate: '$createdAt'
+                        }
+                    },
+                    'year': {
+                        '$year': {
+                            $toDate: '$createdAt'
+                        }
+                    }
+                }
+            }, {
+                '$match': {
+                    'year': year
+                }
+            }, {
+                '$sortByCount': '$month'
+            }
+        ]
+        return await collections.orders.aggregate(agg).toArray()
+    }
+
+    async getOrderChartMerchant(year: number, id: string): Promise<any[]> {
+        const agg = [
+            {
+                '$match': {
+                    'products.sellerId': id
+                }
+            }, {
+                '$project': {
+                    'total_price': 1,
+                    'month': {
+                        '$month': {
+                            $toDate: '$createdAt'
+                        }
+                    },
+                    'year': {
+                        '$year': {
+                            $toDate: '$createdAt'
+                        }
+                    }
+                }
+            }, {
+                '$match': {
+                    'year': year
+                }
+            }, {
+                '$sortByCount': '$month'
+            }
+        ];
+        return await collections.orders.aggregate(agg).toArray()
+    }
+
     async getAllTransaction(): Promise<any[]> {
         const agg = [
             {
@@ -54,21 +113,21 @@ class OrderServiceClass {
         if (field == "admin") {
             agg = [
                 {
-                //     '$project': {
-                //         '_id': {
-                //             '$toString': "$_id"
-                //         }
-                //     }
-                // },
-                // {
-                //     '$match': {
-                //         '$or': [
-                //             {
-                //                 '_id': new RegExp(searchVal, 'i')
-                //             }
-                //         ]
-                //     }
-                // }, {
+                    //     '$project': {
+                    //         '_id': {
+                    //             '$toString': "$_id"
+                    //         }
+                    //     }
+                    // },
+                    // {
+                    //     '$match': {
+                    //         '$or': [
+                    //             {
+                    //                 '_id': new RegExp(searchVal, 'i')
+                    //             }
+                    //         ]
+                    //     }
+                    // }, {
                     '$project': {
                         '_id': 1
                     }
@@ -80,22 +139,22 @@ class OrderServiceClass {
             agg = [
                 {
                     '$match': query
-                // },
-                // {
-                //     '$project': {
-                //         '_id': {
-                //             '$toString': "$_id"
-                //         }
-                //     }
-                // },
-                // {
-                //     '$match': {
-                //         '$or': [
-                //             {
-                //                 '_id': new RegExp(searchVal, 'i')
-                //             }
-                //         ]
-                //     }
+                    // },
+                    // {
+                    //     '$project': {
+                    //         '_id': {
+                    //             '$toString': "$_id"
+                    //         }
+                    //     }
+                    // },
+                    // {
+                    //     '$match': {
+                    //         '$or': [
+                    //             {
+                    //                 '_id': new RegExp(searchVal, 'i')
+                    //             }
+                    //         ]
+                    //     }
                 }, {
                     '$project': {
                         '_id': 1
@@ -108,22 +167,22 @@ class OrderServiceClass {
             agg = [
                 {
                     '$match': query
-                // },
-                // {
-                //     '$project': {
-                //         '_id': {
-                //             '$toString': "$_id"
-                //         }
-                //     }
-                // },
-                // {
-                //     '$match': {
-                //         '$or': [
-                //             {
-                //                 '_id': new RegExp(searchVal, 'i')
-                //             }
-                //         ]
-                //     }
+                    // },
+                    // {
+                    //     '$project': {
+                    //         '_id': {
+                    //             '$toString': "$_id"
+                    //         }
+                    //     }
+                    // },
+                    // {
+                    //     '$match': {
+                    //         '$or': [
+                    //             {
+                    //                 '_id': new RegExp(searchVal, 'i')
+                    //             }
+                    //         ]
+                    //     }
                 }, {
                     '$project': {
                         '_id': 1

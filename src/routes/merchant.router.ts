@@ -117,6 +117,17 @@ merchantRouter.post('/newMerchantImages', uploadImages.array('image'), async (re
     }
 });
 
+merchantRouter.get('/getMerchantOrderTable', async (req: Request, res: Response) => {
+    let id:string = req.query.id.toString()
+    let year:number = parseInt(req.query.year.toString())
+    try {
+        res.status(200).json({ data: await OrderService.getOrderChartMerchant(year, id)})
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
 merchantRouter.post('/newMerchantImgDel', async (req: Request, res: Response) => {
     try {
         const merchantId: string = req.body.merchantId;

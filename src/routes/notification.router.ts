@@ -69,6 +69,37 @@ notificationRouter.get('/getEveryForThisUser', async (req: Request, res: Respons
     }
 });
 
+notificationRouter.get('/getReadForAdmin', async (req: Request, res: Response) => {
+    try {
+        res.status(200).json({ Notifications: await NotifictionService.getReadForAdmin() });
+    } catch (error: any) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
+notificationRouter.get('/getReadForThisMerchant', async (req: Request, res: Response) => {
+    let Id: ObjectId = req?.query?.id ? new ObjectId(req?.query?.id.toString()) : null;
+    try {
+        res.status(200).json({ Notifications: await NotifictionService.getReadForThisMerchant(Id) });
+    } catch (error: any) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
+notificationRouter.get('/getReadForThisUser', async (req: Request, res: Response) => {
+    let Id: ObjectId = req?.query?.id ? new ObjectId(req?.query?.id.toString()) : null;
+    try {
+        let Notifications = await NotifictionService.getReadForThisUser(Id)
+        console.log(Notifications)
+        res.status(200).json({ Notifications});
+    } catch (error: any) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
 notificationRouter.get('/getUnreadForAdmin', async (req: Request, res: Response) => {
     try {
         res.status(200).json({ Notifications: await NotifictionService.getUnreadForAdmin() });

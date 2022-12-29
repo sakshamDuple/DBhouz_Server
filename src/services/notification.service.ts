@@ -21,16 +21,28 @@ class NotifictionServiceClass {
         return (await collections.notifications.find({ OwnerType: "User", typeId: id }).sort({ createdAt: -1 }).toArray()) as INotification[];
     }
 
-    async getUnreadForAdmin(): Promise<INotification[]> {
+    async getReadForAdmin(): Promise<INotification[]> {
         return (await collections.notifications.find({ OwnerType: "Admin", read: true }).sort({ createdAt: -1 }).toArray()) as INotification[];
     }
 
-    async getUnreadForThisMerchant(id: ObjectId): Promise<INotification[]> {
+    async getUnreadForAdmin(): Promise<INotification[]> {
+        return (await collections.notifications.find({ OwnerType: "Admin", read: false }).sort({ createdAt: -1 }).toArray()) as INotification[];
+    }
+
+    async getReadForThisMerchant(id: ObjectId): Promise<INotification[]> {
         return (await collections.notifications.find({ OwnerType: "Merchant", typeId: id, read: true }).sort({ createdAt: -1 }).toArray()) as INotification[];
     }
 
-    async getUnreadForThisUser(id: ObjectId): Promise<INotification[]> {
+    async getUnreadForThisMerchant(id: ObjectId): Promise<INotification[]> {
+        return (await collections.notifications.find({ OwnerType: "Merchant", typeId: id, read: false }).sort({ createdAt: -1 }).toArray()) as INotification[];
+    }
+
+    async getReadForThisUser(id: ObjectId): Promise<INotification[]> {
         return (await collections.notifications.find({ OwnerType: "User", typeId: id, read: true }).sort({ createdAt: -1 }).toArray()) as INotification[];
+    }
+
+    async getUnreadForThisUser(id: ObjectId): Promise<INotification[]> {
+        return (await collections.notifications.find({ OwnerType: "User", typeId: id, read: false }).sort({ createdAt: -1 }).toArray()) as INotification[];
     }
 
     async create(topic: string, OwnerType: string, typeId: ObjectId, description: string): Promise<any> {

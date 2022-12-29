@@ -152,7 +152,6 @@ function doInDCforImageProObjectId(m: DisplayProducts[]) {
     return k
 }
 
-
 miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
@@ -160,11 +159,11 @@ miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
         main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
         main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
         main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
-        console.log(main,"mmmm");
-        
+        console.log(main, "mmmm");
+
 
         let MainPage = await mainPageService.mainPageCreation(main);
-        
+
         res.status(200).json({ MainPage });
     } catch (e: any) {
         LOG.error(e)
@@ -207,6 +206,16 @@ miscRouter.delete("/deleteColor/:colorId", async (req: Request, res: Response) =
     try {
         await ColorService.delete(colorId)
         res.status(200).json({})
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
+miscRouter.get("/getAdminOrderTable", async (req: Request, res: Response) => {
+    let year:number = parseInt(req.query.year.toString())
+    try {
+        res.status(200).json({ data: await OrderService.getOrderChartAdmin(year)})
     } catch (error) {
         LOG.error(error)
         res.status(500).json({ error: error.message });
@@ -300,7 +309,7 @@ miscRouter.post(
     async (req: Request, res: Response) => {
         try {
             let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
-            console.log("filesToUpload",filesToUpload)
+            console.log("filesToUpload", filesToUpload)
             if (!filesToUpload || filesToUpload.length < 0)
                 throw new Error(`Files not available for upload`);
             if (filesToUpload.length > 1) throw new Error(`Only single file can be uploaded`);
@@ -344,7 +353,7 @@ miscRouter.post(
     async (req: Request, res: Response) => {
         try {
             let filesToUpload: Express.Multer.File[] = req.files as Express.Multer.File[];
-            console.log("filesToUpload",filesToUpload)
+            console.log("filesToUpload", filesToUpload)
             if (!filesToUpload || filesToUpload.length < 0)
                 throw new Error(`Files not available for upload`);
             if (filesToUpload.length > 1) throw new Error(`Only single file can be uploaded`);
@@ -374,7 +383,7 @@ miscRouter.post(
                 });
             });
             // await mainPageService.bannerUpdate(banner, BannerType);
-            res.status(200).json({ images:newDocument._id.toString() });
+            res.status(200).json({ images: newDocument._id.toString() });
         } catch (error: any) {
             LOG.error(error);
             res.status(500).json({ error: error.message });
