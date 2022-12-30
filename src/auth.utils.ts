@@ -22,6 +22,11 @@ class CAuthUtils {
   }
 
   async compareHash(plainTextPassword: string, storedSecret: string): Promise<boolean> {
+    console.log(plainTextPassword,"ppll");
+    console.log(storedSecret,"sstt");
+    console.log( await bcrypt.compare(plainTextPassword, `${HASHPREFIX}${storedSecret}`),"boooo")
+    
+    
     return await bcrypt.compare(plainTextPassword, `${HASHPREFIX}${storedSecret}`);
   }
 
@@ -61,14 +66,14 @@ class CAuthUtils {
               email,
             })) as IMerchant;
             if (!user) {
-              return done(null, null, { message: "Invalid Email" });
+              return done(null, null, { message: "Invalid Email" }); 
             }
             if (!await this.compareHash(password, user.secret)) {
               return done(null, null, { message: "Invalid Password" });
             }
             return done(null, user, { message: "Logged in Successfully" });
           } catch (error) {
-            return done(error);
+            return done(error); 
           }
         }
       )
