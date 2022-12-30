@@ -5,7 +5,7 @@ import { ProductService } from "./product.service";
 
 class InventoryServiceClass {
 
-    async getByInventoryId(inventoryId: string | ObjectId): Promise<any> {
+    async getByInventoryId(inventoryId: string): Promise<any> {
         const query = { _id: new ObjectId(inventoryId) };
         return (await collections.inventory.findOne(query));
     }

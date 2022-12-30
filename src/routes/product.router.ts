@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from "express";
 import { rename } from "fs";
 import path from "path";
-import { EProductStatus, IBrand, IDocument, IMerchant, IProductVariant, IReview } from "../interfaces";
+import { EProductStatus, IBrand, IDocument, IMerchant, Inventory, IProductVariant, IReview } from "../interfaces";
 import { LOG } from "../logger";
 import { uploadImages } from "../multer";
 import { DocumentService } from "../services/document.service";
@@ -16,6 +16,7 @@ import { ColorService } from "../services/color.service";
 import { sendEmail } from "./auth.router";
 import { userService } from "../services/user.service";
 import { NotifictionService } from "../services/notification.service";
+import { InventoryService } from "../services/inventory.service";
 let future = require('future')
 
 const productRouter: Router = express.Router();
@@ -37,6 +38,17 @@ productRouter.post("/getProductsByCategory", async (req: Request, res: Response)
     res.status(500).json({ error: error.message });
   }
 });
+
+productRouter.get("/getProductsInventoryQuantity", async (req: Request, res: Response) => {
+  try {
+    let id: string = req.query?.id.toString();
+    let inventory: Inventory = await InventoryService.getByInventoryId(id);
+    res.status(200).json({ Qty:inventory.stock });
+  } catch (error) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
 
 productRouter.post("/getProductsByCategory/filter", async (req: Request, res: Response) => {
   try {
