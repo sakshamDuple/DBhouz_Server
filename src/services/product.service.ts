@@ -258,6 +258,7 @@ class ProductServiceClass {
             element.userId = new ObjectId(element.userId)
         });
         delete product._id;
+        console.log("product.variants",product)
         product.variants.forEach(async element => {
             if (!element.inventoryId) {
                 let inventory: Inventory = {
@@ -277,6 +278,7 @@ class ProductServiceClass {
                 thisVariantInventory.sellingPrice = element.price
             }
         });
+        console.log(product)
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }

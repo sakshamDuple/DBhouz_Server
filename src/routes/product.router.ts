@@ -43,7 +43,7 @@ productRouter.get("/getProductsInventoryQuantity", async (req: Request, res: Res
   try {
     let id: string = req.query?.id.toString();
     let inventory: Inventory = await InventoryService.getByInventoryId(id);
-    res.status(200).json({ Qty:inventory.stock });
+    res.status(200).json({ Qty: inventory.stock });
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });
@@ -347,7 +347,7 @@ productRouter.post(
       let variants = product.variants
       let priority: number
 
-      
+
       variants.map(async element => {
         if (element.name == req.body.name) {
           if (!element.images) element.images = []
@@ -533,7 +533,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
         let thisBrand = await BrandService.create(newBrand)
         if (thisBrand == "Brand with this name already exists") {
           return res.status(400).json({ thisBrand });
-          let theExistingBrand = await BrandService.getByName(newBrand.name)
+          // let theExistingBrand = await BrandService.getByName(newBrand.name)
         }
         product.brandId = new ObjectID(thisBrand._id)
       } else {
@@ -544,6 +544,7 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
     console.log(newProduct)
     product = await ProductService.create(newProduct);
     res.status(200).json({ product });
+    await NotifictionService.create("Merchant Added Product", "Admin", null, `Merchant With Id: ${product.merchantId} Added a Product with Id: ${product._id} and Name: ${product.name}`)
   }
   catch (error: any) {
     LOG.error(error);
@@ -573,7 +574,16 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
     let prevProduct: IProduct = await ProductService.get(product._id)
     let activeInactive = true
     let message = ""
-    if (product.variants.length == 0) {
+    if (product.variants == undefined) {
+      newProduct.variants = prevProduct.variants
+      newProduct.variantParameters = prevProduct.variantParameters
+      newProduct.rating = prevProduct.rating
+      newProduct.review = prevProduct.review
+      newProduct.seo = prevProduct.seo
+      let result = await ProductService.update(newProduct);
+      return res.status(200).json({ result });
+    }
+    if (newProduct.variants.length == 0) {
       activeInactive = false
       message == "product can't be activated if product has less than one variant"
     }
@@ -597,7 +607,6 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
       console.log("product inactivated")
     }
     let merchantOfProfuct: IMerchant = await MerchantService.get(product.merchantId)
-    console.log("product to update", product)
     if (admin == "Admin" && message == "") {
       if (activate == "Active") {
         newProduct.status = EProductStatus.Active;
@@ -654,11 +663,8 @@ productRouter.post("/incRecommendations", async (req: Request, res: Response) =>
 
 productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
   try {
-
-
     const productId = req.body.productId;
     const userId = req.body.userId
-    console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
     let result = await ProductService.dontRecomend(product);
     let result2 = await userService.addUnrecomendedProduct(userId, productId)
@@ -668,8 +674,6 @@ productRouter.post("/dontRecommend", async (req: Request, res: Response) => {
     res.status(500).json({ error: error.message });
   }
 });
-
-
 
 productRouter.post("/productUsed", async (req: Request, res: Response) => {
   try {
