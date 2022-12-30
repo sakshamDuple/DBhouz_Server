@@ -21,6 +21,11 @@ class CAuthUtils {
   }
 
   async compareHash(plainTextPassword: string, storedSecret: string): Promise<boolean> {
+    console.log(plainTextPassword,"ppll");
+    console.log(storedSecret,"sstt");
+    console.log( await bcrypt.compare(plainTextPassword, `${HASHPREFIX}${storedSecret}`),"boooo")
+    
+    
     return await bcrypt.compare(plainTextPassword, `${HASHPREFIX}${storedSecret}`);
   }
 
@@ -55,7 +60,8 @@ class CAuthUtils {
       new LocalStrategy(
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
-          try {
+          try { 
+            console.log(email, password,"checking authenticationnnnnn") 
             let base64Password = password;
             let plainTextPassword: string = Buffer.from(base64Password, "base64").toString(
               "utf-8"
@@ -64,14 +70,20 @@ class CAuthUtils {
               email,
             })) as IMerchant;
             if (!user) {
-              return done(null, null, { message: "Invalid Email" });
+              return done(null, null, { message: "Invalid Email" }); 
             }
-            if (!this.compareHash(plainTextPassword, user.secret)) {
+            console.log(this.compareHash(base64Password, user.secret),"booleannn");
+            console.log(plainTextPassword,"pp");
+            console.log(user.secret,"uuuu");
+            
+            console.log(base64Password,"bbb")
+            if (! await this.compareHash(base64Password, user.secret)) { 
+              
               return done(null, null, { message: "Invalid Password" });
             }
             return done(null, user, { message: "Logged in Successfully" });
           } catch (error) {
-            return done(error);
+            return done(error); 
           }
         }
       )

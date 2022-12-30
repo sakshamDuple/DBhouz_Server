@@ -80,4 +80,15 @@ blogCategoryRouter.get("/getAllBlogCategories", async (req: Request, res: Respon
       res.status(500).json({ error: error.message });
     }
   });
+    blogCategoryRouter.post("/updateBlogCatStatus", async (req: Request, res: Response) => {
+
+    try {
+      let blogCategory: IblogCategory = req.body.blogCat;
+      await blogCategoryService.updateBlogCategory(blogCategory);
+      res.status(200).json({});
+    } catch (error) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  })
 export { blogCategoryRouter };
