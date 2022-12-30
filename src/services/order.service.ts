@@ -568,14 +568,6 @@ class OrderServiceClass {
         return (await collections.orders
             .distinct("customerDetail.customerId", { "products.sellerId": merchantId })).length
     }
-    async getAllCustomersByAdmin(): Promise<number> {
-        return (await collections.orders
-            .distinct("customerDetail.customerId")).length
-    }
-    async getAllMerchantsByAdmin(): Promise<number> {
-        return (await collections.orders
-            .distinct("products.sellerId")).length
-    }
     async getCompletedOrder(Start: number, End: number, SortByDate: string, PageLimit: number, UserId: string): Promise<Order[]> {
         if (SortByDate == "Desc") {
             console.log("Start-1", Start - 1)

@@ -12,6 +12,7 @@ import { userService } from "./services/user.service";
 const HASHPREFIX: string = `$2b$10$`;
 
 class CAuthUtils {
+
   async generateHashPassword(plainTextPassword: string): Promise<string> {
     const saltRounds = 10;
     let salt: string = await bcrypt.genSalt(saltRounds);
@@ -25,15 +26,14 @@ class CAuthUtils {
   }
 
   passportMiddlewares() {
+
     passport.use(
       "merchantsignup",
       new LocalStrategy(
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString();
-            let hashPassword = await this.generateHashPassword(plainTextPassword);
+            let hashPassword = await this.generateHashPassword(password);
             let newMerchant: IMerchant = {
               _id: null,
               email: email,
@@ -50,6 +50,7 @@ class CAuthUtils {
         }
       )
     );
+
     passport.use(
       "merchantlogin",
       new LocalStrategy(
@@ -79,9 +80,7 @@ class CAuthUtils {
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString();
-            let hashPassword = await this.generateHashPassword(plainTextPassword);
+            let hashPassword = await this.generateHashPassword(password);
             let newMerchant: IUser = {
               _id: null,
               email: email,
@@ -97,6 +96,7 @@ class CAuthUtils {
         }
       )
     );
+
     passport.use(
       "userlogin",
       new LocalStrategy(
@@ -126,9 +126,7 @@ class CAuthUtils {
         { usernameField: "email", passwordField: "password" },
         async (email, password, done) => {
           try {
-            let base64Password = password;
-            let plainTextPassword: string = Buffer.from(base64Password, "base64").toString();
-            let hashPassword = await this.generateHashPassword(plainTextPassword);
+            let hashPassword = await this.generateHashPassword(password);
             let admin: IAdmin = {
               _id: null,
               email: email,
@@ -144,6 +142,7 @@ class CAuthUtils {
         }
       )
     );
+
     passport.use(
       "adminlogin",
       new LocalStrategy(
@@ -154,7 +153,6 @@ class CAuthUtils {
             if (!admin) {
               return done(null, null, { message: "Invalid Email" });
             }
-            console.log("\n\n\nhiugef\n\n\n", email, password,await this.compareHash(password, admin.secret))
             if (!await this.compareHash(password, admin.secret)) {
               return done(null, null, { message: "Invalid Password" });
             }
@@ -165,6 +163,7 @@ class CAuthUtils {
         }
       )
     );
+    
     passport.use(
       new JWTstrategy(
         {
@@ -180,6 +179,7 @@ class CAuthUtils {
         }
       )
     );
+
   }
 }
 

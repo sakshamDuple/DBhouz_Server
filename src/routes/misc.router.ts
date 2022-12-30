@@ -13,6 +13,8 @@ import { DocumentService } from '../services/document.service';
 import { AppConfig } from '../config';
 import path from 'path';
 import { rename } from 'fs';
+import { MerchantService } from '../services/merchant.service';
+import { userService } from '../services/user.service';
 
 const miscRouter: Router = express.Router()
 miscRouter.use(express.json())
@@ -105,7 +107,7 @@ miscRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => 
 
 miscRouter.get("/dashboard", async (req: Request, res: Response) => {
     try {
-        res.status(200).json({ orderTotal: await OrderService.getAdminTotalOrderForDashboard(), totalProducts: (await ProductService.getAll(false)).length, totalPayments: await OrderService.getAdminTotalPaymentForDashboard(), total_Customers: await OrderService.getAllCustomersByAdmin(), total_Merchants: await OrderService.getAllMerchantsByAdmin() });
+        res.status(200).json({ orderTotal: await OrderService.getAdminTotalOrderForDashboard(), totalProducts: (await ProductService.getAll(false)).length, totalPayments: await OrderService.getAdminTotalPaymentForDashboard(), total_Customers: await userService.getAllCustomersByAdmin(), total_Merchants: await MerchantService.getAllMerchantsByAdmin() });
     } catch (e: any) {
         LOG.error(e)
         res.status(500).json({ error: e.message });

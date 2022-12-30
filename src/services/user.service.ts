@@ -9,6 +9,11 @@ class UserServiceClass {
     return (await collections.users.findOne(query)) as IUser;
   }
 
+  async getAllCustomersByAdmin(): Promise<number> {
+    return (await collections.users
+        .distinct("_id")).length
+}
+
   async makeContact(contact: IContact): Promise<IContact> {
     contact = { ...contact }
     contact = this.sanitizeContact(contact);

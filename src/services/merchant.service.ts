@@ -10,6 +10,11 @@ class MerchantServiceClass {
         return (await collections.merchants.findOne(query)) as IMerchant;
     }
 
+    async getAllMerchantsByAdmin(): Promise<number> {
+        return (await collections.merchants
+            .distinct("_id")).length
+    }
+
     async getMultipleMerchant(merchants: Array<string>): Promise<IMerchant[]> {
         let merchantsObj: Array<ObjectId> = []
         merchants.forEach((element, i) => {
