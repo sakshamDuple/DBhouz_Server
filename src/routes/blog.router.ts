@@ -9,7 +9,7 @@ import { AppConfig } from "../config";
 import { rename } from "fs";
 import {blogService} from "../services/blog.service"
 import { ObjectId } from "mongodb";
-
+import { Icomment } from "../interfaces";
 
 
 const blogRouter: Router = express.Router();
@@ -223,7 +223,20 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
     }
   );
 
-
+  blogRouter.post("/addComment", async (req: Request, res: Response) => {
+    try {
+    
+      const blogId = req.body.blogId;
+      const commentData: Icomment[] = req.body?.commentData;
+      console.log(req.body.blogId,"bb");
+      console.log(commentData,"cc");
+      res.status(200).json({ result: await blogService.addComment(blogId, commentData) });
+    } catch (error) {
+      console.error(error);
+      LOG.error(error);
+      res.status(500).json({ error: error.message });   
+    }
+  })
 
 
   

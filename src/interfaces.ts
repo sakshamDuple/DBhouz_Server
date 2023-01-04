@@ -218,9 +218,17 @@ export interface Iblog {
     documentId: ObjectId;
     priority: number;
   }[];
+  comments?:Icomment[]
   createdAt: number;
 }
-
+export interface Icomment {
+  name: string;
+  email: string;
+  description:string;
+  createdAt? : number;
+  _id:ObjectId;
+  
+}
 
 
 export interface IProduct {

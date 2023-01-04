@@ -1,6 +1,6 @@
 import { InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { Iblog } from "../interfaces"
+import { Iblog, Icomment } from "../interfaces"
 
 class blogServiceClass {
 
@@ -98,7 +98,23 @@ class blogServiceClass {
         return (await collections.blog.findOne({ blogTitle })) as Iblog;
     }
 
+    async addComment(blogId: string, commentData:any): Promise<any> {
+        let foundBlog: Iblog = await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
+       
+        // foundUser.wishList.forEach(element => {
+        //   element.name == 
+        // });
 
+        if(foundBlog){
+            foundBlog.comments.push(commentData)
+        }
+
+        let resultedBlog = await collections.users.findOneAndUpdate({ _id: foundBlog._id }, { "$set": foundBlog })
+        if (resultedBlog) {
+          return await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
+        }
+        return resultedBlog
+      }
 
 
 

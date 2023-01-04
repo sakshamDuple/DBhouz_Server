@@ -7,7 +7,7 @@ import { number } from "joi";
 
 /**
  * Global Variables
- */
+ */ 
 export const collections: {
   admins?: mongoDB.Collection;
   clients?: mongoDB.Collection;
@@ -305,7 +305,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           _id: {},
           title: { bsonType: "string" },
           category: { bsonType: "string" },
-          description: { bsonType: "string" },
+          description: { bsonType: "string" }, 
           status: { enum: ["ACTIVE", "INACTIVE"] },
           imageDocumentId: { bsonType: "objectId" },
           seo: {

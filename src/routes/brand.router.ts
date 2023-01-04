@@ -1,7 +1,7 @@
 import express, { Request, Response, Router } from 'express'
 import { LOG } from '../logger';
 import { BrandService } from '../services/brand.service';
-import { Iblog, IBrand } from '../interfaces';
+import { Iblog, IBrand, Icomment } from '../interfaces';
 import { blogService } from '../services/blog.service';
 import { blogRouter } from './blog.router';
 
@@ -61,38 +61,8 @@ brandRouter.delete("/deleteOne/:brandId", async (req: Request, res: Response) =>
     }
 });
 
-blogRouter.post("/updateblog", async (req: Request, res: Response) => {
-    try {
-        let blog: Iblog = req.body.blog;
-        await blogService.updateBlog(blog);
-        res.status(200).json({});
-    } catch (error) {
-        LOG.error(error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
-blogRouter.delete("/deleteBlog/:blogId", async (req: Request, res: Response) => {
-    try {
-        const blogId: string = req?.params?.blogId;
-        if (!blogId) throw new Error(`Missing Category ID`);
-        const result = await blogService.deleteBlog(blogId);
-        res.status(200).json({ result });
-    } catch (error) {
-        LOG.error(error);
-        res.status(500).json({ error: error.message });
-    }
-});
 
-blogRouter.post("/updateBlogStatus", async (req: Request, res: Response) => {
-    try {
-        let blog: Iblog = req.body.blog;
-        await blogService.updateBlog(blog);
-        res.status(200).json({});
-    } catch (error) {
-        LOG.error(error);
-        res.status(500).json({ error: error.message });
-    }
-})
+
 
 export { brandRouter }
