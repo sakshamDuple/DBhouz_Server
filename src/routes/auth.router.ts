@@ -21,7 +21,7 @@ const sendEmail = async (email: string, subject: string, text: any) => {
     const transporter = nodemailer.createTransport({
       host: process.env.HOST,
       port: '587',
-      auth: { user: "sdbhous@gmail.com", pass: "flfcxkpnpymbcaju" }, // todo in process.env
+      auth: { user: "sdbhous@gmail.com", pass: "flfcxkpnpymbcaju" }, // todo in process.env //ocqetthgfvshotmy //flfcxkpnpymbcaju
       secure: false,
       logger: true
     });
@@ -40,8 +40,12 @@ const sendEmail = async (email: string, subject: string, text: any) => {
   }
 };
 
-authRouter.get("/test", (req, res, next) => {
-  res.json({ hello: "world" });
+authRouter.get("/test", async (req, res, next) => {
+  let emailSent = await sendEmail("saksham.duple@gmail.com", "merchant email verified", "Saksham")
+  if (emailSent){
+    return res.json({ message: "An Email sent to your account please verify" });
+  }
+  return res.json({ message: "Email NOt Sent" });
 });
 
 authRouter.post(

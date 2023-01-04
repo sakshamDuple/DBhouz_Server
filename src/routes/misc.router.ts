@@ -154,6 +154,18 @@ function doInDCforImageProObjectId(m: DisplayProducts[]) {
     return k
 }
 
+miscRouter.get("/getSearchResponseUser/search", async (req: Request, res: Response) => {
+    let searchVal: string = String(req.query.searchVal)
+    let data =await userService.getUserByEmailSearch(searchVal)
+    console.log(data)
+    try {
+        res.status(200).json({ data });
+    } catch (error: any) {
+        LOG.error(error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
 miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
@@ -215,9 +227,9 @@ miscRouter.delete("/deleteColor/:colorId", async (req: Request, res: Response) =
 });
 
 miscRouter.get("/getAdminOrderTable", async (req: Request, res: Response) => {
-    let year:number = parseInt(req.query.year.toString())
+    let year: number = parseInt(req.query.year.toString())
     try {
-        res.status(200).json({ data: await OrderService.getOrderChartAdmin(year)})
+        res.status(200).json({ data: await OrderService.getOrderChartAdmin(year) })
     } catch (error) {
         LOG.error(error)
         res.status(500).json({ error: error.message });

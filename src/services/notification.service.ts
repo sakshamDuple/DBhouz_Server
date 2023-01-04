@@ -46,17 +46,17 @@ class NotifictionServiceClass {
     }
 
     async create(topic: string, OwnerType: string, typeId: ObjectId, description: string): Promise<any> {
-        console.log(topic, OwnerType, typeId, description)
         let thisOwnerType: IOwnerType = (OwnerType == IOwnerType.Admin || OwnerType == IOwnerType.Merchant || OwnerType == IOwnerType.User) ? OwnerType : IOwnerType.Null
         if (OwnerType == IOwnerType.Admin) typeId = await AdminService.getAdminId()
         let notification: INotification = {
             topic: topic,
             OwnerType: thisOwnerType,
-            typeId: typeId,
+            typeId: new ObjectId(typeId),
             description: description,
             createdAt: Date.now()
         }
         this.sanitize(notification)
+        console.log("topic, OwnerType, typeId, description",notification)
         const result: InsertOneResult<INotification> = await collections.notifications.insertOne(notification);
         notification._id = result.insertedId
         return notification

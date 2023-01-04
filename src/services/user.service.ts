@@ -11,8 +11,8 @@ class UserServiceClass {
 
   async getAllCustomersByAdmin(): Promise<number> {
     return (await collections.users
-        .distinct("_id")).length
-}
+      .distinct("_id")).length
+  }
 
   async makeContact(contact: IContact): Promise<IContact> {
     contact = { ...contact }
@@ -437,8 +437,24 @@ class UserServiceClass {
     return resultedUser
   }
 
-
-
+  async getUserByEmailSearch(email: string): Promise<any[]> {
+    console.log(email)
+    let agg = [{
+      '$match': {
+        '$or': [
+          {
+            'email': new RegExp(email, 'i')
+          }
+        ]
+      }
+    }, {
+      '$project': {
+        '_id': 1,
+        'email':1,
+      }
+    }];
+    return await collections.users.aggregate(agg).sort({ createdAt: -1 }).toArray()
+  }
 }
 
 export let userService: UserServiceClass = new UserServiceClass();
