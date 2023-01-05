@@ -11,7 +11,7 @@ import {blogService} from "../services/blog.service"
 import { ObjectId } from "mongodb";
 import { Icomment } from "../interfaces";
 import { ObjectID } from "bson";
-
+import { collections } from "../db.service";
 
 const blogRouter: Router = express.Router();
 blogRouter.use(express.json());
@@ -248,6 +248,32 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       LOG.error(error);
       res.status(500).json({ error: error.message });   
     }
+  })
+  blogRouter.get("/filterMostPopularBlogs", async (req: Request, res: Response) => {
+
+    // const filterResult = await collections.blog.aggregate([{$project: { count: { $size:"$comments" }}}])
+    try{
+
+      const filterResult = collections.blog.aggregate([
+        
+        {$unwind:"$comments"},
+       { $group : {_id:'$_id',title:{$first:"$title"},createdAt:{$first:"$createdAt"}, count:{$sum:1}}},
+       {
+        $project: {
+            title: 1, createdAt: 1,count:1
+        }
+      }, 
+       { $sort :{ count: -1}} ]);
+      
+      const result = await filterResult.toArray()
+      
+       console.log(result,"fff");
+      res.json({result})
+    }catch(Error){
+      console.log(Error);
+      
+    }
+    
   })
 
 
