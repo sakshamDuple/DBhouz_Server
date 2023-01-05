@@ -98,18 +98,36 @@ class blogServiceClass {
         return (await collections.blog.findOne({ blogTitle })) as Iblog;
     }
 
-    async addComment(blogId: string, commentData:any): Promise<any> {
-        let foundBlog: Iblog = await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
+    async addComment(blogId: string, newComment:Icomment): Promise<any> {
+        console.log(blogId);
+        
+        let foundBlog = await blogService.getblogById(blogId)
        
         // foundUser.wishList.forEach(element => {
         //   element.name == 
         // });
-
-        if(foundBlog){
-            foundBlog.comments.push(commentData)
+        console.log(foundBlog,"ff");
+        let allComments=[]
+        if(foundBlog.comments!==undefined){
+            allComments = foundBlog.comments
+            allComments.push(newComment)
         }
-
-        let resultedBlog = await collections.users.findOneAndUpdate({ _id: foundBlog._id }, { "$set": foundBlog })
+        else{
+            allComments.push(newComment)
+        }
+    
+        console.log(allComments,"allll");
+        
+       
+        console.log(allComments,"alalalalal");
+        
+        foundBlog.comments=allComments
+        console.log(foundBlog,"fffoound");
+        
+ 
+        let resultedBlog = await collections.blog.findOneAndUpdate({ _id: foundBlog._id }, { "$set": foundBlog })
+        console.log(resultedBlog,"rrr");
+        
         if (resultedBlog) {
           return await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
         }

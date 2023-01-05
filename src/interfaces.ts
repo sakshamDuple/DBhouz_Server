@@ -224,9 +224,9 @@ export interface Iblog {
 export interface Icomment {
   name: string;
   email: string;
-  description:string;
+  comment:string;
   createdAt? : number;
-  _id:ObjectId;
+  _id:ObjectId;    
   
 }
 

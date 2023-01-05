@@ -10,6 +10,7 @@ import { rename } from "fs";
 import {blogService} from "../services/blog.service"
 import { ObjectId } from "mongodb";
 import { Icomment } from "../interfaces";
+import { ObjectID } from "bson";
 
 
 const blogRouter: Router = express.Router();
@@ -227,10 +228,21 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
     try {
     
       const blogId = req.body.blogId;
-      const commentData: Icomment[] = req.body?.commentData;
+      const commentData = req.body?.commentData;
       console.log(req.body.blogId,"bb");
       console.log(commentData,"cc");
-      res.status(200).json({ result: await blogService.addComment(blogId, commentData) });
+     
+      let name = commentData.name
+      let email= commentData.email
+      let comment=commentData.comment
+      let createdAt = Date.now()
+      let _id = new ObjectID
+      // let rating: number = review.rating 
+      // let productId: string = review.productId
+      let newComment: Icomment = {
+        name, email, comment,createdAt,_id
+      }
+      res.status(200).json({ result: await blogService.addComment(blogId, newComment) });
     } catch (error) {
       console.error(error);
       LOG.error(error);
