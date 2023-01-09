@@ -206,8 +206,8 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
           await new Promise<void>((resolve, reject) => {
             rename(currentFile.path, newPath, (err) => {
               if (err) reject(err);
-              else resolve();
-            });
+              else resolve();  
+            }); 
           });
         }
         blogService.updateBlog(blog)
@@ -249,6 +249,7 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       res.status(500).json({ error: error.message });   
     }
   })
+
   blogRouter.get("/filterMostPopularBlogs", async (req: Request, res: Response) => {
 
     // const filterResult = await collections.blog.aggregate([{$project: { count: { $size:"$comments" }}}])
@@ -257,13 +258,15 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       const filterResult = collections.blog.aggregate([
         
         {$unwind:"$comments"},
-       { $group : {_id:'$_id',title:{$first:"$title"},createdAt:{$first:"$createdAt"}, count:{$sum:1}}},
+       { $group : {_id:'$_id',title:{$first:"$title"},createdAt:{$first:"$createdAt"},image:{$first:"$imageDocumentId"}, count:{$sum:1}}},
        {
         $project: {
-            title: 1, createdAt: 1,count:1
+            title: 1, createdAt: 1,count:1,image:1
         }
       }, 
-       { $sort :{ count: -1}} ]);
+       { $sort :{ count: -1}},
+       { $limit : 5 }
+      ]);
       
       const result = await filterResult.toArray()
       
@@ -277,7 +280,35 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
   })
 
 
-  
+  blogRouter.post("/getBlogByCategory", async (req:Request, res:Response) => {
+    console.log("inside blog router");
+    
+    console.log(req.body.categoryName,"bdddssd");     
+    const categoryName= req.body.categoryName
+    try {
 
+      const result= await blogService.getblogByCategoryName(categoryName)  
+      console.log(result,"ressss");
+         
+      res.status(200).json({ blogdetail:result  });
+    } catch (error) {
+      LOG.error(error);
+      res
+        .status(500)
+        .json({ error: `Unable to find matching document with productId: ${categoryName}` });
+    }
+  })
+  
+  blogRouter.get("/searchAll", async (req: Request, res: Response) => {
+    try {
+      let searchVal = String(req.query.searchVal)
+      console.log(searchVal,"vvv");
+      
+      res.status(200).json({ fetches: await blogService.searchAll(searchVal) });
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  })
 
 export { blogRouter };

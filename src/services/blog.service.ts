@@ -14,7 +14,7 @@ class blogServiceClass {
         if (!o.description) delete o.description
         if (!o.imageDocumentId) delete o.imageDocumentId
         else o.imageDocumentId = new ObjectId(o.imageDocumentId)
-        if(!o.blogImages) delete o.blogImages
+        if (!o.blogImages) delete o.blogImages
         return o
     }
     async getBlog(blogId: string | ObjectId): Promise<Iblog> {
@@ -45,24 +45,24 @@ class blogServiceClass {
         return newblog
     }
     async updateBlog(blog: Iblog): Promise<boolean> {
-        console.log(blog,"blo");
-        
+        console.log(blog, "blo");
+
         blog = { ...blog }
         const existingBlog: Iblog = await this.getblogByName(blog.title)
         if (existingBlog && existingBlog._id.toString() !== blog._id.toString()) {
             throw new Error(`Category with name ${blog.title} already exists`)
         }
         const query = { _id: new ObjectId(blog._id) };
-        console.log(query,"queery");
-        
+        console.log(query, "queery");
+
         delete blog._id;
         blog = this.sanitizeblog(blog)
-        console.log(blog,"bloo");
-        
+        console.log(blog, "bloo");
+
         let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
-        console.log(result,"rrrr");
-        
-        return (result&&result.modifiedCount > 0)
+        console.log(result, "rrrr");
+
+        return (result && result.modifiedCount > 0)
     }
 
 
@@ -87,6 +87,13 @@ class blogServiceClass {
         return (await collections.blog.findOne(query)) as Iblog;
     }
 
+    async getblogByCategoryName(categoryName: string): Promise<Iblog[]> {
+        console.log(categoryName, "cc")
+
+
+
+        return await collections.blog.find({ category: categoryName }).toArray() as Iblog[]
+    }
     // async getblogByTitle(blogTitle: string | ObjectId): Promise<Iblog> {
     //     console.log(blogTitle,"inside blog service");
 
@@ -98,41 +105,62 @@ class blogServiceClass {
         return (await collections.blog.findOne({ blogTitle })) as Iblog;
     }
 
-    async addComment(blogId: string, newComment:Icomment): Promise<any> {
+    async addComment(blogId: string, newComment: Icomment): Promise<any> {
         console.log(blogId);
-        
+
         let foundBlog = await blogService.getblogById(blogId)
-       
+
         // foundUser.wishList.forEach(element => {
         //   element.name == 
         // });
-        console.log(foundBlog,"ff");
-        let allComments=[]
-        if(foundBlog.comments!==undefined){
+        console.log(foundBlog, "ff");
+        let allComments = []
+        if (foundBlog.comments !== undefined) {
             allComments = foundBlog.comments
             allComments.push(newComment)
         }
-        else{
+        else {
             allComments.push(newComment)
         }
-    
-        console.log(allComments,"allll");
-        
-       
-        console.log(allComments,"alalalalal");
-        
-        foundBlog.comments=allComments
-        console.log(foundBlog,"fffoound");
-        
- 
+
+        console.log(allComments, "allll");
+
+
+        console.log(allComments, "alalalalal");
+
+        foundBlog.comments = allComments
+        console.log(foundBlog, "fffoound");
+
+
         let resultedBlog = await collections.blog.findOneAndUpdate({ _id: foundBlog._id }, { "$set": foundBlog })
-        console.log(resultedBlog,"rrr");
-        
+        console.log(resultedBlog, "rrr");
+
         if (resultedBlog) {
-          return await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
+            return await collections.blog.findOne({ _id: new ObjectId(blogId) }) as Iblog
         }
         return resultedBlog
-      }
+    }
+
+
+
+    async searchAll(searchVal: string): Promise<any[]> {
+        let agg = [
+            { 
+                '$match': {
+                    'title': new RegExp(searchVal, 'i')
+                }
+            }, {
+                '$project': {
+                    '_id': 1,
+                    'title': 1
+                }
+            }
+        ]
+        let blogs = await collections.blog.aggregate(agg).sort({ createdAt: -1 }).toArray()
+        console.log(blogs,"bb");
+        
+        return [{ blogs: blogs }]
+    }
 
 
 
