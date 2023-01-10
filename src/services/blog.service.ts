@@ -26,7 +26,7 @@ class blogServiceClass {
         console.log(newblog, "newww");
 
         newblog = { ...newblog }
-        newblog.title = newblog.title.toLowerCase()
+        newblog.title = newblog.title.toLowerCase().trim()
         console.log(newblog.title, "ttitle");
 
         const existingBlog: Iblog = await this.getblogByName(newblog.title)
@@ -101,8 +101,8 @@ class blogServiceClass {
     //     let result: UpdateResult = await collections.blog.updateOne(query, { $set: blog });
     //     return (await collections.blog.findOne(query)) as Iblog;
     // }
-    async getblogByTitle(blogTitle: string): Promise<Iblog> {
-        return (await collections.blog.findOne({ blogTitle })) as Iblog;
+    async getblogByTitle(title: string): Promise<Iblog> {
+        return (await collections.blog.findOne({ title })) as Iblog;
     }
 
     async addComment(blogId: string, newComment: Icomment): Promise<any> {

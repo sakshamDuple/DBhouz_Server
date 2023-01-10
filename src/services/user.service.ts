@@ -297,7 +297,7 @@ class UserServiceClass {
       recomended = []
     }
     else {
-
+      
       recomended = foundUser.recommendedProductByThisUser
     }
     if (recomended.length == 0) {
@@ -318,7 +318,7 @@ class UserServiceClass {
           flag = 1
         } else {
           console.log("product already exist ")
-          flag = 0
+          return flag = 0
         }
       });
       if (flag == 1) {

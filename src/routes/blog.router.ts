@@ -98,11 +98,11 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
   blogRouter.post("/getBlogDetail", async (req:Request, res:Response) => {
     console.log("inside blog router");
     
-    console.log(req.body.blogid,"bddd");
-    const blogId= req.body.blogid
+    
+    const title= req.body.title
     try {
 
-      const result= await blogService.getblogById(blogId)  
+      const result= await blogService.getblogByName(title)  
       console.log(result,"ressss");
          
       res.status(200).json({ blogdetail:result  });
@@ -110,7 +110,7 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       LOG.error(error);
       res
         .status(500)
-        .json({ error: `Unable to find matching document with productId: ${blogId}` });
+        .json({ error: `Unable to find matching document with productId: ${title}` });
     }
   })
   blogRouter.post("/getBlogByTitle", async (req:Request, res:Response) => {

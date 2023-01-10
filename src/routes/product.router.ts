@@ -652,9 +652,16 @@ productRouter.post("/incRecommendations", async (req: Request, res: Response) =>
     const userId = req.body.userId
     console.log(productId, "pp");
     const product: IProduct = await ProductService.get(productId);
-    let result1 = await ProductService.incRecomendations(product);
-    let result = await userService.addProductRecommended(userId, productId)
-    res.status(200).json({ result });
+    let result1 = await ProductService.incRecomendations(product,userId);
+    console.log(result1,"rrrrrrrrrrrrrrrrrrr");
+     if(result1) {
+      let result = await userService.addProductRecommended(userId, productId)
+      res.status(200).json({ result });
+     }
+     else{
+      res.status(500).json({ error: "product already recommended" })
+     }
+    
   } catch (error) {
     LOG.error(error);
     res.status(500).json({ error: error.message });

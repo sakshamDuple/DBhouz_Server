@@ -1,6 +1,6 @@
 import { Double, InsertOneResult, ObjectId, UpdateResult } from "mongodb";
 import { collections } from "../db.service";
-import { EProductStatus, Inventory, IProduct, IProductVariant, IReview, Order } from "../interfaces";
+import { IUser, EProductStatus, Inventory, IProduct, IProductVariant, IReview, Order } from "../interfaces";
 import { InventoryService } from "./inventory.service";
 
 class ProductServiceClass {
@@ -182,9 +182,10 @@ class ProductServiceClass {
                     }
                 }
             },
-            { '$sort': {
-                'totalReview': -1
-              }
+            {
+                '$sort': {
+                    'totalReview': -1
+                }
             },
             { '$limit': 5 }
         ]
@@ -258,7 +259,7 @@ class ProductServiceClass {
             element.userId = new ObjectId(element.userId)
         });
         delete product._id;
-        console.log("product.variants",product)
+        console.log("product.variants", product)
         product.variants.forEach(async element => {
             if (!element.inventoryId) {
                 let inventory: Inventory = {
@@ -267,7 +268,7 @@ class ProductServiceClass {
                     variant_Name: element.name,
                     stock: element.availableQuantity,
                     availableItems: element.availableQuantity,
-                    taxAmount: element.priceByAdmin, 
+                    taxAmount: element.priceByAdmin,
                 }
                 element.inventoryId = await InventoryService.createInventoryInside(inventory)
             } else {
@@ -583,15 +584,49 @@ class ProductServiceClass {
         return o
     }
 
-    async incRecomendations(product: IProduct): Promise<boolean> {
+    async incRecomendations(product: IProduct, userId: string): Promise<boolean> {
+
         product = { ...product }
         product = this.sanitize2(product)
-        product.recomendations += 1
+        let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
+        let flag = 0
+        let recomendations= product.recomendations
+        if (foundUser.recommendedProductByThisUser !== undefined) {
+            console.log("inside if");
+            
+            foundUser.recommendedProductByThisUser?.forEach(element => {
+                console.log(element, "el");
+                console.log(element==product._id, "222222");
+
+                if (element!=product._id) {
+                   
+                    flag = 1
+                    
+                } else {
+                    console.log("User Already recommended this product ")
+                    return flag = 0
+                }
+            });
+            console.log(flag,"fffffff")
+            if (flag == 1) {
+                recomendations+= 1
+              }
+        }
+        else{
+            console.log("inside else");
+            
+            recomendations+=1
+        }
+        console.log(recomendations,"recccc");
+        
+        product.recomendations=recomendations
         const query = { _id: new ObjectId(product._id) };
 
 
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
-        return (result.modifiedCount > 0)
+        console.log(result,"rrr");
+        if(result.modifiedCount > 0) return true
+        return false
     }
     sanitize3(o: IProduct): IProduct {
         if (!o.unrecomendations) o.unrecomendations = 0;
