@@ -597,11 +597,8 @@ class ProductServiceClass {
             foundUser.recommendedProductByThisUser?.forEach(element => {
                 console.log(element, "el");
                 console.log(element==product._id, "222222");
-
                 if (element!=product._id) {
-                   
                     flag = 1
-                    
                 } else {
                     console.log("User Already recommended this product ")
                     return flag = 0
