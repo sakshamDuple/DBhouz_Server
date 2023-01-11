@@ -94,7 +94,18 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       res.status(500).json({ error: error.message });
     }
   });
-
+  blogRouter.get("/getAllBlogsForUser", async (req: Request, res: Response) => {
+    try {
+        console.log("inside blog category tryy");
+        const blog= await blogService.getAllBlogsForUser()   
+        console.log(blog,"bbbbbbllooggggg");
+        
+      res.status(200).json({ blogs:blog});
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  });
   blogRouter.post("/getBlogDetail", async (req:Request, res:Response) => {
     console.log("inside blog router");
     
@@ -258,6 +269,7 @@ blogRouter.get("/getAllBlogs", async (req: Request, res: Response) => {
       const filterResult = collections.blog.aggregate([
         
         {$unwind:"$comments"},
+        {$match:{status:"ACTIVE"}},
        { $group : {_id:'$_id',title:{$first:"$title"},createdAt:{$first:"$createdAt"},image:{$first:"$imageDocumentId"}, count:{$sum:1}}},
        {
         $project: {

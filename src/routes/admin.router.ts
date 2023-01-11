@@ -246,5 +246,18 @@ adminRouter.delete("/deleteFaq/:Id", async (req: Request, res: Response) => {
   }
 })
 
+adminRouter.get("/getSearchMerchants/search", async (req: Request, res: Response) => {
+  let searchVal: string = String(req.query.searchVal)
+  let filterBy :string = String(req.query.filterBy)
+  let type: string = String(req.query.type)
+  console.log(filterBy,"fff");
+  
+  try {
+    res.status(200).json({ data: await AdminService.getSearchMerchants(searchVal,type,filterBy) });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+})
 
 export { adminRouter }; 
