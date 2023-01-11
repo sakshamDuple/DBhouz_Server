@@ -243,7 +243,6 @@ class ProductServiceClass {
             metaTagTitle: ""
         }
         delete newProduct._id
-        console.log(newProduct)
         const result: InsertOneResult<IProduct> = await collections.products.insertOne(newProduct);
         newProduct._id = result.insertedId
         return newProduct
@@ -259,7 +258,6 @@ class ProductServiceClass {
             element.userId = new ObjectId(element.userId)
         });
         delete product._id;
-        console.log("product.variants", product)
         product.variants.forEach(async element => {
             if (!element.inventoryId) {
                 let inventory: Inventory = {
@@ -279,15 +277,12 @@ class ProductServiceClass {
                 thisVariantInventory.sellingPrice = element.price
             }
         });
-        console.log(product)
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
 
     async delete(productId: string | ObjectId): Promise<boolean> {
         console.log(productId)
-        // let nproductId = new ObjectId(productId.toString())
-        // const query = { _id: productId };
         const result = await collections.products.deleteOne({ _id: new ObjectId(productId) });
         return (result && result.deletedCount > 0)
     }
@@ -305,7 +300,6 @@ class ProductServiceClass {
         if (boolean) {
             query = { categoryId: new ObjectId(categoryId), "variants.price": { $gte: pfrom, $lte: pto }, status: "ACTIVE" }
         }
-        // console.log(pfrom, pto)
         if (colorId[0] != "") {
             let m = []
             colorId.forEach(element => {
@@ -487,12 +481,9 @@ class ProductServiceClass {
 
     func(Order: Order, product: IProduct, rating: number, allReview: Array<IReview>, len: number, review: IReview): boolean {
         let update: boolean = false
-        // console.log("hge \n \n \n \n",Order, product, rating, allReview, len, review)
         const query2 = { _id: new ObjectId(Order._id.toString()) };
         if (Order.products)
             Order.products.forEach(async item => {
-                console.log(item.reviewFlagOfThisProduct == false)
-                console.log(product._id.toString(), item.productId)
                 if (item.reviewFlagOfThisProduct == false && product._id.toString() == item.productId) {
                     let newRating = (rating * len + review.rating) / (len + 1)
                     product.rating = newRating;
@@ -502,12 +493,9 @@ class ProductServiceClass {
                     review.userId = new ObjectId(review.userId)
                     product.review = allReview
                     const query1 = { _id: new ObjectId(product._id.toString()) };
-                    console.log(product)
                     await collections.products.updateOne(query1, { $set: product })
-                    console.log("HIi")
                     item.reviewFlagOfThisProduct = true
                     await collections.orders.updateOne(query2, { $set: Order })
-                    console.log("Hiii")
                     update = true
                     return update
                 }
@@ -517,19 +505,15 @@ class ProductServiceClass {
 
     async doReview(review: IReview, productId: string): Promise<any> {
         let thisId = new ObjectId(productId)
-        console.log(thisId)
         let product: IProduct = await collections.products.findOne(thisId) as IProduct
         let Order: Order = await collections.orders.findOne(review.orderId) as Order
-        console.log("product", product)
         let rating: number = product.rating
         let len = product.review.length
         let allReview: Array<IReview> = product.review
         let Update = await this.func(Order, product, rating, allReview, len, review)
-        // console.log(Order, product, rating, allReview, len, review)
         return {
             Update, Review: review
         }
-        // return "review not made"
     }
 
     sanitize(o: IProduct): IProduct {
@@ -578,64 +562,49 @@ class ProductServiceClass {
         return o
     }
 
-
     sanitize2(o: IProduct): IProduct {
         if (!o.recomendations) o.recomendations = 0;
         return o
     }
 
     async incRecomendations(product: IProduct, userId: string): Promise<boolean> {
-
         product = { ...product }
         product = this.sanitize2(product)
         let foundUser: IUser = await collections.users.findOne({ _id: new ObjectId(userId) }) as IUser
         let flag = 0
         let recomendations= product.recomendations
         if (foundUser.recommendedProductByThisUser !== undefined) {
-            console.log("inside if");
-            
             foundUser.recommendedProductByThisUser?.forEach(element => {
-                console.log(element, "el");
-                console.log(element==product._id, "222222");
                 if (element!=product._id) {
                     flag = 1
                 } else {
-                    console.log("User Already recommended this product ")
                     return flag = 0
                 }
             });
-            console.log(flag,"fffffff")
             if (flag == 1) {
                 recomendations+= 1
               }
         }
         else{
-            console.log("inside else");
-            
             recomendations+=1
-        }
-        console.log(recomendations,"recccc");
-        
+        }        
         product.recomendations=recomendations
         const query = { _id: new ObjectId(product._id) };
-
-
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
-        console.log(result,"rrr");
         if(result.modifiedCount > 0) return true
         return false
     }
+
     sanitize3(o: IProduct): IProduct {
         if (!o.unrecomendations) o.unrecomendations = 0;
         return o
     }
+
     async dontRecomend(product: IProduct): Promise<boolean> {
         product = { ...product }
         product = this.sanitize3(product)
         product.unrecomendations += 1
         const query = { _id: new ObjectId(product._id) };
-
-
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
