@@ -72,7 +72,11 @@ class blogServiceClass {
 
         return (await collections.blog.find({}).sort({ createdAt: -1 }).toArray()) as Iblog[];
     }
+    async getAllBlogsForUser(): Promise<Iblog[]> {
+        console.log("inside blog category service");
 
+        return (await collections.blog.find({status:"ACTIVE"}).sort({ createdAt: -1 }).toArray()) as Iblog[];
+    }
     async deleteBlog(blogId: string | ObjectId): Promise<boolean> {
         const query = { _id: new ObjectId(blogId) };
         const result = await collections.blog.deleteOne(query);
@@ -92,7 +96,7 @@ class blogServiceClass {
 
 
 
-        return await collections.blog.find({ category: categoryName }).toArray() as Iblog[]
+        return await collections.blog.find({ category: categoryName, status:"ACTIVE" }).toArray() as Iblog[]
     }
     // async getblogByTitle(blogTitle: string | ObjectId): Promise<Iblog> {
     //     console.log(blogTitle,"inside blog service");

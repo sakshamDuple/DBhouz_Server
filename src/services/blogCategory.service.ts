@@ -72,6 +72,42 @@ class blogCategoryServiceClass {
         
         return (await collections.blogCategory.find({}).sort({ createdAt: -1 }).toArray()) as IblogCategory[];
     }
+    async getAllBlogCategoriesForUser(): Promise<IblogCategory[]> {
+        console.log("inside blog category service");
+        
+        return (await collections.blogCategory.find({status:"ACTIVE"}).sort({ createdAt: -1 }).toArray()) as IblogCategory[];
+    }
+    
+    async getBlogCategoryByIdSearch(searchVal: string, field: string): Promise<any[]> {
+        let agg = []
+        if (field == "admin") {
+            
+            agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        '_id': 1,
+                        'name':1,
+                        'description':1,
+                        'imageDocumentId':1,
+                        'seo':1,
+                        'status':1,
+                        'createdAt':1
+                    }
+                }
+            ];
+        }
+        
+        
+        return await collections.blogCategory.aggregate(agg).sort({ createdAt: -1 }).toArray()
+    }
 
 
 

@@ -96,7 +96,7 @@ class AdminServiceClass {
         return (await collections.admins.findOne()) as IAdmin;
     }
     async getAdminId(): Promise<ObjectId> {
-        let Admin:IAdmin = await collections.admins.findOne() as IAdmin;
+        let Admin: IAdmin = await collections.admins.findOne() as IAdmin;
         return Admin._id
     }
     async editPersonalInfo(profile: any): Promise<IAdmin> {
@@ -179,6 +179,103 @@ class AdminServiceClass {
         const result = await collections.faq.deleteOne(query);
         return (result && result.deletedCount > 0)
     }
+
+    async getSearchMerchants(searchVal: string, field: string, filterBy: string): Promise<any[]> {
+        let agg = []
+        if (field == "admin") {
+            if (filterBy == "name") {
+                agg = [
+                    {
+                        '$match': {
+                            '$or': [
+                                {
+                                    'name': new RegExp(searchVal, 'i')
+                                }
+                            ]
+                        }
+                    }, {
+                        '$project': {
+                            'bankDetail':1,
+                            'business_info':1,
+                            'createdAt':1,
+                            'email':1,
+                            'firstName':1,   
+                            'lastName':1,
+                            'identification':1,
+                            'isEmailVerified' :1,
+                            'phone':1 ,
+                            'secret':1,
+                            'status' :1,
+                            '_id':1                       
+                        }
+                    }
+                ];
+            }
+        }
+        else if (filterBy == "email") {
+
+            agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'email': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        'bankDetail':1,
+                        'business_info':1,
+                        'createdAt':1,
+                        'email':1,
+                        'firstName':1,   
+                        'lastName':1,
+                        'identification':1,
+                        'isEmailVerified' :1,
+                        'phone':1 ,
+                        'secret':1,
+                        'status' :1,
+                        '_id':1                       
+                    }
+                }
+            ];
+
+        }
+        else {
+            agg = [
+                {
+                    '$match': {
+                        '$or': [
+                            {
+                                'name': new RegExp(searchVal, 'i')
+                            }
+                        ]
+                    }
+                }, {
+                    '$project': {
+                        'bankDetail':1,
+                        'business_info':1,
+                        'createdAt':1,
+                        'email':1,
+                        'firstName':1,   
+                        'lastName':1,
+                        'identification':1,
+                        'isEmailVerified' :1,
+                        'phone':1 ,
+                        'secret':1,
+                        'status' :1,
+                        '_id':1                       
+                    }
+                }
+            ];
+
+        }
+
+
+        return await collections.merchants.aggregate(agg).sort({ createdAt: -1 }).toArray()
+    }
+
 
 
 

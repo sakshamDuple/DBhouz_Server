@@ -80,6 +80,20 @@ blogCategoryRouter.get("/getAllBlogCategories", async (req: Request, res: Respon
       res.status(500).json({ error: error.message });
     }
   });
+  
+  blogCategoryRouter.get("/getAllBlogCategoriesForUser", async (req: Request, res: Response) => {
+    try {
+        console.log("inside blog category tryy");
+        const blogCategory= await blogCategoryService.getAllBlogCategoriesForUser()
+        console.log(blogCategory,"bbbbbbllooggggg");
+        
+      res.status(200).json({ blogCategories:blogCategory});
+    } catch (error: any) {
+      LOG.error(error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
     blogCategoryRouter.post("/updateBlogCatStatus", async (req: Request, res: Response) => {
 
     try {
@@ -91,4 +105,15 @@ blogCategoryRouter.get("/getAllBlogCategories", async (req: Request, res: Respon
       res.status(500).json({ error: error.message });
     }
   })
+  blogCategoryRouter.get("/getSearchResponseBlogCategory/search", async (req: Request, res: Response) => {
+  let searchVal: string = String(req.query.searchVal)
+
+  let type: string = String(req.query.type)
+  try {
+    res.status(200).json({ data: await blogCategoryService.getBlogCategoryByIdSearch(searchVal,type) });
+  } catch (error: any) {
+    LOG.error(error);
+    res.status(500).json({ error: error.message });
+  }
+});
 export { blogCategoryRouter };
