@@ -19,7 +19,6 @@ const EmailHTML = (subject:string, message:any) => {
 			margin: 8px 0;
 			padding: 0;
 		}
-
 		table {
 			border-collapse: collapse;
 		}

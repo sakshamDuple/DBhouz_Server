@@ -13,11 +13,7 @@ adminRouter.use(express.json());
 
 adminRouter.post("/editProfile", async (req: Request, res: Response) => {
   try {
-    console.log("inside edit route");
-    console.log(req.body, "bodyyyy");
     const profile = req.body.data;
-    console.log(profile, "pp");
-
     res.status(200).json({ updatedUser: await AdminService.editProfile(profile) });
   } catch (error) {
     console.error(error);
@@ -28,11 +24,7 @@ adminRouter.post("/editProfile", async (req: Request, res: Response) => {
 
 adminRouter.post("/editPersonalInfo", async (req: Request, res: Response) => {
   try {
-    console.log("inside edit route");
-    console.log(req.body, "bodyyyy");
     const profile = req.body.data;
-    console.log(profile, "pp");
-
     res.status(200).json({ updatedUser: await AdminService.editPersonalInfo(profile) });
   } catch (error) {
     console.error(error);
@@ -46,8 +38,6 @@ adminRouter.post(
   uploadImages.single("image"),
   async (req: Request, res: Response) => {
     try {
-      console.log("inside add blogImage try");
-      console.log(req.body, "boddy");
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
       let admin = await AdminService.getAll()
@@ -66,7 +56,6 @@ adminRouter.post(
       rename(fileToUpload.path, newPath, (err) => {
         if (err) throw err;
         const logoId = newDocument._id;
-        console.log(logoId, "log id created succesfully")
         console.log(admin[0])
         admin[0].logoDocumentId = logoId
         res.status(200).json({ logoId });
@@ -85,11 +74,8 @@ adminRouter.post(
   async (req: Request, res: Response) => {
     try {
       let admin = await AdminService.getAll()
-      console.log("inside add blogImage try 2");
-      console.log(req.body, "boddy");
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
-
       let newDocument: IDocument = {
         _id: null,
         fileName: fileToUpload.originalname,
@@ -105,8 +91,6 @@ adminRouter.post(
       rename(fileToUpload.path, newPath, (err) => {
         if (err) throw err;
         const icon_id = newDocument._id;
-        console.log(icon_id, "log id created succesfully")
-        console.log(admin[0])
         res.status(200).json({ icon_id });
       });
       return await AdminService.update(admin[0])
@@ -123,11 +107,8 @@ adminRouter.post(
   async (req: Request, res: Response) => {
     try {
       let admin = await AdminService.getAll()
-      console.log("inside add blogImage try");
-      console.log(req.body, "boddy");
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
-
       let newDocument: IDocument = {
         _id: null,
         fileName: fileToUpload.originalname,
@@ -143,7 +124,6 @@ adminRouter.post(
       rename(fileToUpload.path, newPath, (err) => {
         if (err) throw err;
         const icon_id = newDocument._id;
-        console.log(icon_id, "log id created succesfully")
         res.status(200).json({ icon_id });
       });
       return await AdminService.update(admin[0])
@@ -154,13 +134,9 @@ adminRouter.post(
   }
 );
 
-
 adminRouter.get("/getDetails", async (req: Request, res: Response) => {
   try {
-    console.log("inside blog category tryy");
     const adminDetails = await AdminService.getAdminDetails()
-
-
     res.status(200).json({ adminDetails });
   } catch (error: any) {
     LOG.error(error);
@@ -168,19 +144,13 @@ adminRouter.get("/getDetails", async (req: Request, res: Response) => {
   }
 });
 
-
-
 adminRouter.post(
   "/editProfilePic",
   uploadImages.single("image"),
   async (req: Request, res: Response) => {
-
     try {
-      console.log("inside add blogImage try");
-      console.log(req.body, "boddy");
       const fileToUpload: Express.Multer.File = req.file;
       if (!fileToUpload) throw new Error(`No file to upload`);
-
       let newDocument: IDocument = {
         _id: null,
         fileName: fileToUpload.originalname,
@@ -195,9 +165,7 @@ adminRouter.post(
       rename(fileToUpload.path, newPath, (err) => {
         if (err) throw err;
         const id = newDocument._id;
-        console.log(id, "log id created succesfully")
         res.status(200).json({ id });
-
       });
     } catch (error: any) {
       LOG.error(error);
@@ -206,12 +174,8 @@ adminRouter.post(
   }
 );
 adminRouter.post('/createFaq',
-
   async (req, res) => {
-    console.log(req.body, "inside post faq route")
     const FAQ = req.body
-    console.log(FAQ, "ff");
-
     let faqCreated = await AdminService.createFaq(FAQ)
     res.status(200).json(faqCreated);
   }
@@ -221,10 +185,7 @@ adminRouter.post('/createFaq',
 
 adminRouter.get("/getAllFaqs", async (req: Request, res: Response) => {
   try {
-    console.log("inside blog category tryy");
     const FAQs = await AdminService.getAllFaqs()
-    console.log(FAQs, "faqsss");
-
     res.status(200).json({ FAQs: FAQs });
   } catch (error: any) {
     LOG.error(error);
@@ -241,7 +202,6 @@ adminRouter.delete("/deleteFaq/:Id", async (req: Request, res: Response) => {
   }
   else {
     const result = await AdminService.deleteSingleFAQ(FAQ)
-    console.log(result, "dddd");
     res.status(200).json({ result: result });
   }
 })
@@ -250,8 +210,6 @@ adminRouter.get("/getSearchMerchants/search", async (req: Request, res: Response
   let searchVal: string = String(req.query.searchVal)
   let filterBy :string = String(req.query.filterBy)
   let type: string = String(req.query.type)
-  console.log(filterBy,"fff");
-  
   try {
     res.status(200).json({ data: await AdminService.getSearchMerchants(searchVal,type,filterBy) });
   } catch (error: any) {
