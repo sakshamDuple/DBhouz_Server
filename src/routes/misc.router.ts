@@ -55,6 +55,27 @@ miscRouter.post("/mainBannerCreation", async (req: Request, res: Response) => {
     }
 })
 
+miscRouter.post("/MultiMainBannerCreation", async (req: Request, res: Response) => {
+    try {
+        let banners: Banner[] = req.body;
+        console.log(banners)
+        let bannerToUpdate:Banner[] = []
+        banners.map((banner)=>{
+            if (banner.Banner_Type == Banner_Type.Main) {
+                if (banner.images)
+                    banner.images = new ObjectID(banner.images)
+                console.log(banner.images)
+                bannerToUpdate.push(banner)
+            }
+        })
+        let NewBanners = await mainPageService.createMultiMainB(bannerToUpdate);
+        res.status(200).json({ NewBanners });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
 miscRouter.post("/smallBanner2Creation", async (req: Request, res: Response) => {
     try {
         let banner: Banner = req.body;
@@ -173,11 +194,7 @@ miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
         main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
         main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
         main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
-        console.log(main, "mmmm");
-
-
         let MainPage = await mainPageService.mainPageCreation(main);
-
         res.status(200).json({ MainPage });
     } catch (e: any) {
         LOG.error(e)

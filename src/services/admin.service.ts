@@ -63,7 +63,6 @@ class AdminServiceClass {
                 ThisProf.website_name = profile.name
             }
             if (profile.email != "") {
-
                 ThisProf.website_email = profile.email
             }
             if (profile.Address != "") {
@@ -144,25 +143,17 @@ class AdminServiceClass {
         if (!o.answer) delete o.answer;
         return o;
     }
+
     async createFaq(newFaq: IFAQ): Promise<IFAQ> {
-        console.log(newFaq, "inside faq service");
-
         newFaq = { ...newFaq }
-
         newFaq = this.sanitizeFAQ(newFaq);
         newFaq.createdAt = Date.now()
-
-        console.log(newFaq, "nn");
-
         const result: InsertOneResult<IFAQ> = await collections.faq.insertOne(newFaq);
         newFaq._id = result.insertedId;
-        console.log(newFaq)
         return newFaq;
     }
 
     async getAllFaqs(): Promise<IFAQ[]> {
-        console.log("inside get all faqs service");
-
         return (await collections.faq.find({}).sort({ createdAt: -1 }).toArray()) as IFAQ[];
     }
 
@@ -171,10 +162,7 @@ class AdminServiceClass {
         return (await collections.faq.findOne(query)) as IFAQ;
     }
     async deleteSingleFAQ(FAQ: IFAQ): Promise<boolean> {
-
         let faqId = FAQ._id
-        console.log(faqId, "fffffff");
-
         const query = { _id: new ObjectId(faqId) };
         const result = await collections.faq.deleteOne(query);
         return (result && result.deletedCount > 0)
@@ -213,7 +201,6 @@ class AdminServiceClass {
             }
         }
         else if (filterBy == "email") {
-
             agg = [
                 {
                     '$match': {
@@ -240,7 +227,6 @@ class AdminServiceClass {
                     }
                 }
             ];
-
         }
         else {
             agg = [
@@ -269,15 +255,9 @@ class AdminServiceClass {
                     }
                 }
             ];
-
         }
-
-
         return await collections.merchants.aggregate(agg).sort({ createdAt: -1 }).toArray()
     }
-
-
-
 
 }
 

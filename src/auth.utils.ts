@@ -31,7 +31,6 @@ class CAuthUtils {
   }
 
   passportMiddlewares() {
-
     passport.use(
       "merchantsignup",
       new LocalStrategy(
@@ -66,7 +65,7 @@ class CAuthUtils {
               email,
             })) as IMerchant;
             if (!user) {
-              return done(null, null, { message: "Invalid Email" }); 
+              return done(null, null, { message: "Invalid Email" });
             }
             if (!await this.compareHash(password, user.secret)) {
               return done(null, null, { message: "Invalid Password" });
