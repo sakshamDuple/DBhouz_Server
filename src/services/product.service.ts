@@ -525,7 +525,7 @@ class ProductServiceClass {
         if (o.images) o.images.forEach(i => {
             i.documentId = new ObjectId(i.documentId)
         })
-        if (o.brandId) delete o.brandId
+        // if (o.brandId) delete o.brandId
         if (!o.rating) o.rating = 0;
         if (!o.review) o.review = [];
         if (o.variantParameters) {

@@ -541,7 +541,6 @@ productRouter.post("/createProduct", async (req: Request, res: Response) => {
       }
     }
     let newProduct: IProduct = product
-    console.log(newProduct)
     product = await ProductService.create(newProduct);
     res.status(200).json({ product });
     await NotifictionService.create("Merchant Added Product", "Admin", null, `Merchant With Id: ${product.merchantId} Added a Product with Id: ${product._id} and Name: ${product.name}`)
@@ -588,7 +587,6 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
       message == "product can't be activated if product has less than one variant"
     }
     product.variants.map((variant, i) => {
-      console.log(variant)
       if (variant.price == 0) {
         activeInactive = activeInactive && false
         message = "product can't be activated until every variants of product has their price atleast more that 1 unit"
@@ -596,7 +594,6 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
         activeInactive = activeInactive && true
       }
     })
-    console.log(activeInactive)
     if (activeInactive == true) {
       product.status == EProductStatus.Active
       newProduct.status = EProductStatus.Active
@@ -616,6 +613,7 @@ productRouter.post("/updateOne", async (req: Request, res: Response) => {
         product.status = EProductStatus.InActive;
       }
     }
+    console.log("newProduct",newProduct)
     let result = await ProductService.update(newProduct);
     res.status(200).json({ result, message });
     if (product.status == EProductStatus.Active && product.status != prevProduct.status) {

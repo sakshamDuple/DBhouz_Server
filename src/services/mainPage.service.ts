@@ -224,7 +224,7 @@ class mainPageServiceClass {
     }
 
     async getMainPageIfAdded(): Promise<MainPage[]> {
-        return await collections.mainPage.find().toArray() as MainPage[];
+        return await collections.mainPage.find().sort({_id:-1}).limit(1).toArray() as MainPage[];
     }
 
     sanitizeSmallB(b: Banner): Banner {
