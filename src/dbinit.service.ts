@@ -43,6 +43,7 @@ export async function dbInit(db: mongoDB.Db) {
     email: "admin@gmail.com",    
     secret: await AuthUtils.generateHashPassword("123456"),
     createdAt: 0,
+    vat:18
   };
   await AdminService.create(newAdmin);
 

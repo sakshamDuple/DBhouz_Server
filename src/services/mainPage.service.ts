@@ -223,6 +223,15 @@ class mainPageServiceClass {
         return mainPage
     }
 
+    async mainPageUpdation(mainPage: MainPage): Promise<Boolean> {
+        mainPage.updatedAt = Date.now()
+        mainPage.MainBanner = await this.getAllMainBannerIds();
+        mainPage.SmallBanner1 = await this.getSmallBanner1Id();
+        mainPage.SmallBanner2 = await this.getSmallBanner2Id();
+        const result: UpdateResult = await collections.mainPage.updateOne({},{$set:mainPage});
+        return result.modifiedCount>0
+    }
+
     async getMainPageIfAdded(): Promise<MainPage[]> {
         return await collections.mainPage.find().sort({_id:-1}).limit(1).toArray() as MainPage[];
     }

@@ -7,7 +7,7 @@ import { number } from "joi";
 
 /**
  * Global Variables
- */ 
+ */
 export const collections: {
   admins?: mongoDB.Collection;
   clients?: mongoDB.Collection;
@@ -115,6 +115,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
         additionalProperties: true,
         properties: {
           _id: {},
+          vat: { bsonType: "number" },
           email: { bsonType: "string" },
           name: { bsonType: "string" },
           address: { bsonType: "string" },
@@ -305,7 +306,7 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
           _id: {},
           title: { bsonType: "string" },
           category: { bsonType: "string" },
-          description: { bsonType: "string" }, 
+          description: { bsonType: "string" },
           status: { enum: ["ACTIVE", "INACTIVE"] },
           imageDocumentId: { bsonType: "objectId" },
           seo: {
@@ -401,6 +402,9 @@ let applyMongoValidations = async (db: mongoDB.Db) => {
                 availableQuantity: { bsonType: "number" },
                 discountPercentage: { bsonType: "number" },
                 price: { bsonType: "number" },
+                priceByAdmin: { bsonType: "number" },
+                priceByMerchant: { bsonType: "number" },
+                discountPrice: { bsonType: "number" },
                 warranty_period: {
                   bsonType: "number"
                 },

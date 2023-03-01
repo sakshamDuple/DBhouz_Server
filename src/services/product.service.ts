@@ -548,6 +548,7 @@ class ProductServiceClass {
             if (Number.isNaN(v.minPurchaseQuantity)) delete v.minPurchaseQuantity
             if (Number.isNaN(v.availableQuantity)) delete v.availableQuantity
             if (Number.isNaN(v.discountPercentage)) delete v.discountPercentage
+            if (Number.isNaN(v.discountPrice)) delete v.discountPrice
             if (Number.isNaN(v.price)) delete v.price
             if (Number.isNaN(v.priceByAdmin)) delete v.priceByAdmin
             if (Number.isNaN(v.priceByMerchant)) delete v.priceByMerchant
@@ -608,11 +609,6 @@ class ProductServiceClass {
         let result: UpdateResult = await collections.products.updateOne(query, { $set: product });
         return (result.modifiedCount > 0)
     }
-
-
-
-
-
 }
 
 export let ProductService: ProductServiceClass = new ProductServiceClass()

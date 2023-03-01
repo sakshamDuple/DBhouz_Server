@@ -202,6 +202,54 @@ miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     }
 })
 
+miscRouter.post("/HomePageMaterial_Selection_1_Update", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
+        let update = await mainPageService.mainPageUpdation(main);
+        res.status(200).json({ update });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.put("/HomePageMaterial_Selection_2_Update", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
+        let update = await mainPageService.mainPageUpdation(main);
+        res.status(200).json({ update });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.post("/HomePageFeatured_Products_Update", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
+        let update = await mainPageService.mainPageUpdation(main);
+        res.status(200).json({ update });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+miscRouter.post("/HomePageShop_By_Category_Update", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
+        let update = await mainPageService.mainPageUpdation(main);
+        res.status(200).json({ update });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
 miscRouter.get("/getAllMainBannerIds", async (req: Request, res: Response) => {
     try {
         res.status(200).json(await mainPageService.getAllMainBannerIds());

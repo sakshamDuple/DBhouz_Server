@@ -6,6 +6,7 @@ class AdminServiceClass {
 
     sanitizeadmin(o: IAdmin): IAdmin {
         if (!o.favIconDocumentId) delete o.favIconDocumentId
+        if (!o.vat) delete o.vat
         else o.favIconDocumentId = new ObjectId(o.favIconDocumentId)
         if (!o.logoDocumentId) delete o.logoDocumentId
         else o.logoDocumentId = new ObjectId(o.logoDocumentId)
@@ -68,6 +69,10 @@ class AdminServiceClass {
             if (profile.Address != "") {
                 ThisProf.address = profile.Address
             }
+            if (profile.vat != 18) {
+                let thisVat = parseInt(profile.vat)
+                ThisProf.vat = Number.isNaN(thisVat) ? 18 : thisVat
+            }
             if (profile.favIconDocumentId !== undefined) {
                 const favIconId = new ObjectId(profile.favIconDocumentId)
                 ThisProf.favIconDocumentId = favIconId
@@ -91,13 +96,16 @@ class AdminServiceClass {
             return (await collections.admins.findOne() as IAdmin)
         }
     }
+
     async getAdminDetails(): Promise<IAdmin> {
         return (await collections.admins.findOne()) as IAdmin;
     }
+
     async getAdminId(): Promise<ObjectId> {
         let Admin: IAdmin = await collections.admins.findOne() as IAdmin;
         return Admin._id
     }
+
     async editPersonalInfo(profile: any): Promise<IAdmin> {
         console.log(profile, "pro")
         let ThisProf: IAdmin = await collections.admins.findOne({}) as IAdmin
@@ -133,9 +141,7 @@ class AdminServiceClass {
             return (result.modifiedCount > 0) ? await collections.admins.findOne({}) as IAdmin : ThisProf;
         } catch (error) {
             console.log(error);
-
         }
-
     }
 
     sanitizeFAQ(o: IFAQ): IFAQ {
@@ -183,18 +189,18 @@ class AdminServiceClass {
                         }
                     }, {
                         '$project': {
-                            'bankDetail':1,
-                            'business_info':1,
-                            'createdAt':1,
-                            'email':1,
-                            'firstName':1,   
-                            'lastName':1,
-                            'identification':1,
-                            'isEmailVerified' :1,
-                            'phone':1 ,
-                            'secret':1,
-                            'status' :1,
-                            '_id':1                       
+                            'bankDetail': 1,
+                            'business_info': 1,
+                            'createdAt': 1,
+                            'email': 1,
+                            'firstName': 1,
+                            'lastName': 1,
+                            'identification': 1,
+                            'isEmailVerified': 1,
+                            'phone': 1,
+                            'secret': 1,
+                            'status': 1,
+                            '_id': 1
                         }
                     }
                 ];
@@ -212,18 +218,18 @@ class AdminServiceClass {
                     }
                 }, {
                     '$project': {
-                        'bankDetail':1,
-                        'business_info':1,
-                        'createdAt':1,
-                        'email':1,
-                        'firstName':1,   
-                        'lastName':1,
-                        'identification':1,
-                        'isEmailVerified' :1,
-                        'phone':1 ,
-                        'secret':1,
-                        'status' :1,
-                        '_id':1                       
+                        'bankDetail': 1,
+                        'business_info': 1,
+                        'createdAt': 1,
+                        'email': 1,
+                        'firstName': 1,
+                        'lastName': 1,
+                        'identification': 1,
+                        'isEmailVerified': 1,
+                        'phone': 1,
+                        'secret': 1,
+                        'status': 1,
+                        '_id': 1
                     }
                 }
             ];
@@ -240,18 +246,18 @@ class AdminServiceClass {
                     }
                 }, {
                     '$project': {
-                        'bankDetail':1,
-                        'business_info':1,
-                        'createdAt':1,
-                        'email':1,
-                        'firstName':1,   
-                        'lastName':1,
-                        'identification':1,
-                        'isEmailVerified' :1,
-                        'phone':1 ,
-                        'secret':1,
-                        'status' :1,
-                        '_id':1                       
+                        'bankDetail': 1,
+                        'business_info': 1,
+                        'createdAt': 1,
+                        'email': 1,
+                        'firstName': 1,
+                        'lastName': 1,
+                        'identification': 1,
+                        'isEmailVerified': 1,
+                        'phone': 1,
+                        'secret': 1,
+                        'status': 1,
+                        '_id': 1
                     }
                 }
             ];

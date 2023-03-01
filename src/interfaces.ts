@@ -10,6 +10,7 @@ export interface IAdmin {
   about?:string;
   phone?: number;
   designation?:string;
+  vat?:number;
   personalAddress?: {
     country?: string,
     state?: string,
@@ -328,7 +329,7 @@ export interface IProductVariant {
   warranty_period?: number;
   material_type?: string;
   material_finish?: string;
-  // stock:number;
+  discountPrice?: number;
   images?: {
     documentId: ObjectId;
     priority: number;
