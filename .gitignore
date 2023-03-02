@@ -5,4 +5,4 @@ files
 temp
 server-prod
 dist
-
+.env
