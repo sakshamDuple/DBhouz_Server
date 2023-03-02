@@ -202,11 +202,29 @@ miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     }
 })
 
-miscRouter.post("/HomePageMaterial_Selection_1_Update", async (req: Request, res: Response) => {
+miscRouter.put("/HomePageDetailUpdate", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
-        main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
-        let update = await mainPageService.mainPageUpdation(main);
+        let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+        let lastMain:MainPage = LastMainPage[0]
+        LastMainPage[0].Benefits_of_having_Marble = main.Benefits_of_having_Marble
+        LastMainPage[0].About_Us = main.About_Us
+        let update = await mainPageService.mainPageUpdation(LastMainPage[0],lastMain);
+        res.status(200).json({ update });
+    } catch (e: any) {
+        LOG.error(e)
+        res.status(500).json({ error: e.message });
+    }
+})
+
+
+miscRouter.put("/HomePageMaterial_Selection_1_Update", async (req: Request, res: Response) => {
+    try {
+        let main: MainPage = req.body;
+        let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+        let lastMain:MainPage = LastMainPage[0]
+        LastMainPage[0].Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
+        let update = await mainPageService.mainPageUpdation(LastMainPage[0],lastMain);
         res.status(200).json({ update });
     } catch (e: any) {
         LOG.error(e)
@@ -217,8 +235,10 @@ miscRouter.post("/HomePageMaterial_Selection_1_Update", async (req: Request, res
 miscRouter.put("/HomePageMaterial_Selection_2_Update", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
-        main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
-        let update = await mainPageService.mainPageUpdation(main);
+        let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+        let lastMain:MainPage = LastMainPage[0]
+        LastMainPage[0].Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
+        let update = await mainPageService.mainPageUpdation(LastMainPage[0],lastMain);
         res.status(200).json({ update });
     } catch (e: any) {
         LOG.error(e)
@@ -229,8 +249,10 @@ miscRouter.put("/HomePageMaterial_Selection_2_Update", async (req: Request, res:
 miscRouter.post("/HomePageFeatured_Products_Update", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
-        main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
-        let update = await mainPageService.mainPageUpdation(main);
+        let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+        let lastMain:MainPage = LastMainPage[0]
+        LastMainPage[0].Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
+        let update = await mainPageService.mainPageUpdation(LastMainPage[0],lastMain);
         res.status(200).json({ update });
     } catch (e: any) {
         LOG.error(e)
@@ -241,8 +263,10 @@ miscRouter.post("/HomePageFeatured_Products_Update", async (req: Request, res: R
 miscRouter.post("/HomePageShop_By_Category_Update", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
-        main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
-        let update = await mainPageService.mainPageUpdation(main);
+        let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+        let lastMain:MainPage = LastMainPage[0]
+        LastMainPage[0].Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
+        let update = await mainPageService.mainPageUpdation(LastMainPage[0],lastMain);
         res.status(200).json({ update });
     } catch (e: any) {
         LOG.error(e)
