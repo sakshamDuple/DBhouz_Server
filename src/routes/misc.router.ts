@@ -1,19 +1,19 @@
-import express, { Request, Response, Router } from 'express'
-import { LOG } from '../logger';
-import { Banner, Banner_Type, DisplayCategory, DisplayProducts, IColor, ICoupon, IDocument, IUnit, MainPage } from '../interfaces';
-import { ColorService } from '../services/color.service';
-import { UnitService } from '../services/unit.service';
-import { mainPageService } from '../services/mainPage.service';
 import { ObjectID } from 'bson';
+import express, { Request, Response, Router } from 'express';
+import { rename } from 'fs';
+import path from 'path';
+import { AppConfig } from '../config';
+import { Banner, Banner_Type, DisplayCategory, DisplayProducts, IColor, ICoupon, IDocument, IUnit, MainPage } from '../interfaces';
+import { LOG } from '../logger';
+import { uploadImages } from '../multer';
+import { ColorService } from '../services/color.service';
 import { couponService } from '../services/coupon.service';
+import { DocumentService } from '../services/document.service';
+import { mainPageService } from '../services/mainPage.service';
+import { MerchantService } from '../services/merchant.service';
 import { OrderService } from '../services/order.service';
 import { ProductService } from '../services/product.service';
-import { uploadImages } from '../multer';
-import { DocumentService } from '../services/document.service';
-import { AppConfig } from '../config';
-import path from 'path';
-import { rename } from 'fs';
-import { MerchantService } from '../services/merchant.service';
+import { UnitService } from '../services/unit.service';
 import { userService } from '../services/user.service';
 
 const miscRouter: Router = express.Router()
@@ -117,6 +117,19 @@ miscRouter.get("/getAllBanners", async (req: Request, res: Response) => {
     }
 })
 
+miscRouter.delete("/deleteBanner/:BannerId", async (req: Request, res: Response) => {
+    const BannerId = req?.params?.BannerId;
+    try {
+         let mainBanner = await mainPageService.deleteOneBanner(BannerId)
+        res.status(200).json({result : mainBanner});
+
+    } catch (error) {
+        LOG.error(error)
+        res.status(500).json({ error: error.message });
+    }
+});
+
+
 miscRouter.get("/getAllBannersDetailed", async (req: Request, res: Response) => {
     try {
         res.status(200).json({ mainBanners: await mainPageService.getAllMainBanners(), smallBanner1: await mainPageService.getSmallBanner1(), smallBanner2: await mainPageService.getSmallBanner2() });
@@ -155,6 +168,7 @@ miscRouter.get("/getMainPage", async (req: Request, res: Response) => {
 
 function doInDCforImageCatObjectId(m: DisplayCategory[]) {
     let k = []
+    console.log('m: ', m);
     m.forEach(element => {
         let newelement: DisplayCategory = element;
         newelement.categoryId = new ObjectID(element.categoryId)
@@ -190,10 +204,10 @@ miscRouter.get("/getSearchResponseUser/search", async (req: Request, res: Respon
 miscRouter.post("/HomePageCreation", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
-        main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
-        main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
-        main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
-        main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
+        // main.Material_Selection_1 = doInDCforImageCatObjectId(main.Material_Selection_1)
+        // main.Material_Selection_2 = doInDCforImageCatObjectId(main.Material_Selection_2)
+        // main.Shop_By_Category = doInDCforImageCatObjectId(main.Shop_By_Category)
+        // main.Featured_Products = doInDCforImageProObjectId(main.Featured_Products)
         let MainPage = await mainPageService.mainPageCreation(main);
         res.status(200).json({ MainPage });
     } catch (e: any) {
@@ -260,7 +274,7 @@ miscRouter.post("/HomePageFeatured_Products_Update", async (req: Request, res: R
     }
 })
 
-miscRouter.post("/HomePageShop_By_Category_Update", async (req: Request, res: Response) => {
+miscRouter.put("/HomePageShop_By_Category_Update", async (req: Request, res: Response) => {
     try {
         let main: MainPage = req.body;
         let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
@@ -274,6 +288,18 @@ miscRouter.post("/HomePageShop_By_Category_Update", async (req: Request, res: Re
     }
 })
 
+// miscRouter.put("/HomePage_update", async (req: Request, res: Response) => {
+//     try {
+//         let main: MainPage = req.body;
+//         let LastMainPage:MainPage[] = await mainPageService.getMainPageIfAdded()
+//         let lastMain:MainPage = LastMainPage[0]
+//         let update = await mainPageService.mainPageUpdation(main,lastMain);
+//         res.status(200).json({ update });
+//     } catch (e: any) {
+//         LOG.error(e)
+//         res.status(500).json({ error: e.message });
+//     }
+// })
 miscRouter.get("/getAllMainBannerIds", async (req: Request, res: Response) => {
     try {
         res.status(200).json(await mainPageService.getAllMainBannerIds());
@@ -314,6 +340,7 @@ miscRouter.delete("/deleteColor/:colorId", async (req: Request, res: Response) =
         res.status(500).json({ error: error.message });
     }
 });
+
 
 miscRouter.get("/getAdminOrderTable", async (req: Request, res: Response) => {
     let year: number = parseInt(req.query.year.toString())
@@ -503,4 +530,5 @@ miscRouter.get("/getAllCoupons", async (req: Request, res: Response) => {
     }
 })
 
-export { miscRouter }
+export { miscRouter };
+

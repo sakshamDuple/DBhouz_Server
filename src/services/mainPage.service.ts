@@ -100,6 +100,16 @@ class mainPageServiceClass {
         return
     }
 
+    async deleteOneBanner(BannerId: string | ObjectId): Promise<boolean> {
+        const id = new ObjectId(BannerId)
+        const query = { _id: new ObjectId(BannerId) };
+        await collections.banner.deleteOne(query);
+        let mainBanner = await collections.mainPage.updateOne({}, { $pull: { "MainBanner": id  } });
+
+        return mainBanner ? true : false;
+    }
+
+
     async getAllMainBannerIds(): Promise<ObjectId[]> {
         let agg = [
             {
