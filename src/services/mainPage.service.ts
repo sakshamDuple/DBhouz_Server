@@ -223,8 +223,8 @@ class mainPageServiceClass {
         return mainPage
     }
 
-    async mainPageUpdation(mainPage: MainPage): Promise<Boolean> {
-        mainPage.updatedAt = Date.now()
+    async mainPageUpdation(mainPage: MainPage,lastMain:MainPage): Promise<Boolean> {
+        if(lastMain != mainPage)mainPage.updatedAt = Date.now();
         mainPage.MainBanner = await this.getAllMainBannerIds();
         mainPage.SmallBanner1 = await this.getSmallBanner1Id();
         mainPage.SmallBanner2 = await this.getSmallBanner2Id();
