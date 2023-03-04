@@ -237,25 +237,34 @@ orderRouter.get("/getOrderCsvForAdmin", async (req: Request, res: Response) => {
   try {
     let PageLimit = 1;
     let criterias: Object = {};
+
     if (req.query.filter) {
       if (req.query.filter == "week") {
         criterias = {
-          createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+          createdAt: { $gte: Date.now() - 7 * 24 * 60 * 60 * 1000 },
         };
       }
       if (req.query.filter == "month") {
         criterias = {
-          createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) },
+          createdAt: { $gte: Date.now() - 30 * 24 * 60 * 60 * 1000 },
         };
       }
       if (req.query.filter == "month") {
         criterias = {
           createdAt: {
-            $gte: new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000),
+            $gte: Date.now() - 12 * 30 * 24 * 60 * 60 * 1000,
+          },
+        };
+      }
+      if (req.query.filter == "today") {
+        criterias = {
+          createdAt: {
+            $gte: Date.now() - 1 * 24 * 60 * 60 * 1000,
           },
         };
       }
     }
+
     res
       .status(200)
       .json({ order: await OrderService.getOrderCsvForAdmin(criterias) });
