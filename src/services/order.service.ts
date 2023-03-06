@@ -403,6 +403,100 @@ class OrderServiceClass {
     return AllProducts;
   }
 
+  async getOrderCsvForMerchant(criterias: Object): Promise<any[]> {
+    let agg = [
+      {
+        $match: criterias,
+      },
+      { $sort: { createdAt: -1 } },
+      //   {
+      //     $addFields: {
+      //       productIds: {
+      //         $map: {
+      //           input: "$products",
+      //           as: "product",
+      //           in: {
+      //             $toObjectId: "$$product.productId",
+      //           },
+      //         },
+      //       },
+      //     },
+      //   },
+      { $unwind: "$products" },
+      {
+        $addFields: {
+          productID: { $toObjectId: "$products.productId" },
+          sellerID: { $toObjectId: "$products.sellerId" },
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "productID",
+          foreignField: "_id",
+          as: "product",
+        },
+      },
+      { $unwind: "$product" },
+      {
+        $project: {
+          _id: 1,
+          "Product name": "$product.name",
+          Country: "$address.country",
+          State: "$address.state",
+          City: "$address.city",
+          Postal_code: "$address.postal_code",
+          Address: "$address.main_address_text",
+          "Customer name": "$customerDetail.name",
+          "Customer phone": "$customerDetail.phone",
+          "Customer email": "$customerDetail.email",
+          "Total price": "$total_price",
+          "Delivery date": "$createdAt",
+          "Item Count": "$products.count",
+          "Variant Name": "$products.variantName",
+          "Order At": {
+            $dateToString: {
+              format: "%Y-%m-%d",
+              date: { $toDate: "$createdAt" },
+            },
+          },
+          "Expected Delivery Date": {
+            $dateToString: {
+              format: "%Y-%m-%d ",
+              date: { $toDate: "$expectedDeliveryDate" },
+            },
+          },
+        },
+      },
+    ];
+    /*
+        [
+  {
+    '$addFields': {
+      'productIds': {
+        '$map': {
+          'input': '$products', 
+          'as': 'product', 
+          'in': {
+            '$toObjectId': '$$product.productId'
+          }
+        }
+      }
+    }
+  }, {
+    '$lookup': {
+      'from': 'products', 
+      'localField': 'productIds', 
+      'foreignField': '_id', 
+      'as': 'result'
+    }
+  }
+]
+*/
+    let AllProducts = await collections.orders.aggregate(agg).toArray();
+
+    return AllProducts;
+  }
   async getTransaction(id: string, type: string): Promise<any[]> {
     let agg = [
       {

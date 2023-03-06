@@ -274,6 +274,57 @@ orderRouter.get("/getOrderCsvForAdmin", async (req: Request, res: Response) => {
     console.log(e);
   }
 });
+
+orderRouter.get(
+  "/getOrderCsvForMerchant/:merchantId",
+  async (req: Request, res: Response) => {
+    try {
+      let criterias: Object = {};
+      let merchantId = req.params.merchantId;
+      criterias = {
+        "products.sellerId": merchantId,
+      };
+      if (req.query.filter) {
+        if (req.query.filter == "week") {
+          criterias = {
+            ...criterias,
+            createdAt: { $gte: Date.now() - 7 * 24 * 60 * 60 * 1000 },
+          };
+        }
+        if (req.query.filter == "month") {
+          criterias = {
+            ...criterias,
+            createdAt: { $gte: Date.now() - 30 * 24 * 60 * 60 * 1000 },
+          };
+        }
+        if (req.query.filter == "month") {
+          criterias = {
+            ...criterias,
+            createdAt: {
+              $gte: Date.now() - 12 * 30 * 24 * 60 * 60 * 1000,
+            },
+          };
+        }
+        if (req.query.filter == "today") {
+          criterias = {
+            ...criterias,
+            createdAt: {
+              $gte: Date.now() - 1 * 24 * 60 * 60 * 1000,
+            },
+          };
+        }
+      }
+
+      res
+        .status(200)
+        .json({ order: await OrderService.getOrderCsvForAdmin(criterias) });
+    } catch (e: any) {
+      LOG.error(e);
+      res.status(500).json({ error: e.message });
+      console.log(e);
+    }
+  }
+);
 orderRouter.get(
   "/getAllTransaction/action",
   async (req: Request, res: Response) => {
